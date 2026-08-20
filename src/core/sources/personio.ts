@@ -32,35 +32,40 @@ const feed = z.looseObject({
   }),
 })
 
+function asArray<T>(value: T | T[] | null | undefined): T[] {
+  if (value === null || value === undefined) return []
+  return Array.isArray(value) ? value : [value]
+}
+
+function descriptionHtml(p: z.output<typeof position>): string | null {
+  const container = p.jobDescriptions
+  const sections
+    = container && typeof container === 'object'
+      ? asArray(container.jobDescription)
+      : []
+  const html = sections
+    .map(d => (d.name ? `<h3>${d.name}</h3>\n${d.value ?? ''}` : d.value ?? ''))
+    .join('\n')
+    .trim()
+  return html || null
+}
+
 export const personio: SourceAdapter = {
   name: 'personio',
   kind: 'ats',
   async fetchCompany(client, company): Promise<JobPosting[]> {
     const xml = await client.text(`https://${company}.jobs.personio.de/xml`)
     const parsed = feed.parse(new XMLParser({ ignoreAttributes: true }).parse(xml))
-    const raw = parsed['workzag-jobs'].position
-    const positions = raw ? (Array.isArray(raw) ? raw : [raw]) : []
+    const positions = asArray(parsed['workzag-jobs'].position)
 
     return positions.map((p) => {
-      const descs = p.jobDescriptions
-      const descList
-        = descs && typeof descs === 'object' && descs.jobDescription
-          ? Array.isArray(descs.jobDescription)
-            ? descs.jobDescription
-            : [descs.jobDescription]
-          : []
-      const html = descList
-        .map(d => (d.name ? `<h3>${d.name}</h3>\n${d.value ?? ''}` : d.value ?? ''))
-        .join('\n')
-        .trim()
-
       return {
         source: 'personio',
         nativeId: String(p.id),
         company: p.subcompany ?? company,
         title: p.name,
         url: `https://${company}.jobs.personio.de/job/${p.id}`,
-        descriptionHtml: html || null,
+        descriptionHtml: descriptionHtml(p),
         location: p.office ?? null,
         workMode: p.office && /remote/i.test(p.office) ? 'remote' : null,
         salaryMin: null,

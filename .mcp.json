@@ -1,8 +1,7 @@
 {
   "mcpServers": {
     "job-kit": {
-      "command": "node",
-      "args": ["dist/mcp-bin.mjs"]
+      "command": "job-kit-mcp"
     }
   }
 }

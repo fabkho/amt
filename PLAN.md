@@ -1,5 +1,7 @@
 # job-kit — Implementation Plan
 
+> **Historisches Dokument.** Die Implementierung hat einzelne Details überholt: `apply` heißt `prepare`, `views` heißt `index`, `render-cv`/`render-letter` gingen in `prepare` auf, das MCP-Tool heißt `prepare_application`, Notes entstehen nur für relevante Postings (seen-Ledger), und Ashby kam als siebter Adapter dazu. Maßgeblich ist der Code + README.
+
 > Konsolidiert aus fünf Scout-Reports (the-i18n-kit-Analyse, Bestandsinventur, Toolchain-Recherche, Job-API-Verifikation, TS-PDF-Rendering-Recherche), alle tragenden Aussagen unabhängig validiert (Stand 2026-08-20).
 >
 > **Sprachentscheidung: TypeScript.** Das ursprüngliche Python-Argument (WeasyPrint als einziger Renderer für CSS-Paged-Media-Margin-Boxes) ist seit Chrome 131 hinfällig: `@bottom-right { content: … counter(page) " / " counter(pages) }` rendert nativ in Chromium — **empirisch verifiziert** mit dem unveränderten Shopware-CV-HTML gegen lokales Chrome 151 (Footer „Page 1 / 2" korrekt, Layout praktisch identisch zu WeasyPrint). Damit gewinnt TS: Fabians Sprache, i18n-kit-Muster und -Tooling übertragen sich wörtlich, Kollegen (Webentwickler) haben Node ohnehin.

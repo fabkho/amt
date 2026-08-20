@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="{{ labels.lang }}">
+<head>
+<meta charset="utf-8" />
+<title>{{ personal.name }} – {{ labels.letterTitle }}</title>
+<style>
+  @page { size: A4; margin: 16mm 17mm 14mm 17mm; }
+
+  {% include "shared.css" %}
+
+  html {
+    font-size: 10.2pt;
+    line-height: 1.55;
+  }
+
+  header { border-bottom: 2px solid #1f3a5f; padding-bottom: 7px; margin-bottom: 22px; }
+
+  .subject { font-weight: 700; color: #14243b; margin: 0 0 16px 0; }
+  p { margin: 0 0 12px 0; }
+  .signoff { margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>{{ personal.name }}</h1>
+  <div class="role">{{ personal.role }}</div>
+  <div class="contact">
+    <span>{{ email }}</span>
+    <span>{{ phone }}</span>
+    <span>{{ location }}</span>
+  </div>
+</header>
+
+<p class="subject">{{ letter.subject }}</p>
+
+<p>{{ letter.salutation }}</p>
+
+{% for paragraph in letter.paragraphs %}
+<p>{{ paragraph }}</p>
+{% endfor %}
+
+<p class="signoff">{{ letter.closing }}<br>{{ letter.signature }}</p>
+
+</body>
+</html>

@@ -1,0 +1,40 @@
+/* Shared print tokens for CV and cover letter. The two documents must look
+   like one application — fonts, palette, and header are defined once here. */
+
+* { box-sizing: border-box; }
+
+html {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #23282e;
+}
+body { margin: 0; }
+
+a { color: #1f3a5f; text-decoration: none; }
+
+/* ---------- Header ---------- */
+h1 {
+  font-size: 21pt;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  margin: 0;
+  color: #14243b;
+}
+
+.role {
+  font-size: 10.6pt;
+  color: #1f3a5f;
+  font-weight: 500;
+  margin-top: 2px;
+  letter-spacing: 0.2px;
+}
+
+.contact {
+  margin-top: 7px;
+  font-size: 8.7pt;
+  color: #4a545e;
+}
+.contact span + span::before {
+  content: "·";
+  margin: 0 6px;
+  color: #b7bfc7;
+}

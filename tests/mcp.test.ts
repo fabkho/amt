@@ -29,6 +29,8 @@ function makeHome(): string {
   )
   profile = profile
     .replace("from '../../../src/define-profile.js'", "from 'job-kit/config'")
+    // keep MCP tests network-free: no ATS probing on import/shortlist
+    .replace('maxYearsRequired: 4,', 'maxYearsRequired: 4,\n    autoTrackCompanies: false,')
     .replace("notesDir: '~/notes/jobs'", `notesDir: '${notesDir}'`)
     .replace("outputBase: '~/applications'", `outputBase: '${join(dir, 'out')}'`)
   writeFileSync(join(dir, 'profile.config.ts'), profile)
@@ -138,6 +140,25 @@ describe('job-kit mcp server', () => {
     })
     expect(json!.letterScaffolded).toBe(true)
     expect((json!.files as string[]).some(f => f.endsWith('cv.en.html'))).toBe(true)
+  })
+
+  it('imports manual postings and surfaces the existing status on dedupe', async () => {
+    const first = await call('import_job', {
+      url: 'https://www.linkedin.com/jobs/view/999',
+      manual: { company: 'Dotbase', title: 'Senior Frontend Engineer', workMode: 'remote' },
+    })
+    expect(first.json!.created).toBe(true)
+    const slug = first.json!.slug as string
+
+    await call('set_job_status', { slug, status: 'cut', cutReason: 'personal_fit' })
+
+    // Re-running the channel must reveal the existing judgment, not hide it.
+    const again = await call('import_job', {
+      url: 'https://www.linkedin.com/jobs/view/999',
+      manual: { company: 'Dotbase', title: 'Senior Frontend Engineer' },
+    })
+    expect(again.json!.created).toBe(false)
+    expect(again.json!.status).toBe('cut')
   })
 
   it('serves job notes as resources', async () => {

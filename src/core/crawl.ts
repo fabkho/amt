@@ -173,7 +173,7 @@ function assertCrawlableSources(sources: Sources): void {
 
 function nextHint(summary: CrawlSummary): string {
   return summary.created > 0
-    ? `Review the new candidates: job-kit list --status new (new slugs: ${summary.createdSlugs.join(', ')})`
+    ? `Review the new candidates: \`job-kit list --status new\` / call list_jobs with status ["new"] (new slugs: ${summary.createdSlugs.join(', ')})`
     : 'Nothing new — all fetched postings were already judged or off-stack.'
 }
 

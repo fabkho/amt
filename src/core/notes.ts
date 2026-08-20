@@ -109,7 +109,7 @@ export interface StoredNote {
 export function readNote(notesDir: string, slug: string): StoredNote {
   const path = notePath(notesDir, slug)
   if (!existsSync(path)) {
-    throw new JobKitError('NOTE_NOT_FOUND', `No job note at ${path} — run \`job-kit list\` to see available slugs.`)
+    throw new JobKitError('NOTE_NOT_FOUND', `No job note at ${path} — run \`job-kit list\` or call list_jobs to see available slugs.`)
   }
   const parsed = matter(readFileSync(path, 'utf-8'))
   const result = jobNoteSchema.safeParse(parsed.data)

@@ -146,7 +146,9 @@ export function createServer(): McpServer {
       description:
         'Fetch every configured board and tracked company. Notes are created only for stack-relevant '
         + 'postings that pass the hard filters; everything else lands in the seen-ledger and never '
-        + 'surfaces again. Returns a summary. Agent channels are not executed here — run those '
+        + 'surfaces again. Summary counters: filtered = failed a hard rule, offStack = no stack '
+        + 'keyword matched, known = already judged in an earlier crawl, stale = board find older than '
+        + 'maxAgeDays. Agent channels are not executed here — run those '
         + 'yourself and feed findings via import_job.',
       inputSchema: z.object({}),
       annotations: { readOnlyHint: false },
@@ -173,7 +175,10 @@ export function createServer(): McpServer {
       description:
         'Import a posting into the job notes. Pass an ATS URL (recruitee/ashby/greenhouse/lever/'
         + 'personio/smartrecruiters) to resolve it automatically, or pass explicit fields for sources the tool '
-        + 'cannot fetch (LinkedIn, StepStone, agent channels). Auto-tracks the company when enabled.',
+        + 'cannot fetch (LinkedIn, StepStone, agent channels). Auto-tracks the company when enabled '
+        + '("tracked" = the ats:slug just added, or null when disabled, already tracked, or not '
+        + 'discoverable). Dedupe hits return the existing note\'s "status" — never re-pitch a note '
+        + 'that is cut, rejected, or applied.',
       inputSchema: z.object({
         url: z.string().describe('Posting URL — ATS URLs resolve automatically.'),
         manual: z
@@ -239,7 +244,10 @@ export function createServer(): McpServer {
           profile.search.autoTrackCompanies,
           company,
         )
-        return jsonContent({ ...result, tracked })
+        // Dedupe hits surface the existing status so a cut/applied note is
+        // never re-pitched by an agent re-running its channels.
+        const { note } = readNote(profile.paths.notesDir, result.slug)
+        return jsonContent({ ...result, status: note.status, tracked })
       } catch (error) {
         return toolErrorResponse('importing the posting', error)
       }
@@ -299,7 +307,8 @@ export function createServer(): McpServer {
       description:
         'Set the status of a job note and persist the judgment behind it: score (0-100), flags, and '
         + 'an assessment text stored under "## Assessment" in the note body. Cutting requires '
-        + 'cutReason. Shortlisting auto-tracks the company ATS when the profile allows it.',
+        + 'cutReason. Shortlisting auto-tracks the company ATS when the profile allows it '
+        + '("tracked" = the ats:slug just added, or null).',
       inputSchema: z.object({
         slug: z.string(),
         status: z.enum(JOB_STATUSES),
@@ -440,12 +449,15 @@ export function createServer(): McpServer {
     async (uri, { slug }) => {
       const profile = await loadProfile(resolveHome())
       const { note, body } = readNote(profile.paths.notesDir, slug as string)
+      const frontmatter = Object.entries(note)
+        .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+        .join('\n')
       return {
         contents: [
           {
             uri: uri.href,
             mimeType: 'text/markdown',
-            text: `${JSON.stringify(note, null, 2)}\n\n${body}`,
+            text: `---\n${frontmatter}\n---\n\n${body}`,
           },
         ],
       }
@@ -460,7 +472,7 @@ export function createServer(): McpServer {
       title: 'Find New Jobs',
       description:
         'Full search round: crawl sources, run agent channels, score new candidates against the profile.',
-      argsSchema: z.object({}),
+      argsSchema: z.object({}).default({}),
     },
     async () => {
       let context = ''
@@ -485,7 +497,7 @@ export function createServer(): McpServer {
                 'Run a job-search round:',
                 '1. Call crawl_jobs and report the summary.',
                 '2. Execute the agent channels yourself (fetch their URLs, parse postings) and feed relevant finds through import_job — use the manual fields for non-ATS sources.',
-                '3. For every note with status "new": judge stack fit and flags against the profile below, store a 0-100 score plus your reasoning via set_job_status/note updates, and cut clear mismatches with a cutReason.',
+                '3. For every note with status "new": judge stack fit and flags against the profile below, then persist score (0-100), flags, and your reasoning via set_job_status — never hand-edit note files. Cut clear mismatches with a cutReason.',
                 '4. Present the shortlist candidates to the user, best first, with salary/remote facts and your reasoning. Never re-surface notes whose status is cut, rejected, or applied.',
                 '',
                 context,
@@ -524,7 +536,7 @@ export function createServer(): McpServer {
               type: 'text' as const,
               text: [
                 `Write the application for job note "${slug}":`,
-                '1. Read the posting via get_job (or the job:// resource).',
+                '1. Read the posting via get_job (or the job://{slug} resource template).',
                 '2. Decide the language using the LANGUAGE RULE below; confirm with the user.',
                 '3. Call prepare_application once — it scaffolds cover-letter.<lang>.md.',
                 '4. Draft the letter WITH the user in chat, strictly following the TONE RULES below. Iterate until they approve, writing the agreed text into the markdown file.',

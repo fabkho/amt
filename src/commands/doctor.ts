@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { createCommand } from './_shared.js'
 import { AmtError } from '../core/errors.js'
@@ -61,6 +61,23 @@ function profileFailure(home: string, error: unknown): HomeChecks {
   }
 }
 
+/** First `amt` on PATH, when it is not a Node shim (i.e. /usr/sbin/amt). */
+function findPathShadow(): string | null {
+  for (const dir of (process.env.PATH ?? '').split(':')) {
+    const candidate = join(dir, 'amt')
+    if (!existsSync(candidate)) continue
+    try {
+      // Our shims are scripts; the macOS binary is Mach-O (starts with 0xCF/0xCA).
+      const fd = readFileSync(candidate)
+      const isMachO = fd[0] === 0xCF || fd[0] === 0xCA
+      return isMachO ? candidate : null
+    } catch {
+      return null
+    }
+  }
+  return null
+}
+
 async function collectChecks(chromium: boolean): Promise<Checks> {
   const home = resolveHome()
   const state = await checkHome(home).catch(error => profileFailure(home, error))
@@ -89,6 +106,14 @@ export default createCommand({
       log.info('Chromium for PDF rendering is missing — installing (~300 MB)…')
       installChromium()
       chromium = await chromiumInstalled()
+    }
+    // macOS ships a deprecated /usr/sbin/amt — warn when it shadows ours.
+    const shadow = findPathShadow()
+    if (shadow) {
+      log.warn(
+        `\`amt\` on your PATH resolves to ${shadow} (a deprecated macOS system binary), not this tool. `
+        + `Prepend your package manager's bin dir, e.g. add to the END of ~/.zshrc: export PATH="$PNPM_HOME:$PATH"`,
+      )
     }
     const checks = await collectChecks(chromium)
     // Findings exist but the check itself ran fine — gate semantics, exit 2.

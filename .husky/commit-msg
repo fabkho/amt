@@ -1,1 +1,2 @@
+sh "$(dirname "$0")/strip-ai-coauthors.sh" "$1"
 pnpm exec commitlint --edit "$1"

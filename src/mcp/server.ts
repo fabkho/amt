@@ -144,9 +144,10 @@ export function createServer(): McpServer {
     {
       title: 'Crawl Job Sources',
       description:
-        'Fetch every configured board and tracked company, apply the hard filters, and upsert job '
-        + 'notes. Returns a summary (fetched/created/cut/updated/stale + per-source errors). Agent '
-        + 'channels are not executed here — run those yourself and feed findings via import_job.',
+        'Fetch every configured board and tracked company. Notes are created only for stack-relevant '
+        + 'postings that pass the hard filters; everything else lands in the seen-ledger and never '
+        + 'surfaces again. Returns a summary. Agent channels are not executed here — run those '
+        + 'yourself and feed findings via import_job.',
       inputSchema: z.object({}),
       annotations: { readOnlyHint: false },
     },
@@ -155,7 +156,7 @@ export function createServer(): McpServer {
         const home = resolveHome(DEFAULT_HOME)
         const profile = await loadProfile(home)
         const sources = loadSources(home)
-        const summary = await crawl(defaultHttpClient, profile, sources)
+        const summary = await crawl(defaultHttpClient, home, profile, sources)
         return jsonContent(summary)
       } catch (error) {
         return toolErrorResponse('crawling job sources', error)

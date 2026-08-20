@@ -35,6 +35,7 @@ export {
   applyHardFilters,
   extractYearsRequired,
   isFresh,
+  isRelevant,
 } from './core/match.js'
 export type { MatchResult } from './core/match.js'
 export { crawl } from './core/crawl.js'

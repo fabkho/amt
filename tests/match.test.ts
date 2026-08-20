@@ -3,6 +3,7 @@ import {
   applyHardFilters,
   extractYearsRequired,
   isFresh,
+  isRelevant,
   loadProfile,
   type JobPosting,
 } from '../src/index.js'
@@ -35,6 +36,25 @@ describe('extractYearsRequired', () => {
     expect(extractYearsRequired('at least 7 years experience')).toBe(7)
     expect(extractYearsRequired('3+ Jahre Vue, 8+ years backend')).toBe(8)
     expect(extractYearsRequired('a great team')).toBeNull()
+  })
+})
+
+describe('isRelevant', () => {
+  const search = { stacksPrimary: ['vue', 'typescript'], stacksSecondary: ['php'] }
+
+  it('matches stack keywords in title, tags, or description', () => {
+    expect(isRelevant(posting({ title: 'Vue.js Developer' }), search)).toBe(true)
+    expect(isRelevant(posting({ title: 'Engineer', tags: ['PHP'] }), search)).toBe(true)
+    expect(
+      isRelevant(posting({ title: 'Engineer', descriptionHtml: 'We use TypeScript.' }), search),
+    ).toBe(true)
+    expect(isRelevant(posting({ title: 'Account Executive' }), search)).toBe(false)
+  })
+
+  it('treats empty stacks as match-all', () => {
+    expect(
+      isRelevant(posting({ title: 'Anything' }), { stacksPrimary: [], stacksSecondary: [] }),
+    ).toBe(true)
   })
 })
 

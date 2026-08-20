@@ -17,6 +17,16 @@ const job = z.looseObject({
   compensation: z
     .looseObject({
       scrapeableCompensationSalarySummary: z.string().nullish(),
+      summaryComponents: z
+        .array(
+          z.looseObject({
+            compensationType: z.string().nullish(),
+            minValue: z.number().nullish(),
+            maxValue: z.number().nullish(),
+            currencyCode: z.string().nullish(),
+          }),
+        )
+        .nullish(),
     })
     .nullish(),
 })
@@ -61,9 +71,14 @@ export const ashby: SourceAdapter = {
     )
     const jobs = parseItems(data.jobs, job)
     return jobs.map((j) => {
-      const salary = parseSalarySummary(
-        j.compensation?.scrapeableCompensationSalarySummary,
+      // Prefer the structured salary component — the string summary is a
+      // locale minefield (decimal commas, equity mixed in).
+      const component = j.compensation?.summaryComponents?.find(
+        c => c.compensationType === 'Salary' && (c.minValue != null || c.maxValue != null),
       )
+      const salary = component
+        ? { min: component.minValue ?? null, max: component.maxValue ?? null, currency: component.currencyCode ?? null }
+        : { ...parseSalarySummary(j.compensation?.scrapeableCompensationSalarySummary), currency: null }
       return {
         source: 'ashby',
         nativeId: j.id,
@@ -75,6 +90,7 @@ export const ashby: SourceAdapter = {
         workMode: workMode(j),
         salaryMin: salary.min,
         salaryMax: salary.max,
+        salaryCurrency: salary.currency,
         publishedAt: toIsoDate(j.publishedAt),
         tags: [j.team, j.department].filter((t): t is string => Boolean(t)),
       }

@@ -11,6 +11,7 @@ export interface JobPosting {
   workMode: 'remote' | 'hybrid' | 'onsite' | null
   salaryMin: number | null
   salaryMax: number | null
+  salaryCurrency: string | null
   /** ISO date (YYYY-MM-DD). */
   publishedAt: string | null
   tags: string[]

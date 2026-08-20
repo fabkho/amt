@@ -71,6 +71,7 @@ export function postingToNoteInput(
     workMode: posting.workMode,
     salaryMin: posting.salaryMin,
     salaryMax: posting.salaryMax,
+    salaryCurrency: posting.salaryCurrency,
     publishedAt: posting.publishedAt,
     discoveredAt,
   }

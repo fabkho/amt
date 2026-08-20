@@ -72,6 +72,7 @@ export const personio: SourceAdapter = {
         workMode: p.office && /remote/i.test(p.office) ? 'remote' : null,
         salaryMin: null,
         salaryMax: null,
+        salaryCurrency: null,
         publishedAt: toIsoDate(p.createdAt),
         tags: [
           ...(p.department ? [p.department] : []),

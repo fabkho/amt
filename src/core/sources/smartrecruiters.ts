@@ -68,6 +68,7 @@ export const smartrecruiters: SourceAdapter = {
       workMode: workModeFromFlags(item.location?.remote, item.location?.hybrid),
       salaryMin: null,
       salaryMax: null,
+      salaryCurrency: null,
       publishedAt: toIsoDate(item.releasedDate),
       tags: [],
     }))

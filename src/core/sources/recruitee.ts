@@ -20,7 +20,7 @@ const offer = z.looseObject({
   department: z.string().nullish(),
   published_at: z.string().nullish(),
   salary: z
-    .looseObject({ min: z.number().nullish(), max: z.number().nullish() })
+    .looseObject({ min: z.number().nullish(), max: z.number().nullish(), currency: z.string().nullish() })
     .nullish(),
 })
 
@@ -48,6 +48,7 @@ export const recruitee: SourceAdapter = {
       workMode: workModeFromFlags(o.remote, o.hybrid, o.on_site),
       salaryMin: o.salary?.min ?? null,
       salaryMax: o.salary?.max ?? null,
+      salaryCurrency: o.salary?.currency ?? null,
       publishedAt: toIsoDate(o.published_at),
       tags: o.department ? [o.department] : [],
     }))

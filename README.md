@@ -55,6 +55,18 @@ Statuses: `new → shortlist → applied → interview` (or `rejected` / `cut` �
 `amt import <url>` for pasted ATS links (`--company/--title` for LinkedIn & co.).
 The `_index.md` overview in your notes directory keeps itself current.
 
+## Die Quellenlage (sources)
+
+amt itself crawls only **safe, official job APIs**: boards like Arbeitnow, and the
+career pages of companies you track — `amt sources add <company>` auto-discovers
+which ATS they use (Recruitee, Ashby, Greenhouse, Lever, Personio, SmartRecruiters).
+
+Everything else goes into `sources.yaml` as a **channel**: a recipe (URL template,
+parse hints, priority) that your *agent* executes during a search round — the tool
+stores channels but never runs them. Ship-safe by design, and fully yours to extend:
+add any source you like that doesn't block AI crawlers, tweak a keyword or parse
+hint, and the very next round uses it.
+
 ## Der Sachbearbeiter (agent integration)
 
 `amt-mcp` exposes nine tools, `job://` resources, and two workflow prompts

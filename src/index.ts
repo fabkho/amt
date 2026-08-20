@@ -16,6 +16,7 @@ export {
   JOB_STATUSES,
   jobNoteSchema,
   listNotes,
+  notesForCompany,
   readNote,
   renderIndex,
   setStatus,

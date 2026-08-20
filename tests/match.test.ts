@@ -126,6 +126,20 @@ describe('applyHardFilters', async () => {
     ).toBe(true)
   })
 
+  it('cuts locations on the blocklist regardless of work mode', async () => {
+    const base = await loadProfile(fixtureHome)
+    const blocked = {
+      ...base,
+      search: { ...base.search, locationBlocklist: ['london', 'united states'] },
+    }
+    expect(
+      applyHardFilters(posting({ workMode: 'remote', location: 'London, UK' }), blocked).cutReason,
+    ).toBe('location')
+    expect(
+      applyHardFilters(posting({ workMode: 'remote', location: 'Berlin' }), blocked).passed,
+    ).toBe(true)
+  })
+
   it('cuts explicit onsite/hybrid outside the profile cities', () => {
     const result = applyHardFilters(
       posting({ workMode: 'hybrid', location: 'Hamburg, Germany' }),

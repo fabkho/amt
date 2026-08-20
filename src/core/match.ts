@@ -125,8 +125,16 @@ const checkLocation: Check = (posting, search) => {
     : cut('location', `${posting.workMode} in ${posting.location}`)
 }
 
+const checkLocationBlocklist: Check = (posting, search) => {
+  if (!posting.location) return null
+  const location = posting.location.toLowerCase()
+  const hit = search.locationBlocklist.find(entry => location.includes(entry.toLowerCase()))
+  return hit ? cut('location', `location blocklist: ${hit} (${posting.location})`) : null
+}
+
 const CHECKS: readonly Check[] = [
   checkTitleBlocklist,
+  checkLocationBlocklist,
   checkCompanyBlocklist,
   checkSalaryFloor,
   checkYearsRequired,

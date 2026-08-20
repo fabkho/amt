@@ -11,6 +11,7 @@ export interface ParsedPostingUrl {
 
 const URL_PATTERNS: { ats: string; pattern: RegExp }[] = [
   { ats: 'recruitee', pattern: /^https?:\/\/([\w-]+)\.recruitee\.com\/o\/([\w-]+)/ },
+  { ats: 'ashby', pattern: /^https?:\/\/jobs\.ashbyhq\.com\/([\w-]+)\/([\w-]+)/ },
   { ats: 'greenhouse', pattern: /^https?:\/\/(?:boards|job-boards)\.greenhouse\.io\/([\w-]+)\/jobs\/(\d+)/ },
   { ats: 'lever', pattern: /^https?:\/\/jobs\.(?:eu\.)?lever\.co\/([\w-]+)\/([\w-]+)/ },
   { ats: 'personio', pattern: /^https?:\/\/([\w-]+)\.jobs\.personio\.de\/job\/(\d+)/ },

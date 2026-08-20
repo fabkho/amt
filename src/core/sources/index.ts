@@ -1,5 +1,6 @@
 import { JobKitError } from '../errors.js'
 import { arbeitnow } from './arbeitnow.js'
+import { ashby } from './ashby.js'
 import { greenhouse } from './greenhouse.js'
 import { lever } from './lever.js'
 import { personio } from './personio.js'
@@ -9,6 +10,7 @@ import type { SourceAdapter } from './types.js'
 
 const adapters: readonly SourceAdapter[] = [
   recruitee,
+  ashby,
   greenhouse,
   lever,
   personio,

@@ -36,9 +36,10 @@ describe('normalize helpers', () => {
 })
 
 describe('registry', () => {
-  it('knows all six adapters', () => {
+  it('knows all seven adapters', () => {
     expect(listAdapters().map(a => a.name)).toEqual([
       'recruitee',
+      'ashby',
       'greenhouse',
       'lever',
       'personio',
@@ -142,6 +143,23 @@ describe('arbeitnow', () => {
     expect(first!.company).toBe('Manzke Gruppe')
     expect(first!.publishedAt).toBe('2026-08-20')
     expect(first!.tags.length).toBeGreaterThan(0)
+  })
+})
+
+describe('ashby', () => {
+  it('normalizes postings with structured compensation', async () => {
+    const postings = await getAdapter('ashby').fetchCompany!(
+      fixtureClient('ashby.json'),
+      'n8n',
+    )
+    expect(postings).toHaveLength(2)
+    const [first, second] = postings
+    expect(first!.workMode).toBe('remote')
+    expect(second!.workMode).toBe('hybrid')
+    expect(first!.salaryMin).toBe(89_700) // "€89.7K - €132.4K"
+    expect(first!.salaryMax).toBe(132_400)
+    expect(second!.salaryMin).toBe(38_400) // "€38,400 - €52,800"
+    expect(first!.publishedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
   })
 })
 

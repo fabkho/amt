@@ -19,7 +19,7 @@ export default function (pi: ExtensionAPI) {
     description:
       "Run a amt CLI command and return its JSON result. Commands: doctor, crawl, "
       + "sources list|add <company>|remove <company>, import <url>, list [--status s], "
-      + "status <slug> <status> [--reason r] [--cut-note n] [--score 0-100], show <slug>, "
+      + "status <slug> <status> [--reason r] [--cut-note n] [--score 0-100] [--assessment t], show <slug>, "
       + "prepare <slug> [--lang de|en] [--no-pdf]. The _index.md overview auto-updates. Non-ATS finds (LinkedIn, StepStone): "
       + "import <url> --company <name> --title <title>. "
       + "Pass arguments as an array, e.g. [\"status\", \"acme-frontend\", \"shortlist\"].",

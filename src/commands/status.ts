@@ -31,6 +31,14 @@ function changeStatus(profile: Profile, args: StatusArgs): JobNote {
       `Unknown status "${status}" — valid: ${JOB_STATUSES.join(', ')}`,
     )
   }
+  // Everything is validated BEFORE the first write — a half-applied status
+  // with a failing score/reason must not exist.
+  if (args.score !== undefined) {
+    const score = Number(args.score)
+    if (!Number.isInteger(score) || score < 0 || score > 100) {
+      throw new AmtError('SCORE_INVALID', `Score must be an integer 0-100, got "${args.score}"`)
+    }
+  }
   return setStatus(profile.paths.notesDir, args.slug, status, {
     cutReason: args.reason as CutReason | undefined,
     cutNote: args['cut-note'],

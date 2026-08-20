@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vite-plus/test'
@@ -128,6 +128,54 @@ describe('notes CRUD', () => {
     upsertNote(dir, posting({ nativeId: '2', slug: 'other' }), 'b')
     setStatus(dir, 'other', 'applied')
     expect(listNotes(dir, { status: ['applied'] })).toHaveLength(1)
+  })
+})
+
+describe('robustness (code-review regressions)', () => {
+  it('rejects an invalid cutReason before writing anything', () => {
+    const dir = freshDir()
+    upsertNote(dir, posting(), 'a')
+    expect(() =>
+      setStatus(dir, 'acme-gmbh-senior-frontend', 'cut', {
+        cutReason: 'not-a-reason' as never,
+      }),
+    ).toThrowError(/CUT_REASON_INVALID|Unknown cutReason/)
+    // note untouched and still readable
+    expect(readNote(dir, 'acme-gmbh-senior-frontend').note.status).toBe('new')
+  })
+
+  it('clears cut metadata when a note leaves cut', () => {
+    const dir = freshDir()
+    upsertNote(dir, posting(), 'a')
+    setStatus(dir, 'acme-gmbh-senior-frontend', 'cut', { cutReason: 'ethics', cutNote: 'nope' })
+    const note = setStatus(dir, 'acme-gmbh-senior-frontend', 'shortlist')
+    expect(note.cutReason).toBeNull()
+    expect(note.cutNote).toBeNull()
+  })
+
+  it('one malformed note file never takes down listNotes', () => {
+    const dir = freshDir()
+    upsertNote(dir, posting(), 'a')
+    writeFileSync(join(dir, 'broken.md'), '---\nstatus: cut\ncutReason: garbage\n---\nbody\n')
+    const notes = listNotes(dir)
+    expect(notes).toHaveLength(1) // the bad file is skipped, not fatal
+    expect(() => readNote(dir, 'broken')).toThrowError() // direct access stays strict
+  })
+
+  it('never destroys human text around a dangling assessment marker', () => {
+    const dir = freshDir()
+    upsertNote(dir, posting(), 'desc')
+    updateNote(dir, 'acme-gmbh-senior-frontend', { assessment: 'First.' })
+    // user deletes the END marker while editing, writes precious notes below
+    const { note, body } = readNote(dir, 'acme-gmbh-senior-frontend')
+    const broken = body.replace('<!-- /job-kit:assessment -->', '') + '\n\nMY PRECIOUS HUMAN NOTES'
+    writeNote(dir, note, broken)
+    updateNote(dir, 'acme-gmbh-senior-frontend', { assessment: 'Second.' })
+    updateNote(dir, 'acme-gmbh-senior-frontend', { assessment: 'Third.' })
+    const after = readNote(dir, 'acme-gmbh-senior-frontend').body
+    expect(after).toContain('MY PRECIOUS HUMAN NOTES')
+    expect(after).toContain('Third.')
+    expect(after).not.toContain('Second.')
   })
 })
 

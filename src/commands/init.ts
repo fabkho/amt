@@ -124,9 +124,12 @@ async function askOnboarding() {
   const location = String(
     await consola.prompt('Location line (e.g. "Cologne, Germany / Remote"):', { type: 'text' }),
   )
-  const salaryFloor = Number(
-    await consola.prompt('Salary floor (hard cut below, e.g. 68000):', { type: 'text' }),
-  )
+  const salaryRaw = await consola.prompt('Salary floor (hard cut below, e.g. 68000):', { type: 'text' })
+  let salaryFloor = Math.round(Number(String(salaryRaw).replace(/[^0-9.]/g, '')))
+  if (!Number.isFinite(salaryFloor) || salaryFloor <= 0) {
+    log.warn('Could not read a salary floor — using 50000 as a placeholder; edit profile.yaml.')
+    salaryFloor = 50_000
+  }
   const citiesRaw = String(
     await consola.prompt('Hybrid-acceptable cities (comma-separated, empty for remote-only):', { type: 'text' }),
   )
@@ -146,7 +149,7 @@ async function askOnboarding() {
       email,
       phone,
       location,
-      salaryFloor: Number.isFinite(salaryFloor) ? salaryFloor : 0,
+      salaryFloor,
       cities: citiesRaw.split(',').map(c => c.trim()).filter(Boolean),
       notesDir,
       outputBase,

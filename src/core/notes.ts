@@ -95,6 +95,7 @@ export function slugify(text: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 80)
+    .replace(/-+$/, '')
 }
 
 function notePath(notesDir: string, slug: string): string {
@@ -152,7 +153,18 @@ export function listNotes(
   const notes: StoredNote[] = []
   for (const file of readdirSync(notesDir)) {
     if (!file.endsWith('.md') || file.startsWith('_')) continue
-    const stored = readNote(notesDir, file.slice(0, -3))
+    let stored: StoredNote
+    try {
+      stored = readNote(notesDir, file.slice(0, -3))
+    } catch (error) {
+      // One drifted note (hand-edit, sync conflict) must never take the
+      // whole directory — and with it crawl/list/index — down. Direct slug
+      // access via readNote stays strict.
+      process.stderr.write(
+        `[amt] skipping invalid note ${file}: ${error instanceof Error ? error.message : String(error)}\n`,
+      )
+      continue
+    }
     if (filter.status && !filter.status.includes(stored.note.status)) continue
     notes.push(stored)
   }
@@ -232,10 +244,14 @@ function setAssessment(body: string, assessment: string): string {
   const block = `${ASSESS_START}\n## Assessment\n\n${assessment.trim()}\n${ASSESS_END}`
   const start = body.indexOf(ASSESS_START)
   const end = body.indexOf(ASSESS_END)
-  if (start !== -1 && end !== -1 && end > start) {
+  if (start !== -1 && end > start) {
     return body.slice(0, start) + block + body.slice(end + ASSESS_END.length)
   }
-  return `${body.trimEnd()}\n\n${block}`
+  // Broken region (user deleted a marker while editing): neutralize the
+  // dangling markers so a later update can never treat human text between
+  // them as replaceable, then append a fresh block.
+  const base = body.replaceAll(ASSESS_START, '').replaceAll(ASSESS_END, '')
+  return `${base.trimEnd()}\n\n${block}`
 }
 
 export interface NoteUpdate {
@@ -269,6 +285,12 @@ export function setStatus(
   options: { cutReason?: CutReason; cutNote?: string } = {},
 ): JobNote {
   const { note, body } = readNote(notesDir, slug)
+  if (options.cutReason && !CUT_REASONS.includes(options.cutReason)) {
+    throw new AmtError(
+      'CUT_REASON_INVALID',
+      `Unknown cutReason "${options.cutReason}" — valid: ${CUT_REASONS.join(', ')}.`,
+    )
+  }
   if (status === 'cut' && !options.cutReason && !note.cutReason) {
     throw new AmtError(
       'CUT_REASON_REQUIRED',
@@ -278,6 +300,12 @@ export function setStatus(
   note.status = status
   if (options.cutReason) note.cutReason = options.cutReason
   if (options.cutNote) note.cutNote = options.cutNote
+  if (status !== 'cut' && note.status !== 'cut') {
+    // Leaving (or never entering) cut: stale cut metadata would otherwise
+    // haunt the index ("shortlisted, ✂️ ethics").
+    if (!options.cutReason) note.cutReason = null
+    if (!options.cutNote) note.cutNote = null
+  }
   writeNote(notesDir, note, body)
   return note
 }

@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
-  <circle cx="200" cy="200" r="150" fill="#1f3a5f"/>
-  <!-- A as a sheet of paper with a folded corner -->
-  <path d="M200 92 L292 288 L108 288 Z" fill="#ffffff"/>
-  <!-- folded tip -->
-  <path d="M200 92 L237 171 L200 171 Z" fill="#9fb3cc"/>
-  <!-- crossbar as a document line -->
-  <rect x="152" y="226" width="96" height="24" rx="4" fill="#1f3a5f"/>
-</svg>

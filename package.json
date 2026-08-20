@@ -17,6 +17,10 @@
     ".": {
       "import": "./dist/index.mjs",
       "types": "./dist/index.d.mts"
+    },
+    "./config": {
+      "import": "./dist/define-profile.mjs",
+      "types": "./dist/define-profile.d.mts"
     }
   },
   "scripts": {
@@ -31,6 +35,7 @@
     "@modelcontextprotocol/server": "^2.0.0",
     "citty": "^0.2.2",
     "consola": "^3.4.2",
+    "jiti": "^2.7.0",
     "nunjucks": "^3.2.4",
     "playwright": "^1.62.1",
     "yaml": "^2.9.0",

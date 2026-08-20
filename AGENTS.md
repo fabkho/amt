@@ -31,7 +31,7 @@ release. Add a tool name to select part of the graph. For example, run
 # amt specifics for agents
 
 - **stdout is machine-readable.** Every CLI command supports `--json`; errors come as `{"error":{"code","message"}}` on stdout with exit 1. Exit 2 = findings (doctor). Diagnostics are on stderr.
-- **State ownership:** `profile.yaml` in `AMT_HOME` is human-edited only — never rewrite it programmatically. `sources.yaml` and `seen.json` are tool-managed (use `amt sources add/remove`, never hand-edit). Job-note bodies: only the region between `<!-- job-kit:description -->` markers is machine-owned; text outside it is the user's.
+- **State ownership:** `profile.yaml` in `AMT_HOME` is human-edited only — never rewrite it programmatically. `sources.yaml` and `seen.json` are tool-managed (use `amt sources add/remove`, never hand-edit). Job-note bodies: only the region between `<!-- job-kit:description -->` markers is machine-owned; text outside it is the user's. (The marker keeps its pre-rename name on purpose — it lives inside users' existing notes.)
 - **Never run `amt init` from an agent** (TTY-interactive). Write `profile.yaml` directly instead (schema: `profile.schema.json` in `AMT_HOME`).
 - Persist scoring via `amt status <slug> <status> --score N` or the MCP `set_job_status` tool (score/flags/assessment) — do not hand-edit frontmatter.
 - Agent channels (LinkedIn guest, StepStone) in `sources.yaml` are data for YOU to execute; the tool never fetches them. Feed findings via `amt import <url> --company … --title …`.

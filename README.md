@@ -7,7 +7,7 @@
 
 `amt` is a personal job-search toolkit: a CLI plus an MCP server (`amt-mcp`) that puts a
 clerk — *der Sachbearbeiter* — inside your AI coding agent. It crawls job APIs
-(7 ATS platforms + Arbeitnow), keeps one markdown note per posting that matches your
+(6 ATS platforms + the Arbeitnow board), keeps one markdown note per posting that matches your
 stack, and files everything else in a seen-ledger so it never resurfaces. You judge,
 it stamps, and `prepare` renders CV + cover letter (PDF/txt/md) into an upload-ready folder.
 
@@ -78,6 +78,17 @@ The agent drafts with you in chat; the logic stays in code.
 - **Codex CLI:** `codex mcp add amt -- amt-mcp` + copy `skills/` to `~/.agents/skills/`
 - **Cursor / Zed:** point a stdio MCP server at `amt-mcp`
 - **pi:** copy `pi-extension/` to `~/.pi/agent/extensions/amt/`
+
+## Sprechzeiten (troubleshooting)
+
+- **Access first:** the repo is private — ask to be added as a collaborator, and make
+  sure `git` can reach GitHub over SSH (`ssh -T git@github.com`). For the Claude Code
+  plugin (HTTPS clone), `gh auth login` once.
+- **Node ≥ 22** and pnpm (`corepack enable`; if a global install complains about a
+  missing global bin dir, run `pnpm setup` and restart your shell).
+- **`amt` behaves strangely / prints nonsense:** macOS ships a deprecated
+  `/usr/sbin/amt`. If it shadows the real one, add to the END of your `~/.zshrc`:
+  `export PATH="$PNPM_HOME:$PATH"` — `which amt` should point into your pnpm dir.
 
 ## Development
 

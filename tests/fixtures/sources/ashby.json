@@ -1,0 +1,97 @@
+{
+ "jobs": [
+  {
+   "id": "42e72645-d99a-4545-97b7-53ba3a699893",
+   "title": "AI Product Manager",
+   "department": "Product",
+   "team": "Product Management",
+   "employmentType": "FullTime",
+   "location": "Berlin Office",
+   "shouldDisplayCompensationOnJobPostings": true,
+   "publishedAt": "2026-08-12T07:16:36.638+00:00",
+   "isListed": true,
+   "isRemote": true,
+   "workplaceType": "Remote",
+   "address": {
+    "postalAddress": {
+     "addressRegion": "Berlin-Brandenburg",
+     "addressCountry": "Germany",
+     "addressLocality": "Berlin"
+    }
+   },
+   "jobUrl": "https://jobs.ashbyhq.com/n8n/42e72645-d99a-4545-97b7-53ba3a699893",
+   "applyUrl": "https://jobs.ashbyhq.com/n8n/42e72645-d99a-4545-97b7-53ba3a699893/application",
+   "descriptionHtml": "<p style=\"min-height:1.5em\"><strong>The AI orchestration of your wildest imagination.</strong></p><p style=\"min-height:1.5em\">n8n is the open workflow orchestration platform built for the new era of AI. We give technical teams the freedom of code with the speed of no-code, so they can automate faster, smarter, and without limits. Backed by a fiercely inventive community and 500+ builder-approved i",
+   "descriptionPlain": "The AI orchestration of your wildest imagination.\n\nn8n is the open workflow orchestration platform built for the new era of AI. We give technical teams the freedom of code with the speed of no-code, s",
+   "compensation": {
+    "compensationTierSummary": "\u20ac89.7K \u2013 \u20ac132.4K \u2022 Offers Equity \u2022 Multiple Ranges",
+    "scrapeableCompensationSalarySummary": "\u20ac89.7K - \u20ac132.4K",
+    "summaryComponents": [
+     {
+      "minValue": 89700,
+      "maxValue": 132400,
+      "currencyCode": "EUR",
+      "interval": "1 YEAR",
+      "compensationType": "Salary"
+     },
+     {
+      "compensationType": "EquityCashValue",
+      "minValue": null,
+      "maxValue": null,
+      "interval": "1 YEAR"
+     }
+    ]
+   }
+  },
+  {
+   "id": "566726ff-a159-4943-9a07-0f8537530057",
+   "title": "Sales Development Representative DACH (German speaker)",
+   "department": "Sales",
+   "team": "Sales Development",
+   "employmentType": "FullTime",
+   "location": "London Office",
+   "shouldDisplayCompensationOnJobPostings": true,
+   "publishedAt": "2026-08-11T08:00:25.494+00:00",
+   "isListed": true,
+   "isRemote": true,
+   "workplaceType": "Hybrid",
+   "address": {
+    "postalAddress": {
+     "addressRegion": "London",
+     "addressCountry": "United Kingdom",
+     "addressLocality": "London"
+    }
+   },
+   "jobUrl": "https://jobs.ashbyhq.com/n8n/566726ff-a159-4943-9a07-0f8537530057",
+   "applyUrl": "https://jobs.ashbyhq.com/n8n/566726ff-a159-4943-9a07-0f8537530057/application",
+   "descriptionHtml": "<p style=\"min-height:1.5em\"><strong>The AI orchestration of your wildest imagination.</strong></p><p style=\"min-height:1.5em\">n8n is the open workflow orchestration platform built for the new era of AI. We give technical teams the freedom of code with the speed of no-code, so they can automate faster, smarter, and without limits. Backed by a fiercely inventive community and 500+ builder-approved i",
+   "descriptionPlain": "The AI orchestration of your wildest imagination.\n\nn8n is the open workflow orchestration platform built for the new era of AI. We give technical teams the freedom of code with the speed of no-code, s",
+   "compensation": {
+    "compensationTierSummary": "\u20ac38.4K \u2013 \u20ac52.8K \u2022 Offers Equity \u2022 \u20ac25.6K \u2013 \u20ac35.2K Commission \u2022 Multiple Ranges",
+    "scrapeableCompensationSalarySummary": "\u20ac38,400 - \u20ac52,800",
+    "summaryComponents": [
+     {
+      "minValue": 38400,
+      "maxValue": 52800,
+      "currencyCode": "EUR",
+      "interval": "1 YEAR",
+      "compensationType": "Salary"
+     },
+     {
+      "compensationType": "EquityCashValue",
+      "minValue": null,
+      "maxValue": null,
+      "interval": "1 YEAR"
+     },
+     {
+      "minValue": 25600,
+      "maxValue": 35200,
+      "currencyCode": "EUR",
+      "interval": "1 YEAR",
+      "compensationType": "Commission"
+     }
+    ]
+   }
+  }
+ ]
+}

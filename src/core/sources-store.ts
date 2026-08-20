@@ -59,7 +59,7 @@ export function saveSources(home: string, sources: Sources): void {
   writeFileSync(sourcesPath(home), stringify(sources))
 }
 
-const ATS_ORDER = ['recruitee', 'greenhouse', 'lever', 'personio', 'smartrecruiters']
+const ATS_ORDER = ['recruitee', 'ashby', 'greenhouse', 'lever', 'personio', 'smartrecruiters']
 
 /** Slug variants worth probing: "shopware AG" → shopware, shopwareag, shopware-ag. */
 export function slugCandidates(name: string): string[] {

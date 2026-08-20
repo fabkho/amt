@@ -89,13 +89,16 @@ const checkCompanyBlocklist: Check = (posting, search) => {
   return hit ? cut('personal_fit', `company blocklist: ${hit}`) : null
 }
 
-/** A stated band below the floor cuts; absent salary data never does. */
+/**
+ * Cuts only when the ENTIRE band sits below the floor (max < floor). A wide
+ * band like 65-90k stays in: a senior realistically lands in its upper half.
+ * Min-only postings pass (open upward); absent salary data never cuts.
+ */
 const checkSalaryFloor: Check = (posting, search) => {
-  const bandFloor = posting.salaryMin ?? posting.salaryMax
-  if (bandFloor === null || bandFloor >= search.salaryFloor) return null
+  if (posting.salaryMax === null || posting.salaryMax >= search.salaryFloor) return null
   return cut(
     'salary_below_floor',
-    `band starts at ${bandFloor} < floor ${search.salaryFloor}`,
+    `band tops out at ${posting.salaryMax} < floor ${search.salaryFloor}`,
   )
 }
 

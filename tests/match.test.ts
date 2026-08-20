@@ -106,9 +106,17 @@ describe('applyHardFilters', async () => {
     expect(result.cutReason).toBe('buzzword')
   })
 
-  it('cuts salary bands starting below the floor', () => {
-    const result = applyHardFilters(posting({ salaryMin: 55_000 }), profile)
-    expect(result.cutReason).toBe('salary_below_floor')
+  it('cuts only bands that top out below the floor', () => {
+    // whole band below floor → cut
+    expect(
+      applyHardFilters(posting({ salaryMin: 45_000, salaryMax: 60_000 }), profile).cutReason,
+    ).toBe('salary_below_floor')
+    // band crossing the floor (65-90k at floor 68k) → keep: upper half is reachable
+    expect(
+      applyHardFilters(posting({ salaryMin: 65_000, salaryMax: 90_000 }), profile).passed,
+    ).toBe(true)
+    // min-only is open upward → keep
+    expect(applyHardFilters(posting({ salaryMin: 55_000 }), profile).passed).toBe(true)
     // no salary data → no cut
     expect(applyHardFilters(posting(), profile).passed).toBe(true)
   })

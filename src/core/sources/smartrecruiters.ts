@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { AmtError } from '../errors.js'
+import { parseItems } from './parse.js'
 import { toIsoDate, workModeFromFlags } from './normalize.js'
 import type { JobPosting, SourceAdapter } from './types.js'
 
@@ -17,9 +18,10 @@ const listItem = z.looseObject({
     .nullish(),
 })
 
+// Items are validated one by one — a single malformed entry never sinks the batch.
 const listResponse = z.looseObject({
   totalFound: z.number(),
-  content: z.array(listItem),
+  content: z.array(z.unknown()),
 })
 
 const MAX_PAGES = 5
@@ -31,6 +33,7 @@ export const smartrecruiters: SourceAdapter = {
   async fetchCompany(client, company): Promise<JobPosting[]> {
     const items: z.output<typeof listItem>[] = []
     let totalFound = 0
+    let rawSeen = 0
     for (let page = 0; page < MAX_PAGES; page++) {
       const data = listResponse.parse(
         await client.json(
@@ -38,8 +41,9 @@ export const smartrecruiters: SourceAdapter = {
         ),
       )
       totalFound = data.totalFound
-      items.push(...data.content)
-      if (items.length >= totalFound || data.content.length === 0) break
+      rawSeen += data.content.length
+      items.push(...parseItems(data.content, listItem))
+      if (rawSeen >= totalFound || data.content.length === 0) break
     }
     // The API answers 200 with totalFound 0 for unknown identifiers AND for
     // legitimately empty boards — a distinct code lets slug probing treat it

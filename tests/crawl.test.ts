@@ -118,10 +118,11 @@ describe('crawl', () => {
 })
 
 describe('import from URL', () => {
-  it('parses the five ATS URL shapes', () => {
+  it('parses the six ATS URL shapes', () => {
     expect(parsePostingUrl('https://shopwareag.recruitee.com/o/some-job')).toMatchObject({ ats: 'recruitee', company: 'shopwareag' })
     expect(parsePostingUrl('https://boards.greenhouse.io/n26/jobs/7965433')).toMatchObject({ ats: 'greenhouse', postingRef: '7965433' })
     expect(parsePostingUrl('https://jobs.lever.co/emma-sleep/be3ee809-x')).toMatchObject({ ats: 'lever' })
+    expect(parsePostingUrl('https://jobs.ashbyhq.com/n8n/42e72645-abcd')).toMatchObject({ ats: 'ashby', company: 'n8n' })
     expect(parsePostingUrl('https://gridx.jobs.personio.de/job/2659676')).toMatchObject({ ats: 'personio' })
     expect(parsePostingUrl('https://jobs.smartrecruiters.com/BoschGroup/744000144588559')).toMatchObject({ ats: 'smartrecruiters' })
     expect(parsePostingUrl('https://www.linkedin.com/jobs/view/123')).toBeNull()

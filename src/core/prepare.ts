@@ -91,7 +91,13 @@ export async function prepareApplication(
   writeFileSync(track(join(folder, 'job.yaml')), stringify(note))
 
   // CV
-  const cvDataPath = join(profile.paths.cvDataDir ?? '', `cv-data.${lang}.yaml`)
+  if (!profile.paths.cvDataDir) {
+    throw new AmtError(
+      'CV_DATA_MISSING',
+      'profile.paths.cvDataDir is unset — load the profile via loadProfile(), which defaults it to AMT_HOME.',
+    )
+  }
+  const cvDataPath = join(profile.paths.cvDataDir, `cv-data.${lang}.yaml`)
   if (!existsSync(cvDataPath)) {
     throw new AmtError(
       'CV_DATA_MISSING',

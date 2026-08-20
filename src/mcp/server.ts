@@ -386,7 +386,7 @@ export function createServer(): McpServer {
     },
   )
 
-  // ─── Tool: generate_application ────────────────────────────────
+  // ─── Tool: prepare_application ─────────────────────────────────
 
   server.registerTool(
     'prepare_application',

@@ -5,6 +5,7 @@ import { loadProfile, resolveHome } from '../core/profile.js'
 import { defaultHttpClient } from '../core/sources/http.js'
 import { htmlToMarkdown, postingToNoteInput } from '../core/sources/normalize.js'
 import { tryAutoTrack } from '../core/sources-store.js'
+import { AmtError } from '../core/errors.js'
 import type { JobPosting } from '../core/sources/types.js'
 
 interface ImportArgs {
@@ -18,6 +19,10 @@ interface ImportArgs {
 
 async function resolvePosting(args: ImportArgs): Promise<{ posting: JobPosting; source: string }> {
   if (args.company && args.title) {
+    const workMode = args['work-mode']
+    if (workMode && !['remote', 'hybrid', 'onsite'].includes(workMode)) {
+      throw new AmtError('WORK_MODE_INVALID', `--work-mode must be remote|hybrid|onsite, got "${workMode}"`)
+    }
     // Manual path for non-ATS sources (LinkedIn, StepStone, agent channels).
     return {
       source: 'manual',

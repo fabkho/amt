@@ -81,11 +81,14 @@ function findPathShadow(): string | null {
 async function collectChecks(chromium: boolean): Promise<Checks> {
   const home = resolveHome()
   const state = await checkHome(home).catch(error => profileFailure(home, error))
+  const next
+    = state.next ?? (chromium ? null : 'Install Chromium for PDF rendering: re-run amt doctor without --no-install.')
   return {
     node: process.version,
     home,
     chromium,
     ...state,
+    next,
     ok: chromium && state.profile === 'ok' && state.cvData.length > 0,
   }
 }

@@ -40,7 +40,9 @@ function parseSalarySummary(
   if (!summary) return { min: null, max: null }
   const numbers = [...summary.matchAll(/([\d.,]+)\s*(K?)/gi)]
     .map(([, raw, k]) => {
-      const value = Number(raw!.replaceAll(',', ''))
+      // "38,400" and German-style "38.400" are grouped thousands; "89.7K" is not.
+      const grouped = /^\d{1,3}(?:[.,]\d{3})+$/.test(raw!)
+      const value = Number(grouped ? raw!.replace(/[.,]/g, '') : raw!.replaceAll(',', ''))
       return Number.isFinite(value) ? value * (k ? 1000 : 1) : null
     })
     .filter((v): v is number => v !== null && v > 1000)

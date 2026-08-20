@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { z } from 'zod'
+import { AmtError } from './errors.js'
 import type { CutReason } from './notes.js'
 
 // Notes are for postings worth a human look. Everything else the crawler has
@@ -32,7 +33,14 @@ function ledgerPath(home: string): string {
 export function loadSeen(home: string): SeenLedger {
   const path = ledgerPath(home)
   if (!existsSync(path)) return {}
-  return ledgerSchema.parse(JSON.parse(readFileSync(path, 'utf-8')))
+  try {
+    return ledgerSchema.parse(JSON.parse(readFileSync(path, 'utf-8')))
+  } catch (error) {
+    throw new AmtError(
+      'SEEN_LEDGER_INVALID',
+      `${path} is corrupt: ${error instanceof Error ? error.message : String(error)} — fix or delete it (postings will simply be re-judged).`,
+    )
+  }
 }
 
 export function saveSeen(home: string, ledger: SeenLedger): void {

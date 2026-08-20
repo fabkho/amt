@@ -145,6 +145,26 @@ describe('arbeitnow', () => {
   })
 })
 
+describe('arbeitnow resilience', () => {
+  it('skips malformed entries instead of failing the board', async () => {
+    const fixture = JSON.parse(
+      readFileSync(join(fixturesDir, 'arbeitnow.json'), 'utf-8'),
+    ) as { data: unknown[] }
+    // live-observed shape drift: job_types as object, plus a broken entry
+    fixture.data.push(
+      { ...(fixture.data[0] as object), slug: 'obj-types', job_types: { a: 'x' } },
+      { slug: 'missing-everything' },
+    )
+    const client: HttpClient = {
+      json: async () => fixture,
+      text: async () => '',
+    }
+    const postings = await getAdapter('arbeitnow').fetchBoard!(client)
+    expect(postings).toHaveLength(3) // 2 fixtures + tolerant obj-types entry
+    expect(postings.find(p => p.nativeId === 'obj-types')!.tags.length).toBeGreaterThan(0)
+  })
+})
+
 describe('postingToNoteInput', () => {
   it('bridges a posting into a valid note input', async () => {
     const [posting] = await getAdapter('arbeitnow').fetchBoard!(

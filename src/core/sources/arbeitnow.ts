@@ -14,12 +14,16 @@ const job = z.looseObject({
   location: z.string().nullish(),
   remote: z.boolean().nullish(),
   created_at: z.number().nullish(), // epoch seconds
-  tags: z.array(z.string()).nullish(),
-  job_types: z.array(z.string()).nullish(),
+  // A handful of live entries ship these as keyed objects instead of
+  // arrays — tolerate rather than failing the whole board.
+  tags: z.array(z.string()).catch([]),
+  job_types: z.array(z.string()).catch([]),
 })
 
+// Items are validated one by one: a single malformed entry (it happens on
+// this board) must never sink the other 174.
 const response = z.looseObject({
-  data: z.array(job),
+  data: z.array(z.unknown()),
   links: z.looseObject({ next: z.string().nullish() }).nullish(),
 })
 
@@ -33,8 +37,12 @@ export const arbeitnow: SourceAdapter = {
 
     for (let page = 0; page < pages && url; page++) {
       const data: z.output<typeof response> = response.parse(await client.json(url))
+      const jobs = data.data
+        .map(item => job.safeParse(item))
+        .filter(result => result.success)
+        .map(result => result.data)
       postings.push(
-        ...data.data.map(j => ({
+        ...jobs.map(j => ({
           source: 'arbeitnow',
           nativeId: j.slug,
           company: j.company_name,

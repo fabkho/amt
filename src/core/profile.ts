@@ -45,15 +45,9 @@ export const profileSchema = z.object({
     companyBlocklist: z.array(z.string()).default([]),
     titleBlocklist: z.array(z.string()).default([]),
     maxAgeDays: z.number().int().positive().default(7),
+    /** shortlist/apply/import auto-add the company's ATS to sources.yaml. */
+    autoTrackCompanies: z.boolean().default(true),
   }),
-
-  sources: z
-    .object({
-      /** Company slugs per ATS, e.g. { recruitee: ["shopwareag"] }. */
-      ats: z.record(z.string(), z.array(z.string())).default({}),
-      boards: z.array(z.string()).default(['arbeitnow']),
-    })
-    .default({ ats: {}, boards: ['arbeitnow'] }),
 
   tone: z.object({
     salutation: bilingual,

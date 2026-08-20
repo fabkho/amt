@@ -37,6 +37,23 @@ export {
   isFresh,
 } from './core/match.js'
 export type { MatchResult } from './core/match.js'
+export { crawl } from './core/crawl.js'
+export type { CrawlSummary } from './core/crawl.js'
+export { importPostingFromUrl, parsePostingUrl } from './core/import-url.js'
+export type { ParsedPostingUrl } from './core/import-url.js'
+export { applyToJob } from './core/apply.js'
+export type { ApplyOptions, ApplyResult } from './core/apply.js'
+export {
+  addCompany,
+  discoverCompany,
+  loadSources,
+  removeCompany,
+  saveSources,
+  slugCandidates,
+  sourcesSchema,
+  tryAutoTrack,
+} from './core/sources-store.js'
+export type { CompanySource, DiscoveryResult, Sources } from './core/sources-store.js'
 export { getAdapter, listAdapters } from './core/sources/index.js'
 export { defaultHttpClient } from './core/sources/http.js'
 export {

@@ -122,14 +122,30 @@ describe('smartrecruiters', () => {
     expect(first!.descriptionHtml).toBeNull() // detail is a second request
   })
 
-  it('treats totalFound 0 as an unreachable source, not an empty board', async () => {
+  it('flags totalFound 0 as SOURCE_EMPTY — a probe miss, a tracked-company no-op', async () => {
     const empty: HttpClient = {
       json: async () => ({ totalFound: 0, content: [] }),
       text: async () => '',
     }
     await expect(
       getAdapter('smartrecruiters').fetchCompany!(empty, 'wrong-slug'),
-    ).rejects.toMatchObject({ code: 'SOURCE_UNREACHABLE' })
+    ).rejects.toMatchObject({ code: 'SOURCE_EMPTY' })
+  })
+
+  it('fetches the description via the detail endpoint', async () => {
+    const files: Record<string, string> = {
+      postings: 'smartrecruiters-list.json',
+      '744000144588559': 'smartrecruiters-detail.json',
+    }
+    const client: HttpClient = {
+      json: async (url) => {
+        const file = url.includes('/postings/') ? files[url.split('/').pop()!] : files.postings
+        return JSON.parse(readFileSync(join(fixturesDir, file!), 'utf-8')) as unknown
+      },
+      text: async () => '',
+    }
+    const html = await getAdapter('smartrecruiters').fetchDetail!(client, 'BoschGroup', '744000144588559')
+    expect(html).toBeTruthy()
   })
 })
 

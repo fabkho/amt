@@ -29,4 +29,13 @@ export interface SourceAdapter {
   fetchCompany?: (client: HttpClient, company: string) => Promise<JobPosting[]>
   /** Required for kind 'board'. */
   fetchBoard?: (client: HttpClient, options?: { pages?: number }) => Promise<JobPosting[]>
+  /**
+   * For ATS where the list endpoint carries no description (N+1 detail
+   * requests) — the crawler calls this once per new posting.
+   */
+  fetchDetail?: (
+    client: HttpClient,
+    company: string,
+    nativeId: string,
+  ) => Promise<string | null>
 }

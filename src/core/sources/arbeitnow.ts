@@ -54,7 +54,7 @@ export const arbeitnow: SourceAdapter = {
           salaryMin: null,
           salaryMax: null,
           publishedAt: toIsoDate(j.created_at),
-          tags: [...(j.tags ?? []), ...(j.job_types ?? [])],
+          tags: [...j.tags, ...j.job_types],
         })),
       )
       url = data.links?.next ?? null

@@ -1,5 +1,20 @@
+import TurndownService from 'turndown'
 import type { JobPosting } from './types.js'
 import { slugify, type JobNoteInput } from '../notes.js'
+
+const turndown = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced' })
+
+/**
+ * ATS descriptions arrive as (often Word-export) HTML. Notes store markdown:
+ * readable in the terminal and Obsidian, and far cheaper in agent context.
+ */
+export function htmlToMarkdown(html: string): string {
+  try {
+    return turndown.turndown(html).trim()
+  } catch {
+    return html
+  }
+}
 
 export function workModeFromFlags(
   remote: boolean | null | undefined,

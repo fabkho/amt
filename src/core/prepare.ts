@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { JobKitError } from './errors.js'
 import { join } from 'node:path'
 import { stringify } from 'yaml'
 import { loadCvData } from './cv-data.js'
@@ -25,7 +26,11 @@ export interface PrepareResult {
   folder: string
   lang: Lang
   letterScaffolded: boolean
+  /** True while the letter still contains the scaffold placeholder — txt/html/pdf are held back. */
+  letterIsPlaceholder: boolean
   files: string[]
+  /** What to do now — surfaced verbatim by the CLI and MCP layers. */
+  next: string
 }
 
 function underscored(name: string): string {
@@ -43,6 +48,8 @@ function cvConfigFromProfile(profile: Profile, lang: Lang): CvRenderConfig {
     links: identity.links,
   }
 }
+
+const PLACEHOLDER = '<!-- draft your paragraphs here'
 
 function scaffoldLetter(profile: Profile, title: string, lang: Lang): string {
   const subjectPrefix = lang === 'de' ? 'Betreff' : 'Subject'
@@ -69,9 +76,9 @@ export async function prepareApplication(
   slug: string,
   options: PrepareOptions = {},
 ): Promise<PrepareResult> {
-  const lang = options.lang ?? readNote(profile.paths.notesDir, slug).note.application?.lang as Lang | undefined ?? 'en'
-  const pdf = options.pdf ?? true
   const { note, body } = readNote(profile.paths.notesDir, slug)
+  const lang = options.lang ?? (note.application?.lang as Lang | undefined) ?? 'en'
+  const pdf = options.pdf ?? true
 
   const folder = join(profile.paths.outputBase, slug)
   mkdirSync(folder, { recursive: true })
@@ -85,6 +92,12 @@ export async function prepareApplication(
 
   // CV
   const cvDataPath = join(profile.paths.cvDataDir ?? '', `cv-data.${lang}.yaml`)
+  if (!existsSync(cvDataPath)) {
+    throw new JobKitError(
+      'CV_DATA_MISSING',
+      `No CV data for "${lang}" — create ${cvDataPath} (see the schema in the job-kit README; \`job-kit doctor\` lists which languages exist).`,
+    )
+  }
   const cvData = loadCvData(readFileSync(cvDataPath, 'utf-8'))
   const cvConfig = cvConfigFromProfile(profile, lang)
   const cvHtml = renderCvHtml(cvData, cvConfig, lang, { templatesDir: options.templatesDir })
@@ -102,22 +115,28 @@ export async function prepareApplication(
     letterScaffolded = true
   }
   track(letterMdPath)
-  const letter = parseLetterMarkdown(readFileSync(letterMdPath, 'utf-8'))
-  const identity: LetterIdentity = {
-    name: profile.identity.name,
-    role: profile.identity.role[lang],
-    email: profile.identity.email,
-    phone: profile.identity.phone,
-    location: profile.identity.location[lang],
-  }
-  writeFileSync(track(join(folder, `cover-letter.${lang}.txt`)), letterToText(letter))
-  const letterHtml = renderLetterHtml(letter, identity, lang, { templatesDir: options.templatesDir })
-  writeFileSync(track(join(folder, `cover-letter.${lang}.html`)), letterHtml)
-  if (pdf) {
-    await htmlToPdf(
-      letterHtml,
-      track(join(folder, `Cover_Letter_${underscored(profile.identity.name)}.pdf`)),
-    )
+  const letterMd = readFileSync(letterMdPath, 'utf-8')
+  // Never render the scaffold placeholder into uploadable files — a txt
+  // containing "draft your paragraphs here" must not exist.
+  const letterIsPlaceholder = letterMd.includes(PLACEHOLDER)
+  if (!letterIsPlaceholder) {
+    const letter = parseLetterMarkdown(letterMd)
+    const identity: LetterIdentity = {
+      name: profile.identity.name,
+      role: profile.identity.role[lang],
+      email: profile.identity.email,
+      phone: profile.identity.phone,
+      location: profile.identity.location[lang],
+    }
+    writeFileSync(track(join(folder, `cover-letter.${lang}.txt`)), letterToText(letter))
+    const letterHtml = renderLetterHtml(letter, identity, lang, { templatesDir: options.templatesDir })
+    writeFileSync(track(join(folder, `cover-letter.${lang}.html`)), letterHtml)
+    if (pdf) {
+      await htmlToPdf(
+        letterHtml,
+        track(join(folder, `Cover_Letter_${underscored(profile.identity.name)}.pdf`)),
+      )
+    }
   }
 
   note.application = {
@@ -127,5 +146,8 @@ export async function prepareApplication(
   }
   writeNote(profile.paths.notesDir, note, body)
 
-  return { folder, lang, letterScaffolded, files }
+  const next = letterIsPlaceholder
+    ? `Draft the letter in ${letterMdPath}, then re-run prepare to render txt/html/pdf.`
+    : `Letter rendered. After submitting, run: job-kit status ${slug} applied`
+  return { folder, lang, letterScaffolded, letterIsPlaceholder, files, next }
 }

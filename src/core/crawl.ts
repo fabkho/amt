@@ -1,16 +1,19 @@
+import { JobKitError } from './errors.js'
 import { applyHardFilters, isFresh, isRelevant } from './match.js'
 import { dedupeKey, listNotes, renderIndex, upsertNote } from './notes.js'
 import { loadSeen, markSeen, saveSeen, type SeenLedger } from './seen.js'
-import { postingToNoteInput } from './sources/normalize.js'
+import { htmlToMarkdown, postingToNoteInput } from './sources/normalize.js'
 import { getAdapter } from './sources/index.js'
+import { slugify } from './notes.js'
 import type { Profile } from './profile.js'
 import type { Sources } from './sources-store.js'
-import type { HttpClient, JobPosting } from './sources/types.js'
+import type { HttpClient, JobPosting, SourceAdapter } from './sources/types.js'
 
 export interface CrawlSummary {
   fetched: number
   /** New notes — postings actually worth a human look. */
   created: number
+  createdSlugs: string[]
   /** Existing notes refreshed with current posting facts. */
   refreshed: number
   /** Mechanically filtered out by the hard rules — ledger only, no file. */
@@ -21,12 +24,38 @@ export interface CrawlSummary {
   known: number
   stale: number
   errors: { source: string; message: string }[]
+  /** What to do now — surfaced verbatim by the CLI and MCP layers. */
+  next: string
 }
 
 interface FetchedBatch {
+  adapter: SourceAdapter
+  companySlug: string | null
   postings: JobPosting[]
   /** Board finds outside the freshness window are skipped, company ones not. */
   applyFreshness: boolean
+}
+
+async function fetchBoardBatch(client: HttpClient, board: string): Promise<FetchedBatch> {
+  const adapter = getAdapter(board)
+  return {
+    adapter,
+    companySlug: null,
+    postings: await adapter.fetchBoard!(client),
+    applyFreshness: true,
+  }
+}
+
+async function fetchCompanyBatch(
+  client: HttpClient,
+  company: Sources['companies'][number],
+): Promise<FetchedBatch> {
+  const adapter = getAdapter(company.ats)
+  const postings = (await adapter.fetchCompany!(client, company.slug))
+    // Some ATS payloads carry no display name — fall back to the name the
+    // user gave the company when tracking it.
+    .map(p => (p.company === company.slug ? { ...p, company: company.name } : p))
+  return { adapter, companySlug: company.slug, postings, applyFreshness: false }
 }
 
 async function fetchAll(
@@ -35,27 +64,22 @@ async function fetchAll(
   errors: CrawlSummary['errors'],
 ): Promise<FetchedBatch[]> {
   const batches: FetchedBatch[] = []
-  for (const board of sources.boards) {
+  const jobs: { source: string; run: () => Promise<FetchedBatch> }[] = [
+    ...sources.boards.map(board => ({ source: board, run: () => fetchBoardBatch(client, board) })),
+    ...sources.companies.map(company => ({
+      source: `${company.ats}:${company.slug}`,
+      run: () => fetchCompanyBatch(client, company),
+    })),
+  ]
+  for (const job of jobs) {
     try {
-      const adapter = getAdapter(board)
-      batches.push({
-        postings: await adapter.fetchBoard!(client),
-        applyFreshness: true,
-      })
+      batches.push(await job.run())
     } catch (error) {
-      errors.push({ source: board, message: String(error instanceof Error ? error.message : error) })
-    }
-  }
-  for (const company of sources.companies) {
-    try {
-      const adapter = getAdapter(company.ats)
-      batches.push({
-        postings: await adapter.fetchCompany!(client, company.slug),
-        applyFreshness: false,
-      })
-    } catch (error) {
+      // An empty-or-unknown board is legitimate for a tracked company
+      // (all roles filled) — only slug *probing* treats it as a miss.
+      if (error instanceof JobKitError && error.code === 'SOURCE_EMPTY') continue
       errors.push({
-        source: `${company.ats}:${company.slug}`,
+        source: job.source,
         message: String(error instanceof Error ? error.message : error),
       })
     }
@@ -64,6 +88,7 @@ async function fetchAll(
 }
 
 interface IngestContext {
+  client: HttpClient
   profile: Profile
   ledger: SeenLedger
   /** dedupe key → note slug, for postings that already have a note. */
@@ -72,28 +97,50 @@ interface IngestContext {
   summary: CrawlSummary
 }
 
+function noteBody(posting: JobPosting): string {
+  return posting.descriptionHtml ? htmlToMarkdown(posting.descriptionHtml) : ''
+}
+
+/** Slug collisions (same company+title twice) get a nativeId suffix. */
+function upsertWithDecollide(ctx: IngestContext, posting: JobPosting): { slug: string; created: boolean } {
+  const input = postingToNoteInput(posting, ctx.today)
+  try {
+    return upsertNote(ctx.profile.paths.notesDir, input, noteBody(posting))
+  } catch (error) {
+    if (!(error instanceof JobKitError) || error.code !== 'NOTE_SLUG_TAKEN') throw error
+    input.slug = `${input.slug}-${slugify(posting.nativeId).slice(0, 8)}`
+    return upsertNote(ctx.profile.paths.notesDir, input, noteBody(posting))
+  }
+}
+
 /**
  * Notes are created only for postings that are stack-relevant AND pass the
  * hard filters. Everything else goes into the seen ledger so it never
  * surfaces again — without leaving a file behind.
  */
-function ingest(posting: JobPosting, ctx: IngestContext): void {
+async function ingest(posting: JobPosting, batch: FetchedBatch, ctx: IngestContext): Promise<void> {
   const key = `${posting.source}:${posting.nativeId}`
 
   // An existing note always wins over the ledger — the user may have
   // imported something the crawler once dismissed.
   if (ctx.noted.has(key)) {
-    upsertNote(
-      ctx.profile.paths.notesDir,
-      postingToNoteInput(posting, ctx.today),
-      posting.descriptionHtml ?? '',
-    )
+    upsertNote(ctx.profile.paths.notesDir, postingToNoteInput(posting, ctx.today), noteBody(posting))
     ctx.summary.refreshed++
     return
   }
   if (ctx.ledger[key]) {
     ctx.summary.known++
     return
+  }
+
+  // Some ATS (SmartRecruiters) need a second request per posting for the
+  // description — fetch it once per new posting so relevance and the note
+  // body work with the full text.
+  if (posting.descriptionHtml === null && batch.adapter.fetchDetail && batch.companySlug) {
+    posting = {
+      ...posting,
+      descriptionHtml: await batch.adapter.fetchDetail(ctx.client, batch.companySlug, posting.nativeId),
+    }
   }
 
   if (!isRelevant(posting, ctx.profile.search)) {
@@ -108,13 +155,26 @@ function ingest(posting: JobPosting, ctx: IngestContext): void {
     return
   }
 
-  const result = upsertNote(
-    ctx.profile.paths.notesDir,
-    postingToNoteInput(posting, ctx.today),
-    posting.descriptionHtml ?? '',
-  )
+  const result = upsertWithDecollide(ctx, posting)
   ctx.noted.set(key, result.slug)
   ctx.summary.created++
+  ctx.summary.createdSlugs.push(result.slug)
+}
+
+function assertCrawlableSources(sources: Sources): void {
+  if (sources.boards.length > 0 || sources.companies.length > 0) return
+  throw new JobKitError(
+    'NO_SOURCES',
+    sources.channels.length > 0
+      ? 'Only agent channels are configured — run those via your agent and feed findings through import. For tool crawling, add boards or companies (`job-kit init`, `job-kit sources add <company>`).'
+      : 'No sources configured. Run `job-kit init` or add some with `job-kit sources add <company>`.',
+  )
+}
+
+function nextHint(summary: CrawlSummary): string {
+  return summary.created > 0
+    ? `Review the new candidates: job-kit list --status new (new slugs: ${summary.createdSlugs.join(', ')})`
+    : 'Nothing new — all fetched postings were already judged or off-stack.'
 }
 
 export async function crawl(
@@ -124,19 +184,24 @@ export async function crawl(
   sources: Sources,
   options: { today?: string } = {},
 ): Promise<CrawlSummary> {
+  assertCrawlableSources(sources)
+
   const today = options.today ?? new Date().toISOString().slice(0, 10)
   const summary: CrawlSummary = {
     fetched: 0,
     created: 0,
+    createdSlugs: [],
     refreshed: 0,
     filtered: 0,
     offStack: 0,
     known: 0,
     stale: 0,
     errors: [],
+    next: '',
   }
 
   const ctx: IngestContext = {
+    client,
     profile,
     ledger: loadSeen(home),
     noted: new Map(
@@ -154,11 +219,20 @@ export async function crawl(
         summary.stale++
         continue
       }
-      ingest(posting, ctx)
+      try {
+        await ingest(posting, batch, ctx)
+      } catch (error) {
+        // One broken posting must never abort the run or lose the ledger.
+        summary.errors.push({
+          source: `${posting.source}:${posting.nativeId}`,
+          message: String(error instanceof Error ? error.message : error),
+        })
+      }
     }
   }
 
   saveSeen(home, ctx.ledger)
   renderIndex(profile.paths.notesDir)
+  summary.next = nextHint(summary)
   return summary
 }

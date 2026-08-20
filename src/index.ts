@@ -20,12 +20,13 @@ export {
   renderIndex,
   setStatus,
   slugify,
+  updateNote,
   upsertNote,
-  writeNote,
 } from './core/notes.js'
 export type {
   CutReason,
   JobNote,
+  NoteUpdate,
   JobNoteInput,
   JobStatus,
   StoredNote,
@@ -54,10 +55,11 @@ export {
   sourcesSchema,
   tryAutoTrack,
 } from './core/sources-store.js'
-export type { CompanySource, DiscoveryResult, Sources } from './core/sources-store.js'
+export type { AddCompanyResult, CompanySource, DiscoveryResult, Sources } from './core/sources-store.js'
 export { getAdapter, listAdapters } from './core/sources/index.js'
 export { defaultHttpClient } from './core/sources/http.js'
 export {
+  htmlToMarkdown,
   postingToNoteInput,
   toIsoDate,
   unescapeHtml,

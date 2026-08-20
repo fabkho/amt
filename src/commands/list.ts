@@ -19,7 +19,10 @@ export default createCommand({
       status = (args.status as string).split(',').map(s => s.trim()) as JobStatus[]
       const invalid = status.filter(s => !JOB_STATUSES.includes(s))
       if (invalid.length > 0) {
-        throw new JobKitError('INVALID_STATUS', `Unknown status: ${invalid.join(', ')}`)
+        throw new JobKitError(
+          'STATUS_INVALID',
+          `Unknown status: ${invalid.join(', ')} — valid: ${JOB_STATUSES.join(', ')}`,
+        )
       }
     }
     const notes = listNotes(profile.paths.notesDir, { status })

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { parseItems } from './parse.js'
 import { toIsoDate } from './normalize.js'
 import type { JobPosting, SourceAdapter } from './types.js'
 
@@ -20,7 +21,8 @@ const job = z.looseObject({
     .nullish(),
 })
 
-const response = z.looseObject({ jobs: z.array(job) })
+// Items are validated one by one — a single malformed entry never sinks the batch.
+const response = z.looseObject({ jobs: z.array(z.unknown()) })
 
 // workplaceType is the specific field — Ashby sets isRemote true even on
 // hybrid roles, so it only serves as a fallback.
@@ -32,7 +34,7 @@ function workMode(j: z.output<typeof job>): JobPosting['workMode'] {
 }
 
 /** "€89.7K – €132.4K" / "€38,400 - €52,800" → [89700, 132400]. */
-export function parseSalarySummary(
+function parseSalarySummary(
   summary: string | null | undefined,
 ): { min: number | null; max: number | null } {
   if (!summary) return { min: null, max: null }
@@ -55,7 +57,8 @@ export const ashby: SourceAdapter = {
         `https://api.ashbyhq.com/posting-api/job-board/${company}?includeCompensation=true`,
       ),
     )
-    return data.jobs.map((j) => {
+    const jobs = parseItems(data.jobs, job)
+    return jobs.map((j) => {
       const salary = parseSalarySummary(
         j.compensation?.scrapeableCompensationSalarySummary,
       )

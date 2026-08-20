@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { parseItems } from './parse.js'
 import { toIsoDate, workModeFromFlags } from './normalize.js'
 import type { JobPosting, SourceAdapter } from './types.js'
 
@@ -23,7 +24,8 @@ const offer = z.looseObject({
     .nullish(),
 })
 
-const response = z.looseObject({ offers: z.array(offer) })
+// Items are validated one by one — a single malformed entry never sinks the batch.
+const response = z.looseObject({ offers: z.array(z.unknown()) })
 
 export const recruitee: SourceAdapter = {
   name: 'recruitee',
@@ -32,7 +34,8 @@ export const recruitee: SourceAdapter = {
     const data = response.parse(
       await client.json(`https://${company}.recruitee.com/api/offers/`),
     )
-    return data.offers.map(o => ({
+    const offers = parseItems(data.offers, offer)
+    return offers.map(o => ({
       source: 'recruitee',
       nativeId: String(o.id),
       company: o.company_name ?? company,

@@ -8,9 +8,11 @@ import {
   renderIndex,
   setStatus,
   slugify,
+  updateNote,
   upsertNote,
   type JobNoteInput,
 } from '../src/index.js'
+import { writeNote } from '../src/core/notes.js'
 
 function freshDir(): string {
   return mkdtempSync(join(tmpdir(), 'job-kit-notes-'))
@@ -43,7 +45,7 @@ describe('notes CRUD', () => {
     const { note, body } = readNote(dir, 'acme-gmbh-senior-frontend')
     expect(note.status).toBe('new')
     expect(note.workMode).toBeNull()
-    expect(body).toBe('Job description here.')
+    expect(body).toContain('Job description here.')
   })
 
   it('dedupes on source:nativeId and preserves human state', () => {
@@ -61,7 +63,39 @@ describe('notes CRUD', () => {
     const { note, body } = readNote(dir, result.slug)
     expect(note.status).toBe('shortlist') // human state survived
     expect(note.salaryMin).toBe(70_000) // posting facts refreshed
-    expect(body).toBe('v2 with salary')
+    expect(body).toContain('v2 with salary')
+  })
+
+  it('preserves human text outside the description markers on refresh', () => {
+    const dir = freshDir()
+    upsertNote(dir, posting(), 'original description')
+    const { note, body } = readNote(dir, 'acme-gmbh-senior-frontend')
+    writeNote(dir, note, `${body}\n\nMy own interview notes.`)
+
+    upsertNote(dir, posting(), 'refreshed description')
+    const after = readNote(dir, 'acme-gmbh-senior-frontend')
+    expect(after.body).toContain('refreshed description')
+    expect(after.body).not.toContain('original description')
+    expect(after.body).toContain('My own interview notes.') // human text survived
+  })
+
+  it('persists score, flags, and assessment via updateNote', () => {
+    const dir = freshDir()
+    upsertNote(dir, posting(), 'desc')
+    updateNote(dir, 'acme-gmbh-senior-frontend', {
+      score: 72,
+      flags: ['uncertain'],
+      assessment: 'Solid but salary unclear.',
+    })
+    const { note, body } = readNote(dir, 'acme-gmbh-senior-frontend')
+    expect(note.score).toBe(72)
+    expect(note.flags).toEqual(['uncertain'])
+    expect(body).toContain('## Assessment')
+    // updating replaces the assessment block instead of appending
+    updateNote(dir, 'acme-gmbh-senior-frontend', { assessment: 'Revised.' })
+    const again = readNote(dir, 'acme-gmbh-senior-frontend')
+    expect(again.body).toContain('Revised.')
+    expect(again.body).not.toContain('Solid but salary unclear.')
   })
 
   it('creates distinct notes for distinct postings', () => {

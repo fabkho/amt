@@ -53,6 +53,7 @@ export const arbeitnow: SourceAdapter = {
           workMode: j.remote ? ('remote' as const) : null,
           salaryMin: null,
           salaryMax: null,
+          salaryCurrency: null,
           publishedAt: toIsoDate(j.created_at),
           // Board tags are categories ('entry', 'Full-time'), not a tech
           // stack — relevance matching uses title+description instead.

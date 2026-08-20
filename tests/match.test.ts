@@ -23,6 +23,7 @@ function posting(overrides: Partial<JobPosting> = {}): JobPosting {
     workMode: 'remote',
     salaryMin: null,
     salaryMax: null,
+    salaryCurrency: null,
     publishedAt: null,
     tags: [],
     ...overrides,

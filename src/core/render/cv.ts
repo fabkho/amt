@@ -36,7 +36,8 @@ export function renderCvHtml(
     ...data,
     border: true,
     ...config,
-    links: config.links ?? data.links ?? [],
+    // an empty profile links array must not shadow the cv-data links
+    links: config.links?.length ? config.links : data.links ?? [],
     labels,
   })
 }

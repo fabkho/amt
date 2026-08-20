@@ -47,6 +47,7 @@ export const jobNoteSchema = z.object({
   hoDays: z.number().int().nullable().default(null),
   salaryMin: z.number().int().nullable().default(null),
   salaryMax: z.number().int().nullable().default(null),
+  salaryCurrency: z.string().nullable().default(null),
   yearsRequired: z.number().int().nullable().default(null),
   publishedAt: isoDate.nullable().default(null),
   discoveredAt: isoDate,

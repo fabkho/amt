@@ -93,6 +93,21 @@ describe('lever', () => {
     expect(first!.workMode).toBe('hybrid')
     expect(first!.publishedAt).toBe('2026-07-03')
     expect(first!.location).toBe('Mexico City')
+    // requirements live in lists[] — the composed description must include them
+    expect((first!.descriptionHtml ?? '').length).toBeGreaterThan(1500)
+  })
+
+  it('normalizes non-canonical workplaceType values instead of dropping postings', async () => {
+    const fixture = JSON.parse(
+      readFileSync(join(fixturesDir, 'lever.json'), 'utf-8'),
+    ) as Record<string, unknown>[]
+    fixture[0]!.workplaceType = 'On-site'
+    fixture[1]!.workplaceType = 'unspecified'
+    const client: HttpClient = { json: async () => fixture, text: async () => '' }
+    const postings = await getAdapter('lever').fetchCompany!(client, 'emma-sleep')
+    expect(postings).toHaveLength(2) // nothing silently dropped
+    expect(postings[0]!.workMode).toBe('onsite')
+    expect(postings[1]!.workMode).toBeNull()
   })
 })
 
@@ -174,7 +189,8 @@ describe('ashby', () => {
     expect(second!.workMode).toBe('hybrid')
     expect(first!.salaryMin).toBe(89_700) // "€89.7K - €132.4K"
     expect(first!.salaryMax).toBe(132_400)
-    expect(second!.salaryMin).toBe(38_400) // "€38,400 - €52,800"
+    expect(first!.salaryCurrency).toBe('EUR') // structured summaryComponents
+    expect(second!.salaryMin).toBe(38_400)
     expect(first!.publishedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
   })
 })

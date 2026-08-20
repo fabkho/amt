@@ -42,6 +42,7 @@ export function manualPosting(url: string, fields: ManualFields): JobPosting {
     workMode: fields.workMode ?? null,
     salaryMin: fields.salaryMin ?? null,
     salaryMax: fields.salaryMax ?? null,
+    salaryCurrency: null,
     publishedAt: fields.publishedAt ?? null,
     tags: [],
   }

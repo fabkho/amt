@@ -36,9 +36,13 @@ export default function (pi: ExtensionAPI) {
         });
         return { content: [{ type: "text", text: stdout.trim() }], details: {} };
       } catch (err: any) {
-        // The structured {error:{code,message}} envelope is on STDOUT.
         const stdout = typeof err?.stdout === "string" ? err.stdout.trim() : "";
         const stderr = typeof err?.stderr === "string" ? err.stderr.trim() : "";
+        // Exit 2 = "ran fine, findings exist" (doctor) — a result, not a failure.
+        if (err?.status === 2 && stdout) {
+          return { content: [{ type: "text", text: stdout }], details: {} };
+        }
+        // The structured {error:{code,message}} envelope is on STDOUT.
         return {
           content: [
             {

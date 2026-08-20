@@ -79,6 +79,7 @@ function buildProfileSection(profile: Profile): string {
     `Seniority: ${search.seniority.join(', ')}`,
     `Locations: remote ${search.locations.remote ? 'yes' : 'no'}; cities: ${search.locations.cities.map(c => `${c.name} (≥${c.minHomeOfficeDays} HO days)`).join(', ') || '—'}`,
     `Company types to reject (agent-judged — no deterministic check exists): ${search.companyTypesBlocked.join(', ') || '—'}`,
+    `Hard filters already applied by the tool: max years required ${search.maxYearsRequired ?? '—'}; company blocklist ${search.companyBlocklist.join(', ') || '—'}; title blocklist ${search.titleBlocklist.join(', ') || '—'}; location blocklist ${search.locationBlocklist.join(', ') || '—'}`,
     '',
     'TONE RULES (cover letters)',
     ...tone.rules.map(r => `- ${r}`),

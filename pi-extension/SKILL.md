@@ -1,3 +1,8 @@
+---
+name: amt
+description: Job-search workflow via the amt CLI — crawl sources, score candidates, prepare applications (CV + cover letter). Use when the user wants to search jobs, review candidates, or apply.
+---
+
 # amt (pi wrapper)
 
 Thin wrapper around the globally installed `amt` CLI — one `amt` tool taking an argv array, always returning JSON.

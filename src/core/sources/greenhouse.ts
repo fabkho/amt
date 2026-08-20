@@ -41,6 +41,7 @@ export const greenhouse: SourceAdapter = {
         workMode: location && /remote/i.test(location) ? 'remote' : null,
         salaryMin: null,
         salaryMax: null,
+        salaryCurrency: null,
         publishedAt: toIsoDate(j.first_published),
         tags: j.departments?.map(d => d.name) ?? [],
       }

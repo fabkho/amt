@@ -76,6 +76,13 @@ export function letterToText(model: LetterModel): string {
   ].join('\n\n') + '\n'
 }
 
+function escapeHtml(text: string): string {
+  return text
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+}
+
 export function renderLetterHtml(
   model: LetterModel,
   identity: LetterIdentity,
@@ -85,12 +92,22 @@ export function renderLetterHtml(
   const templatesDir = options.templatesDir ?? defaultTemplatesDir()
   const env = createTemplateEnv(templatesDir)
   const labels = loadLabels(lang, templatesDir)
+  // Templates run with autoescape off (CV data carries trusted HTML) — the
+  // letter is plain text, so "<React>" must survive as text, not vanish as
+  // a tag.
+  const escaped: LetterModel = {
+    subject: escapeHtml(model.subject),
+    salutation: escapeHtml(model.salutation),
+    paragraphs: model.paragraphs.map(escapeHtml),
+    closing: escapeHtml(model.closing),
+    signature: escapeHtml(model.signature),
+  }
   return env.render('letter.njk', {
     personal: { name: identity.name, role: identity.role },
     email: identity.email,
     phone: identity.phone,
     location: identity.location,
-    letter: model,
+    letter: escaped,
     labels,
   })
 }

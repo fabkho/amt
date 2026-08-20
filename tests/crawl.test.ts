@@ -31,12 +31,22 @@ const routedClient: HttpClient = {
   },
 }
 
-async function testProfile(notesDir: string): Promise<Profile> {
+interface Env {
+  home: string
+  notesDir: string
+  profile: Profile
+}
+
+async function testEnv(stacks: string[]): Promise<Env> {
+  const home = mkdtempSync(join(tmpdir(), 'job-kit-crawl-'))
+  const notesDir = join(home, 'notes')
   const base = await loadProfile(join(import.meta.dirname, 'fixtures/profile-home'))
-  return profileSchema.parse({
+  const profile = profileSchema.parse({
     ...base,
+    search: { ...base.search, stacksPrimary: stacks, stacksSecondary: [] },
     paths: { ...base.paths, notesDir, outputBase: notesDir },
   })
+  return { home, notesDir, profile }
 }
 
 describe('crawl', () => {
@@ -45,43 +55,39 @@ describe('crawl', () => {
     companies: [{ name: 'shopware', ats: 'recruitee', slug: 'shopwareag' }],
   })
 
-  it('fetches boards and companies, filters, and writes notes', async () => {
-    const notesDir = mkdtempSync(join(tmpdir(), 'job-kit-crawl-'))
-    const profile = await testProfile(notesDir)
-
-    const summary = await crawl(routedClient, profile, sources, {
+  it('creates notes only for stack-relevant postings; the rest goes to the ledger', async () => {
+    // "databricks" matches exactly one fixture posting (Senior Data Engineer)
+    const { home, notesDir, profile } = await testEnv(['databricks'])
+    const summary = await crawl(routedClient, home, profile, sources, {
       today: '2026-08-20',
     })
     expect(summary.fetched).toBe(4) // 2 arbeitnow + 2 recruitee
     expect(summary.errors).toHaveLength(0)
-    expect(summary.created + summary.cut + summary.stale).toBe(4)
-
-    const notes = listNotes(notesDir)
-    expect(notes.length).toBe(summary.created + summary.cut)
-    // auto-cut notes carry a reason
-    for (const { note } of notes.filter(n => n.note.status === 'cut')) {
-      expect(note.cutReason).not.toBeNull()
-    }
+    expect(summary.irrelevant).toBe(3)
+    expect(summary.created + summary.cut).toBe(1)
+    // files exist only for real candidates — never for ledger entries
+    expect(listNotes(notesDir)).toHaveLength(summary.created)
   })
 
-  it('is idempotent — re-crawling refreshes instead of duplicating', async () => {
-    const notesDir = mkdtempSync(join(tmpdir(), 'job-kit-crawl-'))
-    const profile = await testProfile(notesDir)
-    await crawl(routedClient, profile, sources, { today: '2026-08-20' })
-    const first = listNotes(notesDir).length
-    const summary = await crawl(routedClient, profile, sources, { today: '2026-08-20' })
-    expect(listNotes(notesDir)).toHaveLength(first)
-    expect(summary.updated).toBeGreaterThan(0)
+  it('never surfaces judged postings again, but refreshes existing notes', async () => {
+    const { home, notesDir, profile } = await testEnv(['databricks'])
+    const first = await crawl(routedClient, home, profile, sources, { today: '2026-08-20' })
+    const noteCount = listNotes(notesDir).length
+
+    const second = await crawl(routedClient, home, profile, sources, { today: '2026-08-20' })
+    expect(second.created).toBe(0)
+    expect(second.refreshed).toBe(first.created)
+    expect(second.seenBefore).toBe(first.irrelevant + first.cut)
+    expect(listNotes(notesDir)).toHaveLength(noteCount)
   })
 
   it('isolates per-source failures', async () => {
-    const notesDir = mkdtempSync(join(tmpdir(), 'job-kit-crawl-'))
-    const profile = await testProfile(notesDir)
+    const { home, profile } = await testEnv(['databricks'])
     const broken = sourcesSchema.parse({
       boards: ['arbeitnow'],
       companies: [{ name: 'ghost', ats: 'recruitee', slug: 'ghost' }],
     })
-    const summary = await crawl(routedClient, profile, broken, { today: '2026-08-20' })
+    const summary = await crawl(routedClient, home, profile, broken, { today: '2026-08-20' })
     expect(summary.errors).toHaveLength(1)
     expect(summary.fetched).toBe(2) // the board still delivered
   })

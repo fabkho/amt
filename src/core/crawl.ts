@@ -1,5 +1,6 @@
-import { applyHardFilters, isFresh } from './match.js'
-import { renderIndex, upsertNote } from './notes.js'
+import { applyHardFilters, isFresh, isRelevant } from './match.js'
+import { dedupeKey, listNotes, renderIndex, upsertNote } from './notes.js'
+import { loadSeen, markSeen, saveSeen, type SeenLedger } from './seen.js'
 import { postingToNoteInput } from './sources/normalize.js'
 import { getAdapter } from './sources/index.js'
 import type { Profile } from './profile.js'
@@ -8,9 +9,16 @@ import type { HttpClient, JobPosting } from './sources/types.js'
 
 export interface CrawlSummary {
   fetched: number
+  /** New notes — postings actually worth a human look. */
   created: number
-  updated: number
+  /** Existing notes refreshed with current posting facts. */
+  refreshed: number
+  /** Auto-cut by the hard filters — ledger only, no file. */
   cut: number
+  /** No stack keyword matched — ledger only, no file. */
+  irrelevant: number
+  /** Already judged in an earlier crawl. */
+  seenBefore: number
   stale: number
   errors: { source: string; message: string }[]
 }
@@ -55,13 +63,63 @@ async function fetchAll(
   return batches
 }
 
+interface IngestContext {
+  profile: Profile
+  ledger: SeenLedger
+  /** dedupe key → note slug, for postings that already have a note. */
+  noted: Map<string, string>
+  today: string
+  summary: CrawlSummary
+}
+
 /**
- * Fetches every configured source, hard-filters, and upserts job notes.
- * Agent channels in sources.channels are intentionally not touched — the
- * agent runs those itself and feeds findings through the import path.
+ * Notes are created only for postings that are stack-relevant AND pass the
+ * hard filters. Everything else goes into the seen ledger so it never
+ * surfaces again — without leaving a file behind.
  */
+function ingest(posting: JobPosting, ctx: IngestContext): void {
+  const key = `${posting.source}:${posting.nativeId}`
+
+  // An existing note always wins over the ledger — the user may have
+  // imported something the crawler once dismissed.
+  if (ctx.noted.has(key)) {
+    upsertNote(
+      ctx.profile.paths.notesDir,
+      postingToNoteInput(posting, ctx.today),
+      posting.descriptionHtml ?? '',
+    )
+    ctx.summary.refreshed++
+    return
+  }
+  if (ctx.ledger[key]) {
+    ctx.summary.seenBefore++
+    return
+  }
+
+  if (!isRelevant(posting, ctx.profile.search)) {
+    markSeen(ctx.ledger, key, 'irrelevant', null, ctx.today)
+    ctx.summary.irrelevant++
+    return
+  }
+  const verdict = applyHardFilters(posting, ctx.profile)
+  if (!verdict.passed) {
+    markSeen(ctx.ledger, key, 'cut', verdict.cutReason, ctx.today)
+    ctx.summary.cut++
+    return
+  }
+
+  const result = upsertNote(
+    ctx.profile.paths.notesDir,
+    postingToNoteInput(posting, ctx.today),
+    posting.descriptionHtml ?? '',
+  )
+  ctx.noted.set(key, result.slug)
+  ctx.summary.created++
+}
+
 export async function crawl(
   client: HttpClient,
+  home: string,
   profile: Profile,
   sources: Sources,
   options: { today?: string } = {},
@@ -70,10 +128,22 @@ export async function crawl(
   const summary: CrawlSummary = {
     fetched: 0,
     created: 0,
-    updated: 0,
+    refreshed: 0,
     cut: 0,
+    irrelevant: 0,
+    seenBefore: 0,
     stale: 0,
     errors: [],
+  }
+
+  const ctx: IngestContext = {
+    profile,
+    ledger: loadSeen(home),
+    noted: new Map(
+      listNotes(profile.paths.notesDir).map(s => [dedupeKey(s.note), s.note.slug]),
+    ),
+    today,
+    summary,
   }
 
   const batches = await fetchAll(client, sources, summary.errors)
@@ -84,33 +154,11 @@ export async function crawl(
         summary.stale++
         continue
       }
-      ingest(posting, profile, today, summary)
+      ingest(posting, ctx)
     }
   }
 
+  saveSeen(home, ctx.ledger)
   renderIndex(profile.paths.notesDir)
   return summary
-}
-
-function ingest(
-  posting: JobPosting,
-  profile: Profile,
-  today: string,
-  summary: CrawlSummary,
-): void {
-  const verdict = applyHardFilters(posting, profile)
-  const input = postingToNoteInput(posting, today)
-  if (!verdict.passed) {
-    input.status = 'cut'
-    input.cutReason = verdict.cutReason
-    input.cutNote = verdict.cutNote
-  }
-  const result = upsertNote(
-    profile.paths.notesDir,
-    input,
-    posting.descriptionHtml ?? '',
-  )
-  if (!result.created) summary.updated++
-  else if (verdict.passed) summary.created++
-  else summary.cut++
 }

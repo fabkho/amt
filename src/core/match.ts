@@ -36,6 +36,22 @@ export function extractYearsRequired(text: string): number | null {
   return max
 }
 
+/**
+ * A posting is only worth a note when it touches the user's stacks at all —
+ * tracked companies and boards both ship sales/ops postings. Empty stacks
+ * mean "everything is relevant".
+ */
+export function isRelevant(
+  posting: Pick<JobPosting, 'title' | 'tags' | 'descriptionHtml'>,
+  search: Pick<Profile['search'], 'stacksPrimary' | 'stacksSecondary'>,
+): boolean {
+  const keywords = [...search.stacksPrimary, ...search.stacksSecondary]
+  if (keywords.length === 0) return true
+  const haystack
+    = `${posting.title}\n${posting.tags.join('\n')}\n${posting.descriptionHtml ?? ''}`.toLowerCase()
+  return keywords.some(keyword => haystack.includes(keyword.toLowerCase()))
+}
+
 export function isFresh(
   posting: Pick<JobPosting, 'publishedAt'>,
   maxAgeDays: number,

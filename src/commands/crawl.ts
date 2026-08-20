@@ -23,11 +23,12 @@ export default createCommand({
       )
     }
 
-    const summary = await crawl(defaultHttpClient, profile, sources)
+    const summary = await crawl(defaultHttpClient, home, profile, sources)
     return {
       result: summary,
       human: [
-        `Fetched ${summary.fetched} postings — ${summary.created} new, ${summary.cut} auto-cut, ${summary.updated} refreshed, ${summary.stale} stale.`,
+        `Fetched ${summary.fetched} postings — ${summary.created} new notes, ${summary.refreshed} refreshed; `
+        + `ledger-only: ${summary.cut} auto-cut, ${summary.irrelevant} off-stack, ${summary.seenBefore} seen before, ${summary.stale} stale.`,
         ...(summary.errors.length
           ? summary.errors.map(e => `⚠ ${e.source}: ${e.message}`)
           : []),

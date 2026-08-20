@@ -3,6 +3,13 @@
 // presentation layers. Never deep-import from core modules elsewhere.
 
 export { JobKitError, toErrorMessage } from './core/errors.js'
+export {
+  expandPath,
+  loadProfile,
+  profileSchema,
+  resolveHome,
+} from './core/profile.js'
+export type { Profile, ProfileInput } from './core/profile.js'
 export { cvDataSchema, loadCvData } from './core/cv-data.js'
 export type { CvData, CvLink } from './core/cv-data.js'
 export {

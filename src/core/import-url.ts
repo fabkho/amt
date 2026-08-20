@@ -18,6 +18,35 @@ const URL_PATTERNS: { ats: string; pattern: RegExp }[] = [
   { ats: 'smartrecruiters', pattern: /^https?:\/\/jobs\.smartrecruiters\.com\/([\w-]+)\/(\d+)/ },
 ]
 
+export interface ManualFields {
+  company: string
+  title: string
+  descriptionHtml?: string | null
+  location?: string | null
+  workMode?: 'remote' | 'hybrid' | 'onsite' | null
+  salaryMin?: number | null
+  salaryMax?: number | null
+  publishedAt?: string | null
+}
+
+/** Posting shape for non-ATS sources (LinkedIn, StepStone, agent channels). */
+export function manualPosting(url: string, fields: ManualFields): JobPosting {
+  return {
+    source: 'manual',
+    nativeId: url,
+    company: fields.company,
+    title: fields.title,
+    url,
+    descriptionHtml: fields.descriptionHtml ?? null,
+    location: fields.location ?? null,
+    workMode: fields.workMode ?? null,
+    salaryMin: fields.salaryMin ?? null,
+    salaryMax: fields.salaryMax ?? null,
+    publishedAt: fields.publishedAt ?? null,
+    tags: [],
+  }
+}
+
 export function parsePostingUrl(url: string): ParsedPostingUrl | null {
   for (const { ats, pattern } of URL_PATTERNS) {
     const match = url.match(pattern)

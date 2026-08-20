@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workzag-jobs><position>
+    <id>2659676</id>
+    <subcompany>gridX GmbH</subcompany>
+    <office>Remote DE; Aachen; Munich</office>
+    <department>Development</department>
+    <recruitingCategory>Full time positions</recruitingCategory>
+    <name>Lead Engineer – EV Charging Infrastructure (all genders)</name>
+    <jobDescriptions></jobDescriptions>
+    <employmentType>permanent</employmentType>
+    <seniority>experienced</seniority>
+    <schedule>full-time</schedule>
+    <keywords>golang,distributed systems,backend development,software architecture,docker,overvability,Energy Management Systems (EMS),Smart Charging,EV Charging Infrastructure (EVCI),eMobility,Energy Tech,lead engineer,tech lead</keywords>
+    <occupation>software_and_web_development</occupation>
+    <occupationCategory>it_software</occupationCategory>
+    <createdAt>2026-06-05T14:38:56+00:00</createdAt>
+</position><position>
+    <id>2747735</id>
+    <subcompany>gridX GmbH</subcompany>
+    <office>Remote DE; Aachen; Munich</office>
+    <department>Development</department>
+    <recruitingCategory>Full time positions</recruitingCategory>
+    <name>Senior Backend Engineer - Energy Management Platform (all genders)</name>
+    <jobDescriptions></jobDescriptions>
+    <employmentType>permanent</employmentType>
+    <seniority>experienced</seniority>
+    <schedule>full-time</schedule>
+    <occupation>software_and_web_development</occupation>
+    <occupationCategory>it_software</occupationCategory>
+    <createdAt>2026-08-10T12:32:39+00:00</createdAt>
+</position></workzag-jobs>

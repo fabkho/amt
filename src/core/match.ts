@@ -47,9 +47,13 @@ export function isRelevant(
 ): boolean {
   const keywords = [...search.stacksPrimary, ...search.stacksSecondary]
   if (keywords.length === 0) return true
-  const haystack
-    = `${posting.title}\n${posting.tags.join('\n')}\n${posting.descriptionHtml ?? ''}`.toLowerCase()
-  return keywords.some(keyword => haystack.includes(keyword.toLowerCase()))
+  const haystack = `${posting.title}\n${posting.tags.join('\n')}\n${posting.descriptionHtml ?? ''}`
+  // Word boundaries, not substrings — "vue" must not match "Fanvue", nor
+  // "node" match inside longer words. Dots/pluses in keywords are escaped.
+  return keywords.some((keyword) => {
+    const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)
+    return new RegExp(`\\b${escaped}\\b`, 'i').test(haystack)
+  })
 }
 
 export function isFresh(

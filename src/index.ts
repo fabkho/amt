@@ -42,8 +42,8 @@ export { crawl } from './core/crawl.js'
 export type { CrawlSummary } from './core/crawl.js'
 export { importPostingFromUrl, parsePostingUrl } from './core/import-url.js'
 export type { ParsedPostingUrl } from './core/import-url.js'
-export { applyToJob } from './core/apply.js'
-export type { ApplyOptions, ApplyResult } from './core/apply.js'
+export { prepareApplication } from './core/prepare.js'
+export type { PrepareOptions, PrepareResult } from './core/prepare.js'
 export {
   addCompany,
   discoverCompany,

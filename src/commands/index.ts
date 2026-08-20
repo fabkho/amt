@@ -3,7 +3,7 @@ import { renderIndex } from '../core/notes.js'
 import { loadProfile, resolveHome } from '../core/profile.js'
 
 export default createCommand({
-  name: 'views',
+  name: 'index',
   description: 'Regenerate the _index.md overview from the job notes',
   async run() {
     const profile = await loadProfile(resolveHome())

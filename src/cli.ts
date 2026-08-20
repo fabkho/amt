@@ -22,8 +22,8 @@ const main = defineCommand({
     list: () => import('./commands/list.js').then(m => m.default),
     status: () => import('./commands/status.js').then(m => m.default),
     show: () => import('./commands/show.js').then(m => m.default),
-    apply: () => import('./commands/apply.js').then(m => m.default),
-    views: () => import('./commands/views.js').then(m => m.default),
+    prepare: () => import('./commands/prepare.js').then(m => m.default),
+    index: () => import('./commands/index.js').then(m => m.default),
   },
 })
 

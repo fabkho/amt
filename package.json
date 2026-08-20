@@ -1,34 +1,30 @@
 {
   "name": "job-kit",
   "version": "0.1.0",
-  "description": "Job application toolkit: crawl postings, manage job notes, render CVs and cover letters",
-  "type": "module",
   "private": true,
+  "description": "Job application toolkit: crawl postings, manage job notes, render CVs and cover letters",
   "license": "MIT",
-  "packageManager": "pnpm@10.12.1",
-  "engines": {
-    "node": ">=22.0.0"
-  },
   "bin": {
     "job-kit": "./dist/bin.mjs",
     "job-kit-mcp": "./dist/mcp-bin.mjs"
   },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "type": "module",
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
       "types": "./dist/index.d.mts"
     }
   },
-  "files": [
-    "dist",
-    "templates"
-  ],
   "scripts": {
-    "build": "tsdown",
-    "dev": "tsdown --watch",
-    "lint": "oxlint",
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "lint": "vp lint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vp test run",
     "prepare": "node .husky/install.mjs && pnpm build"
   },
   "dependencies": {
@@ -43,9 +39,12 @@
     "@types/node": "^26.2.0",
     "fallow": "^3.17.0",
     "husky": "^9.1.7",
-    "oxlint": "^1.79.0",
-    "tsdown": "^0.22.14",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.11"
-  }
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "pnpm@10.12.1"
 }

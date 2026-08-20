@@ -51,6 +51,22 @@ describe('isRelevant', () => {
     expect(isRelevant(posting({ title: 'Account Executive' }), search)).toBe(false)
   })
 
+  it('matches whole words only — no substring false positives', () => {
+    expect(isRelevant(posting({ title: 'Creator Success at Fanvue' }), search)).toBe(false)
+    expect(
+      isRelevant(posting({ descriptionHtml: 'network nodes and pipelines' }), {
+        stacksPrimary: ['node'],
+        stacksSecondary: [],
+      }),
+    ).toBe(false)
+    expect(
+      isRelevant(posting({ descriptionHtml: 'We run Node.js services.' }), {
+        stacksPrimary: ['node'],
+        stacksSecondary: [],
+      }),
+    ).toBe(true)
+  })
+
   it('treats empty stacks as match-all', () => {
     expect(
       isRelevant(posting({ title: 'Anything' }), { stacksPrimary: [], stacksSecondary: [] }),

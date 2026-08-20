@@ -1,0 +1,158 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { describe, expect, it } from 'vite-plus/test'
+import {
+  getAdapter,
+  listAdapters,
+  postingToNoteInput,
+  toIsoDate,
+  unescapeHtml,
+  type HttpClient,
+} from '../src/index.js'
+
+const fixturesDir = join(import.meta.dirname, 'fixtures/sources')
+
+function fixtureClient(file: string): HttpClient {
+  const load = () => readFileSync(join(fixturesDir, file), 'utf-8')
+  return {
+    json: async () => JSON.parse(load()) as unknown,
+    text: async () => load(),
+  }
+}
+
+describe('normalize helpers', () => {
+  it('converts epoch seconds, epoch millis, and UTC strings to ISO dates', () => {
+    expect(toIsoDate(1787238038)).toBe('2026-08-20')
+    expect(toIsoDate(1783109951806)).toBe('2026-07-03')
+    expect(toIsoDate('2026-08-19 11:05:24 UTC')).toBe('2026-08-19')
+    expect(toIsoDate(null)).toBeNull()
+    expect(toIsoDate('not a date')).toBeNull()
+  })
+
+  it('unescapes exactly one HTML layer', () => {
+    expect(unescapeHtml('&lt;p&gt;Tom &amp;amp; Jerry&lt;/p&gt;'))
+      .toBe('<p>Tom &amp; Jerry</p>')
+  })
+})
+
+describe('registry', () => {
+  it('knows all six adapters', () => {
+    expect(listAdapters().map(a => a.name)).toEqual([
+      'recruitee',
+      'greenhouse',
+      'lever',
+      'personio',
+      'smartrecruiters',
+      'arbeitnow',
+    ])
+  })
+
+  it('throws a coded error for unknown sources', () => {
+    expect(() => getAdapter('nope')).toThrowError(/Unknown source/)
+  })
+})
+
+describe('recruitee', () => {
+  it('normalizes offers with explicit work-mode flags', async () => {
+    const postings = await getAdapter('recruitee').fetchCompany!(
+      fixtureClient('recruitee.json'),
+      'shopwareag',
+    )
+    expect(postings).toHaveLength(2)
+    const [first] = postings
+    expect(first!.source).toBe('recruitee')
+    expect(first!.company).toBe('shopware AG')
+    expect(first!.workMode).toBe('remote')
+    expect(first!.publishedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(first!.url).toContain('recruitee.com/o/')
+  })
+})
+
+describe('greenhouse', () => {
+  it('unescapes content and parses first_published', async () => {
+    const postings = await getAdapter('greenhouse').fetchCompany!(
+      fixtureClient('greenhouse.json'),
+      'n26',
+    )
+    expect(postings.length).toBeGreaterThan(0)
+    const [first] = postings
+    expect(first!.company).toBe('N26')
+    expect(first!.descriptionHtml).not.toContain('&lt;')
+    expect(first!.publishedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+})
+
+describe('lever', () => {
+  it('maps workplaceType and epoch-ms createdAt', async () => {
+    const postings = await getAdapter('lever').fetchCompany!(
+      fixtureClient('lever.json'),
+      'emma-sleep',
+    )
+    const [first] = postings
+    expect(first!.workMode).toBe('hybrid')
+    expect(first!.publishedAt).toBe('2026-07-03')
+    expect(first!.location).toBe('Mexico City')
+  })
+})
+
+describe('personio', () => {
+  it('parses the XML feed and detects remote offices', async () => {
+    const postings = await getAdapter('personio').fetchCompany!(
+      fixtureClient('personio.xml'),
+      'gridx',
+    )
+    expect(postings).toHaveLength(2)
+    const [first] = postings
+    expect(first!.company).toBe('gridX GmbH')
+    expect(first!.workMode).toBe('remote') // office "Remote DE; Aachen; Munich"
+    expect(first!.tags).toContain('golang')
+  })
+})
+
+describe('smartrecruiters', () => {
+  it('normalizes list items with remote and hybrid booleans', async () => {
+    const postings = await getAdapter('smartrecruiters').fetchCompany!(
+      fixtureClient('smartrecruiters-list.json'),
+      'BoschGroup',
+    )
+    const [first] = postings
+    expect(first!.company).toBe('Bosch Group')
+    expect(first!.workMode).toBe('hybrid')
+    expect(first!.descriptionHtml).toBeNull() // detail is a second request
+  })
+
+  it('treats totalFound 0 as an unreachable source, not an empty board', async () => {
+    const empty: HttpClient = {
+      json: async () => ({ totalFound: 0, content: [] }),
+      text: async () => '',
+    }
+    await expect(
+      getAdapter('smartrecruiters').fetchCompany!(empty, 'wrong-slug'),
+    ).rejects.toMatchObject({ code: 'SOURCE_UNREACHABLE' })
+  })
+})
+
+describe('arbeitnow', () => {
+  it('normalizes board jobs including tags and epoch-second dates', async () => {
+    const postings = await getAdapter('arbeitnow').fetchBoard!(
+      fixtureClient('arbeitnow.json'),
+    )
+    expect(postings).toHaveLength(2)
+    const [first] = postings
+    expect(first!.company).toBe('Manzke Gruppe')
+    expect(first!.publishedAt).toBe('2026-08-20')
+    expect(first!.tags.length).toBeGreaterThan(0)
+  })
+})
+
+describe('postingToNoteInput', () => {
+  it('bridges a posting into a valid note input', async () => {
+    const [posting] = await getAdapter('arbeitnow').fetchBoard!(
+      fixtureClient('arbeitnow.json'),
+    )
+    const input = postingToNoteInput(posting!, '2026-08-20')
+    expect(input.slug).toMatch(/^manzke-gruppe-/)
+    expect(input.nativeId).toBe(posting!.nativeId)
+    expect(input.discoveredAt).toBe('2026-08-20')
+  })
+})

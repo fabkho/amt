@@ -1,0 +1,986 @@
+{
+ "offers": [
+  {
+   "dynamic_fields": [],
+   "position": 372,
+   "cover_image": null,
+   "salary": {
+    "max": null,
+    "min": null,
+    "period": null,
+    "currency": null
+   },
+   "careers_apply_url": "https://shopwareag.recruitee.com/o/business-development-representative-mfd-2/c/new",
+   "state_name": "Nordrhein-Westfalen",
+   "options_cover_letter": "off",
+   "close_at": null,
+   "guid": "dyv15",
+   "state_code": "NW",
+   "published_at": "2026-08-19 11:05:24 UTC",
+   "open_questions": [
+    {
+     "id": 3177199,
+     "position": 1,
+     "options": {
+      "length": 120
+     },
+     "required": false,
+     "body": "Lade bei Bedarf gerne weitere Unterlagen hoch (z.B. Anschreiben, Arbeitsproben, Zeugnisse).",
+     "kind": "file",
+     "translations": {
+      "de": {
+       "body": "Lade bei Bedarf gerne weitere Unterlagen hoch (z.B. Anschreiben, Arbeitsproben, Zeugnisse)."
+      },
+      "en": {
+       "body": "Please feel free to upload additional documents (e.g. cover letter, work samples, references). "
+      }
+     },
+     "open_question_options": []
+    },
+    {
+     "id": 3177200,
+     "position": 2,
+     "options": {},
+     "required": true,
+     "body": "Diversit\u00e4t, Inklusion und Vielfalt sind wichtige Bestandteile unserer Kultur. Daher m\u00f6chten wir dir im Bewerbungsprozess die M\u00f6glichkeit geben, uns mitzuteilen, wie du gerne angesprochen werden m\u00f6chtest. Diese Information tr\u00e4gt dazu bei, Chancengleichheit sowie ein respektvolles und inklusives Umfeld zu f\u00f6rdern. Selbstverst\u00e4ndlich steht es dir frei, keine Angabe dazu zu machen.",
+     "kind": "single_choice",
+     "translations": {
+      "de": {
+       "body": "Diversit\u00e4t, Inklusion und Vielfalt sind wichtige Bestandteile unserer Kultur. Daher m\u00f6chten wir dir im Bewerbungsprozess die M\u00f6glichkeit geben, uns mitzuteilen, wie du gerne angesprochen werden m\u00f6chtest. Diese Information tr\u00e4gt dazu bei, Chancengleichheit sowie ein respektvolles und inklusives Umfeld zu f\u00f6rdern. Selbstverst\u00e4ndlich steht es dir frei, keine Angabe dazu zu machen."
+      },
+      "en": {
+       "body": "Diversity, inclusion, and variety are important components of our culture. Therefore, we would like to offer you the opportunity during the application process to let us know how you would prefer to be addressed. This information helps us promote equal opportunities as well as foster a respectful and inclusive environment. Of course, you are free to not provide this information if you prefer."
+      }
+     },
+     "open_question_options": [
+      {
+       "id": 4657522,
+       "position": 0,
+       "body": "Er / Ihm (m\u00e4nnlich)",
+       "translations": {
+        "de": {
+         "body": "Er / Ihm (m\u00e4nnlich)"
+        },
+        "en": {
+         "body": "He / Him (male)"
+        }
+       }
+      },
+      {
+       "id": 4657523,
+       "position": 1,
+       "body": "Sie /  Ihr (weiblich) ",
+       "translations": {
+        "de": {
+         "body": "Sie /  Ihr (weiblich) "
+        },
+        "en": {
+         "body": "She / Her (female)"
+        }
+       }
+      },
+      {
+       "id": 4657524,
+       "position": 2,
+       "body": "Nicht-Bin\u00e4r",
+       "translations": {
+        "de": {
+         "body": "Nicht-Bin\u00e4r"
+        },
+        "en": {
+         "body": "Non-binary"
+        }
+       }
+      },
+      {
+       "id": 4657525,
+       "position": 3,
+       "body": "Keine Angabe",
+       "translations": {
+        "de": {
+         "body": "Keine Angabe"
+        },
+        "en": {
+         "body": "Not specified"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": 3177201,
+     "position": 3,
+     "options": {},
+     "required": true,
+     "body": "Welche Gehaltsvorstellung hast du? Bitte gib uns dein Wunsch-OTE (On-Target Earning) mit der bevorzugten Aufteilung zwischen Fixum und Bonus in EUR an. ",
+     "kind": "string",
+     "translations": {
+      "de": {
+       "body": "Welche Gehaltsvorstellung hast du? Bitte gib uns dein Wunsch-OTE (On-Target Earning) mit der bevorzugten Aufteilung zwischen Fixum und Bonus in EUR an. "
+      },
+      "en": {
+       "body": "What are your salary expectations? Please name an OTE (On-Target-Earning) with your preferred base/variable split in EUR."
+      }
+     },
+     "open_question_options": []
+    },
+    {
+     "id": 3177202,
+     "position": 4,
+     "options": {
+      "length": 120
+     },
+     "required": false,
+     "body": "Welche K\u00fcndigungsfrist hast du derzeit? ",
+     "kind": "string",
+     "translations": {
+      "de": {
+       "body": "Welche K\u00fcndigungsfrist hast du derzeit? "
+      },
+      "en": {
+       "body": "What is your current notice period? "
+      }
+     },
+     "open_question_options": []
+    },
+    {
+     "id": 3177203,
+     "position": 5,
+     "options": {
+      "length": 120
+     },
+     "required": false,
+     "body": "Wenn du magst, kannst du uns noch dein \u00f6ffentliches Profil mitteilen (z.B. GitHub, Blog, LinkedIn).",
+     "kind": "string",
+     "translations": {
+      "de": {
+       "body": "Wenn du magst, kannst du uns noch dein \u00f6ffentliches Profil mitteilen (z.B. GitHub, Blog, LinkedIn)."
+      },
+      "en": {
+       "body": "If you like, you can also share your public profile with us (e.g. GitHub, Blog, LinkedIn). "
+      }
+     },
+     "open_question_options": []
+    },
+    {
+     "id": 3177204,
+     "position": 6,
+     "options": {
+      "length": 120
+     },
+     "required": false,
+     "body": "Wie bzw. wo bist du auf uns aufmerksam geworden? (z.B. Google, LinkedIn, indeed, Shopware Website)",
+     "kind": "string",
+     "translations": {
+      "de": {
+       "body": "Wie bzw. wo bist du auf uns aufmerksam geworden? (z.B. Google, LinkedIn, indeed, Shopware Website)"
+      },
+      "en": {
+       "body": "How or where did you become aware of Shopware? (e.g. Google, LinkedIn, indeed, Shopware website)"
+      }
+     },
+     "open_question_options": []
+    },
+    {
+     "id": 3177205,
+     "position": 7,
+     "options": {},
+     "required": true,
+     "body": "In welchem Land wohnst du derzeit? ",
+     "kind": "single_choice",
+     "translations": {
+      "de": {
+       "body": "In welchem Land wohnst du derzeit? "
+      },
+      "en": {
+       "body": "In which country do you currently live in? "
+      }
+     },
+     "open_question_options": [
+      {
+       "id": 4657526,
+       "position": 0,
+       "body": "Deutschland",
+       "translations": {
+        "de": {
+         "body": "Deutschland"
+        },
+        "en": {
+         "body": "Germany"
+        }
+       }
+      },
+      {
+       "id": 4657527,
+       "position": 1,
+       "body": "\u00d6sterreich",
+       "translations": {
+        "de": {
+         "body": "\u00d6sterreich"
+        },
+        "en": {
+         "body": "Austria"
+        }
+       }
+      },
+      {
+       "id": 4657528,
+       "position": 2,
+       "body": "Vereinigtes K\u00f6nigreich",
+       "translations": {
+        "de": {
+         "body": "Vereinigtes K\u00f6nigreich"
+        },
+        "en": {
+         "body": "United Kingdoms"
+        }
+       }
+      },
+      {
+       "id": 4657529,
+       "position": 3,
+       "body": "USA",
+       "translations": {
+        "de": {
+         "body": "USA"
+        },
+        "en": {
+         "body": "US"
+        }
+       }
+      },
+      {
+       "id": 4657530,
+       "position": 4,
+       "body": "Spanien",
+       "translations": {
+        "de": {
+         "body": "Spanien"
+        },
+        "en": {
+         "body": "Spain"
+        }
+       }
+      },
+      {
+       "id": 4657531,
+       "position": 5,
+       "body": "Niederlande",
+       "translations": {
+        "de": {
+         "body": "Niederlande"
+        },
+        "en": {
+         "body": "Netherlands"
+        }
+       }
+      },
+      {
+       "id": 4657532,
+       "position": 6,
+       "body": "Belgien",
+       "translations": {
+        "de": {
+         "body": "Belgien"
+        },
+        "en": {
+         "body": "Belgium "
+        }
+       }
+      },
+      {
+       "id": 4657533,
+       "position": 7,
+       "body": "Frankreich",
+       "translations": {
+        "de": {
+         "body": "Frankreich"
+        },
+        "en": {
+         "body": "France"
+        }
+       }
+      },
+      {
+       "id": 4657534,
+       "position": 8,
+       "body": "Italien",
+       "translations": {
+        "de": {
+         "body": "Italien"
+        },
+        "en": {
+         "body": "Italy"
+        }
+       }
+      },
+      {
+       "id": 4657535,
+       "position": 9,
+       "body": "Schweden",
+       "translations": {
+        "de": {
+         "body": "Schweden"
+        },
+        "en": {
+         "body": "Sweden"
+        }
+       }
+      },
+      {
+       "id": 4657536,
+       "position": 10,
+       "body": "Polen",
+       "translations": {
+        "de": {
+         "body": "Polen"
+        },
+        "en": {
+         "body": "Poland"
+        }
+       }
+      },
+      {
+       "id": 4657537,
+       "position": 11,
+       "body": "Ich wohne in keinem der aufgelisteten L\u00e4ndern. ",
+       "translations": {
+        "de": {
+         "body": "Ich wohne in keinem der aufgelisteten L\u00e4ndern. "
+        },
+        "en": {
+         "body": "I do not live in any of the countries listed, currently. "
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": 3177206,
+     "position": 8,
+     "options": {},
+     "required": true,
+     "body": "Hast du f\u00fcr das Land, in dem du derzeit wohnst, eine dauerhafte Arbeits- und Aufenthaltserlaubnis? ",
+     "kind": "boolean",
+     "translations": {
+      "de": {
+       "body": "Hast du f\u00fcr das Land, in dem du derzeit wohnst, eine dauerhafte Arbeits- und Aufenthaltserlaubnis? "
+      },
+      "en": {
+       "body": "Do you have a permanent work and residence permission for the country you currently live in? "
+      }
+     },
+     "open_question_options": []
+    },
+    {
+     "id": 3177207,
+     "position": 9,
+     "options": {},
+     "required": false,
+     "body": "Wenn Ja: Ich kann meine dauerhafte Arbeits- und Aufenthaltserlaubnis durch folgende Dokumente nachweisen.*",
+     "kind": "string",
+     "translations": {
+      "de": {
+       "body": "Wenn Ja: Ich kann meine dauerhafte Arbeits- und Aufenthaltserlaubnis durch folgende Dokumente nachweisen.*"
+      },
+      "en": {
+       "body": "If Yes: I can prove my permanent work and residence permit with the following documents.*"
+      }
+     },
+     "open_question_options": []
+    },
+    {
+     "id": 3177208,
+     "position": 10,
+     "options": {},
+     "required": false,
+     "body": "<p>* Wir behalten uns vor im Laufe des Bewerbungsprozesses Dokumente zum Nachweis der dauerhaften Arbeits- und Aufenthaltserlaubnis von dir anzufragen.\u00a0</p>",
+     "kind": "infobox",
+     "translations": {
+      "de": {
+       "body": "<p>* Wir behalten uns vor im Laufe des Bewerbungsprozesses Dokumente zum Nachweis der dauerhaften Arbeits- und Aufenthaltserlaubnis von dir anzufragen.\u00a0</p>"
+      },
+      "en": {
+       "body": "<p>* We reserve the right to request documents as proof of permanent work and residence permits during the application process.</p>"
+      }
+     },
+     "open_question_options": []
+    }
+   ],
+   "city": "Sch\u00f6ppingen",
+   "updated_at": "2026-08-19 11:05:24 UTC",
+   "sharing_description": "Als Business Development Representative (m/w/d) bist du der erste Kontakt f\u00fcr potenzielle Kunden und entscheidest ma\u00dfgeblich dar\u00fcber, welche Unternehmen k\u00fcnftig auf Shopware setzen.",
+   "postal_code": "48624",
+   "locations_question_type": "multiple_choice",
+   "options_photo": "off",
+   "locations_question_required": true,
+   "requirements": "<ul><li><p>Du verantwortest und bearbeitest aktiv unsere Lead-Pipeline durch<strong> Outbound Aktivit\u00e4ten</strong> und baust in kurzer Zeit ein qualifiziertes Netzwerk auf.</p></li><li><p>Du kontaktierst potenzielle Kunden im Mid-Market- und Enterprise-Umfeld via Telefon, Video-Call oder vor Ort und kommunizierst dabei mit <strong>Top-Entscheider*innen aller </strong>Branchen.</p></li><li><p>Du qu\u2026",
+   "mailbox_email": "job.dyv15@shopwareag.recruitee.com",
+   "min_hours": null,
+   "slug": "business-development-representative-mfd-2",
+   "country_code": "DE",
+   "location_question_visible": false,
+   "options_salutation": "off",
+   "hybrid": false,
+   "education_code": "certification",
+   "sharing_image": "https://recruitee-main.s3.eu-central-1.amazonaws.com/offers/2715301/normal_sharing_awts3thav7d4.png",
+   "description": "<p>Shopware ist ein f\u00fchrendes E-Commerce-System, das es Unternehmen weltweit erm\u00f6glicht, im digitalen Handel schnell und effizient zu skalieren. Als zukunftsweisende Open-Source-L\u00f6sung wird Shopware bereits von einigen der gr\u00f6\u00dften europ\u00e4ischen Marken, Einzelh\u00e4ndlern und Herstellern im B2C- und B2B-Bereich eingesetzt.</p><p style=\"text-align:start;\">Als <strong>Business Development Representative (\u2026",
+   "category_code": "internet",
+   "company_name": "shopware AG",
+   "tags": [
+    "Sales"
+   ],
+   "max_hours": null,
+   "highlight": "<p> </p>",
+   "remote": true,
+   "max_hours_per_week": null,
+   "options_cv": "required",
+   "employment_type_code": "fulltime_permanent",
+   "created_at": "2026-08-19 10:59:12 UTC",
+   "locations": [
+    {
+     "id": 53371,
+     "name": "Sch\u00f6ppingen",
+     "state": "Nordrhein-Westfalen",
+     "country": "Germany",
+     "city": "Sch\u00f6ppingen",
+     "translations": {
+      "de": {
+       "name": "Sch\u00f6ppingen",
+       "city": "Sch\u00f6ppingen",
+       "postal_code": "48624",
+       "street": "Ebbinghoff 10",
+       "note": null
+      },
+      "en": {
+       "name": "Sch\u00f6ppingen",
+       "city": "Sch\u00f6ppingen",
+       "postal_code": "48624",
+       "street": "Ebbinghoff 10",
+       "note": null
+      }
+     },
+     "country_code": "DE",
+     "postal_code": "48624",
+     "state_code": "NW",
+     "street": "Ebbinghoff 10",
+     "note": null
+    },
+    {
+     "id": 179209,
+     "name": "Deutschland",
+     "state": "Berlin",
+     "country": "Germany",
+     "city": "Berlin",
+     "translations": {
+      "de": {
+       "name": "Deutschland",
+       "city": "Berlin",
+       "postal_code": null,
+       "street": null,
+       "note": null
+      },
+      "en": {
+       "name": "Germany",
+       "city": "Berlin",
+       "postal_code": null,
+       "street": null,
+       "note": null
+      }
+     },
+     "country_code": "DE",
+     "postal_code": null,
+     "state_code": "BE",
+     "street": null,
+     "note": null
+    }
+   ],
+   "id": 2715301,
+   "department": "Sales",
+   "options_title": "off",
+   "title": "Business Development Representative (m/w/d)",
+   "location": "Homeoffice",
+   "experience_code": "mid_level",
+   "status": "published",
+   "sharing_title": "Business Development Representative (m/w/d)",
+   "locations_question": "Was ist dein bevorzugter Arbeitsort?",
+   "options_phone": "required",
+   "careers_url": "https://shopwareag.recruitee.com/o/business-development-representative-mfd-2",
+   "country": "Deutschland",
+   "min_hours_per_week": null,
+   "on_site": false
+  },
+  {
+   "dynamic_fields": [],
+   "position": 371,
+   "cover_image": null,
+   "salary": {
+    "max": null,
+    "min": null,
+    "period": null,
+    "currency": null
+   },
+   "careers_apply_url": "https://shopwareag.recruitee.com/o/it-administrator-cloud-infrastructure-mfd-1/c/new",
+   "state_name": "Nordrhein-Westfalen",
+   "options_cover_letter": "off",
+   "close_at": null,
+   "guid": "8dnvl",
+   "state_code": "NW",
+   "published_at": "2026-08-18 13:28:31 UTC",
+   "open_questions": [
+    {
+     "id": 3093816,
+     "position": 1,
+     "options": {},
+     "required": false,
+     "body": "Lade bei Bedarf gerne weitere Unterlagen hoch (z.B. Anschreiben, Arbeitsproben, Zeugnisse).",
+     "kind": "file",
+     "translations": {
+      "de": {
+       "body": "Lade bei Bedarf gerne weitere Unterlagen hoch (z.B. Anschreiben, Arbeitsproben, Zeugnisse)."
+      },
+      "en": {
+       "body": "Please feel free to upload additional documents (e.g. cover letter, work samples, references). "
+      }
+     },
+     "open_question_options": []
+    },
+    {
+     "id": 3141874,
+     "position": 2,
+     "options": {},
+     "required": true,
+     "body": "Diversit\u00e4t, Inklusion und Vielfalt sind wichtige Bestandteile unserer Kultur. Daher m\u00f6chten wir dir im Bewerbungsprozess die M\u00f6glichkeit geben, uns mitzuteilen, wie du gerne angesprochen werden m\u00f6chtest. Diese Information tr\u00e4gt dazu bei, Chancengleichheit sowie ein respektvolles und inklusives Umfeld zu f\u00f6rdern. Selbstverst\u00e4ndlich steht es dir frei, keine Angabe dazu zu machen.",
+     "kind": "single_choice",
+     "translations": {
+      "de": {
+       "body": "Diversit\u00e4t, Inklusion und Vielfalt sind wichtige Bestandteile unserer Kultur. Daher m\u00f6chten wir dir im Bewerbungsprozess die M\u00f6glichkeit geben, uns mitzuteilen, wie du gerne angesprochen werden m\u00f6chtest. Diese Information tr\u00e4gt dazu bei, Chancengleichheit sowie ein respektvolles und inklusives Umfeld zu f\u00f6rdern. Selbstverst\u00e4ndlich steht es dir frei, keine Angabe dazu zu machen."
+      },
+      "en": {
+       "body": "Diversity, inclusion, and variety are important components of our culture. Therefore, we would like to offer you the opportunity during the application process to let us know how you would prefer to be addressed. This information helps us promote equal opportunities as well as foster a respectful and inclusive environment. Of course, you are free to not provide this information if you prefer."
+      }
+     },
+     "open_question_options": [
+      {
+       "id": 4600084,
+       "position": 0,
+       "body": "Er / Ihm (m\u00e4nnlich)",
+       "translations": {
+        "de": {
+         "body": "Er / Ihm (m\u00e4nnlich)"
+        },
+        "en": {
+         "body": "He / Him (male)"
+        }
+       }
+      },
+      {
+       "id": 4600085,
+       "position": 1,
+       "body": "Sie /  Ihr (weiblich) ",
+       "translations": {
+        "de": {
+         "body": "Sie /  Ihr (weiblich) "
+        },
+        "en": {
+         "body": "She / Her (female)"
+        }
+       }
+      },
+      {
+       "id": 4600086,
+       "position": 2,
+       "body": "Nicht-Bin\u00e4r",
+       "translations": {
+        "de": {
+         "body": "Nicht-Bin\u00e4r"
+        },
+        "en": {
+         "body": "Non-binary"
+        }
+       }
+      },
+      {
+       "id": 4600087,
+       "position": 3,
+       "body": "Keine Angabe",
+       "translations": {
+        "de": {
+         "body": "Keine Angabe"
+        },
+        "en": {
+         "body": "Not specified"
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": 3093817,
+     "position": 3,
+     "options": {},
+     "required": true,
+     "body": "Welche Gehaltsvorstellung hast du? Bitte nenne uns das Bruttojahresgehalt in \u20ac als j\u00e4hrliche Gesamtsumme, die sowohl das fixe monatliche Gehalt als auch m\u00f6gliche variable Gehaltsbestandteile umfasst.",
+     "kind": "string",
+     "translations": {
+      "de": {
+       "body": "Welche Gehaltsvorstellung hast du? Bitte nenne uns das Bruttojahresgehalt in \u20ac als j\u00e4hrliche Gesamtsumme, die sowohl das fixe monatliche Gehalt als auch m\u00f6gliche variable Gehaltsbestandteile umfasst."
+      },
+      "en": {
+       "body": "What are your salary expectations? Please provide a gross annual salary in \u20ac as a total annual sum, which includes both the fixed monthly salary and any variable salary components."
+      }
+     },
+     "open_question_options": []
+    },
+    {
+     "id": 3093818,
+     "position": 4,
+     "options": {},
+     "required": false,
+     "body": "Welche K\u00fcndigungsfrist hast du derzeit? ",
+     "kind": "string",
+     "translations": {
+      "de": {
+       "body": "Welche K\u00fcndigungsfrist hast du derzeit? "
+      },
+      "en": {
+       "body": "What is your current notice period? "
+      }
+     },
+     "open_question_options": []
+    },
+    {
+     "id": 3093819,
+     "position": 5,
+     "options": {},
+     "required": false,
+     "body": "Wenn du magst, kannst du uns noch dein \u00f6ffentliches Profil mitteilen (z.B. GitHub, Blog, LinkedIn).",
+     "kind": "string",
+     "translations": {
+      "de": {
+       "body": "Wenn du magst, kannst du uns noch dein \u00f6ffentliches Profil mitteilen (z.B. GitHub, Blog, LinkedIn)."
+      },
+      "en": {
+       "body": "If you like, you can also share your public profile with us (e.g. GitHub, Blog, LinkedIn). "
+      }
+     },
+     "open_question_options": []
+    },
+    {
+     "id": 3093820,
+     "position": 6,
+     "options": {},
+     "required": false,
+     "body": "Wie bzw. wo bist du auf uns aufmerksam geworden? (z.B. Google, LinkedIn, indeed, Shopware Website)",
+     "kind": "string",
+     "translations": {
+      "de": {
+       "body": "Wie bzw. wo bist du auf uns aufmerksam geworden? (z.B. Google, LinkedIn, indeed, Shopware Website)"
+      },
+      "en": {
+       "body": "How or where did you become aware of Shopware? (e.g. Google, LinkedIn, indeed, Shopware website)"
+      }
+     },
+     "open_question_options": []
+    },
+    {
+     "id": 3093821,
+     "position": 7,
+     "options": {},
+     "required": true,
+     "body": "In welchem Land wohnst du derzeit? ",
+     "kind": "single_choice",
+     "translations": {
+      "de": {
+       "body": "In welchem Land wohnst du derzeit? "
+      },
+      "en": {
+       "body": "In which country do you currently live in? "
+      }
+     },
+     "open_question_options": [
+      {
+       "id": 4524868,
+       "position": 0,
+       "body": "Deutschland",
+       "translations": {
+        "de": {
+         "body": "Deutschland"
+        },
+        "en": {
+         "body": "Germany"
+        }
+       }
+      },
+      {
+       "id": 4524869,
+       "position": 1,
+       "body": "\u00d6sterreich",
+       "translations": {
+        "de": {
+         "body": "\u00d6sterreich"
+        },
+        "en": {
+         "body": "Austria"
+        }
+       }
+      },
+      {
+       "id": 4524870,
+       "position": 2,
+       "body": "Vereinigtes K\u00f6nigreich",
+       "translations": {
+        "de": {
+         "body": "Vereinigtes K\u00f6nigreich"
+        },
+        "en": {
+         "body": "United Kingdoms"
+        }
+       }
+      },
+      {
+       "id": 4524871,
+       "position": 3,
+       "body": "USA",
+       "translations": {
+        "de": {
+         "body": "USA"
+        },
+        "en": {
+         "body": "US"
+        }
+       }
+      },
+      {
+       "id": 4524872,
+       "position": 4,
+       "body": "Spanien",
+       "translations": {
+        "de": {
+         "body": "Spanien"
+        },
+        "en": {
+         "body": "Spain"
+        }
+       }
+      },
+      {
+       "id": 4524873,
+       "position": 5,
+       "body": "Niederlande",
+       "translations": {
+        "de": {
+         "body": "Niederlande"
+        },
+        "en": {
+         "body": "Netherlands"
+        }
+       }
+      },
+      {
+       "id": 4524874,
+       "position": 6,
+       "body": "Belgien",
+       "translations": {
+        "de": {
+         "body": "Belgien"
+        },
+        "en": {
+         "body": "Belgium "
+        }
+       }
+      },
+      {
+       "id": 4524875,
+       "position": 7,
+       "body": "Frankreich",
+       "translations": {
+        "de": {
+         "body": "Frankreich"
+        },
+        "en": {
+         "body": "France"
+        }
+       }
+      },
+      {
+       "id": 4524876,
+       "position": 8,
+       "body": "Italien",
+       "translations": {
+        "de": {
+         "body": "Italien"
+        },
+        "en": {
+         "body": "Italy"
+        }
+       }
+      },
+      {
+       "id": 4524877,
+       "position": 9,
+       "body": "Schweden",
+       "translations": {
+        "de": {
+         "body": "Schweden"
+        },
+        "en": {
+         "body": "Sweden"
+        }
+       }
+      },
+      {
+       "id": 4524878,
+       "position": 10,
+       "body": "Polen",
+       "translations": {
+        "de": {
+         "body": "Polen"
+        },
+        "en": {
+         "body": "Poland"
+        }
+       }
+      },
+      {
+       "id": 4524879,
+       "position": 11,
+       "body": "Ich wohne in keinem der aufgelisteten L\u00e4ndern. ",
+       "translations": {
+        "de": {
+         "body": "Ich wohne in keinem der aufgelisteten L\u00e4ndern. "
+        },
+        "en": {
+         "body": "I do not live in any of the countries listed, currently. "
+        }
+       }
+      }
+     ]
+    },
+    {
+     "id": 3093872,
+     "position": 8,
+     "options": {},
+     "required": true,
+     "body": "Hast du f\u00fcr das Land, in dem du derzeit wohnst, eine dauerhafte Arbeits- und Aufenthaltserlaubnis? ",
+     "kind": "boolean",
+     "translations": {
+      "de": {
+       "body": "Hast du f\u00fcr das Land, in dem du derzeit wohnst, eine dauerhafte Arbeits- und Aufenthaltserlaubnis? "
+      },
+      "en": {
+       "body": "Do you have a permanent work and residence permission for the country you currently live in? "
+      }
+     },
+     "open_question_options": []
+    },
+    {
+     "id": 3093873,
+     "position": 9,
+     "options": {},
+     "required": false,
+     "body": "Wenn Ja: Ich kann meine dauerhafte Arbeits- und Aufenthaltserlaubnis durch folgende Dokumente nachweisen.*",
+     "kind": "string",
+     "translations": {
+      "de": {
+       "body": "Wenn Ja: Ich kann meine dauerhafte Arbeits- und Aufenthaltserlaubnis durch folgende Dokumente nachweisen.*"
+      },
+      "en": {
+       "body": "If Yes: I can prove my permanent work and residence permit with the following documents.*"
+      }
+     },
+     "open_question_options": []
+    },
+    {
+     "id": 3095514,
+     "position": 10,
+     "options": {},
+     "required": false,
+     "body": "<p>* Wir behalten uns vor im Laufe des Bewerbungsprozesses Dokumente zum Nachweis der dauerhaften Arbeits- und Aufenthaltserlaubnis von dir anzufragen.\u00a0</p>",
+     "kind": "infobox",
+     "translations": {
+      "de": {
+       "body": "<p>* Wir behalten uns vor im Laufe des Bewerbungsprozesses Dokumente zum Nachweis der dauerhaften Arbeits- und Aufenthaltserlaubnis von dir anzufragen.\u00a0</p>"
+      },
+      "en": {
+       "body": "<p>* We reserve the right to request documents as proof of permanent work and residence permits during the application process.</p>"
+      }
+     },
+     "open_question_options": []
+    }
+   ],
+   "city": "Sch\u00f6ppingen",
+   "updated_at": "2026-08-18 13:34:45 UTC",
+   "sharing_description": "Als IT Administrator - Cloud-Infrastructure (m/w/d) \u00fcbernimmst du eine zentrale Rolle bei der Sicherung, Optimierung und Weiterentwicklung unserer internen Infrastruktur.",
+   "postal_code": "48624",
+   "locations_question_type": "multiple_choice",
+   "options_photo": "off",
+   "locations_question_required": true,
+   "requirements": "<ul><li><p>Du beh\u00e4ltst den <strong>\u00dcberblick \u00fcber unsere gesamte Infrastruktur</strong> und sorgst durch kontinuierliches <strong>Monitoring</strong> f\u00fcr Stabilit\u00e4t, Performance und Sicherheit.</p></li><li><p>Durch die <strong>Konstruktion und Architektur unserer Netzwerke</strong> legst du die Grundlage f\u00fcr eine <strong>effiziente und skalierbare Infrastruktur</strong>.</p></li><li><p>In enger Ab\u2026",
+   "mailbox_email": "job.8dnvl@shopwareag.recruitee.com",
+   "min_hours": null,
+   "slug": "it-administrator-cloud-infrastructure-mfd-1",
+   "country_code": "DE",
+   "location_question_visible": false,
+   "options_salutation": "off",
+   "hybrid": true,
+   "education_code": "vocational",
+   "sharing_image": "https://recruitee-main.s3.eu-central-1.amazonaws.com/offers/2714196/normal_sharing_awts3thav7d4.png",
+   "description": "<p style=\"text-align:start;\">Shopware ist ein f\u00fchrendes E-Commerce-System, das es Unternehmen weltweit erm\u00f6glicht, im digitalen Handel schnell und effizient zu skalieren. Als zukunftsweisende Open-Source-L\u00f6sung wird Shopware bereits von einigen der gr\u00f6\u00dften europ\u00e4ischen Marken, Einzelh\u00e4ndlern und Herstellern im B2C- und B2B-Bereich eingesetzt.</p><p class=\"Paragraph SCXW88548090 BCX0\" style=\"text-a\u2026",
+   "category_code": "internet",
+   "company_name": "shopware AG",
+   "tags": [],
+   "max_hours": null,
+   "highlight": null,
+   "remote": true,
+   "max_hours_per_week": null,
+   "options_cv": "required",
+   "employment_type_code": "fulltime_permanent",
+   "created_at": "2026-08-18 13:14:16 UTC",
+   "locations": [
+    {
+     "id": 53371,
+     "name": "Sch\u00f6ppingen",
+     "state": "Nordrhein-Westfalen",
+     "country": "Germany",
+     "city": "Sch\u00f6ppingen",
+     "translations": {
+      "de": {
+       "name": "Sch\u00f6ppingen",
+       "city": "Sch\u00f6ppingen",
+       "postal_code": "48624",
+       "street": "Ebbinghoff 10",
+       "note": null
+      },
+      "en": {
+       "name": "Sch\u00f6ppingen",
+       "city": "Sch\u00f6ppingen",
+       "postal_code": "48624",
+       "street": "Ebbinghoff 10",
+       "note": null
+      }
+     },
+     "country_code": "DE",
+     "postal_code": "48624",
+     "state_code": "NW",
+     "street": "Ebbinghoff 10",
+     "note": null
+    }
+   ],
+   "id": 2714196,
+   "department": "Operations",
+   "options_title": "off",
+   "title": "IT Administrator - Cloud-Infrastructure (m/w/d)",
+   "location": "Homeoffice",
+   "experience_code": "mid_level",
+   "status": "published",
+   "sharing_title": " IT Administrator - Cloud-Infrastructure (m/w/d) | shopware AG",
+   "locations_question": "Was ist dein bevorzugter Arbeitsort?",
+   "options_phone": "required",
+   "careers_url": "https://shopwareag.recruitee.com/o/it-administrator-cloud-infrastructure-mfd-1",
+   "country": "Deutschland",
+   "min_hours_per_week": null,
+   "on_site": true
+  }
+ ]
+}

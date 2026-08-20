@@ -31,6 +31,19 @@ export type {
   StoredNote,
   UpsertResult,
 } from './core/notes.js'
+export { getAdapter, listAdapters } from './core/sources/index.js'
+export { defaultHttpClient } from './core/sources/http.js'
+export {
+  postingToNoteInput,
+  toIsoDate,
+  unescapeHtml,
+  workModeFromFlags,
+} from './core/sources/normalize.js'
+export type {
+  HttpClient,
+  JobPosting,
+  SourceAdapter,
+} from './core/sources/types.js'
 export { cvDataSchema, loadCvData } from './core/cv-data.js'
 export type { CvData, CvLink } from './core/cv-data.js'
 export {

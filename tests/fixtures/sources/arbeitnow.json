@@ -1,0 +1,44 @@
+{
+ "data": [
+  {
+   "slug": "personalreferent-mit-schwerpunkt-recruiting-vastorf-482128",
+   "company_name": "Manzke Gruppe",
+   "title": "Personalreferent mit Schwerpunkt Recruiting (m/w/d)",
+   "description": "<p>\u00dcber uns:</p>\n<p>Die Manzke Gruppe steht f\u00fcr nachhaltigen Umgang mit nat\u00fcrlichen Ressourcen: Wir gewinnen Baustoffe wie Kies und Sand, recyceln Altbaustoffe und entsorgen Bauabf\u00e4lle fachgerecht. Mit eigenem Fuhrpark und Baustoffhandel sind wir ein mittelst\u00e4ndisches Familienunternehmen mit klaren Strukturen und kurzen Entscheidungswegen.</p>\n<h2>Aufgaben</h2>\n<p>Ihre Rolle:</p>\n<p>Wir suchen jemanden, der Recruiting nicht als Nebensache, sondern als Herzst\u00fcck der Personalarbeit versteht. Jede \u2026",
+   "remote": false,
+   "url": "https://www.arbeitnow.com/jobs/companies/manzke-gruppe/personalreferent-mit-schwerpunkt-recruiting-vastorf-482128",
+   "tags": [
+    "Personnel Specialist"
+   ],
+   "job_types": [
+    "berufserfahren"
+   ],
+   "location": "Vastorf",
+   "created_at": 1787238038
+  },
+  {
+   "slug": "senior-data-engineer-databricks-stuttgart-187617",
+   "company_name": "Collaboration Betters The World GmbH",
+   "title": "Senior Data Engineer (Databricks) (m/w/d)",
+   "description": "<p>Willkommen bei CBTW! Wir sind ein innovatives Team mit \u00fcber 3.000 Mitarbeitern in 21 L\u00e4ndern und f\u00fchrend in den Bereichen Strategie &#x26; Governance, Software-Engineering, Datenanalyse &#x26; KI und mehr.</p>\n<p>Als Mitglied unseres Teams bei CBTW arbeitest Du in einem inspirierenden Umfeld an anspruchsvollen Projekten. Wir f\u00f6rdern die Entwicklung der Experten von morgen und sch\u00e4tzen Deine Ideen. Wenn Du bereit bist, die Zukunft der datengetriebenen Transformation mit einem hochmotivierten T\u2026",
+   "remote": false,
+   "url": "https://www.arbeitnow.com/jobs/companies/collaboration-betters-the-world-gmbh/senior-data-engineer-databricks-stuttgart-187617",
+   "tags": [
+    "Consulting",
+    "Engineering"
+   ],
+   "job_types": [],
+   "location": "Stuttgart",
+   "created_at": 1787238037
+  }
+ ],
+ "links": {
+  "first": "https://www.arbeitnow.com/api/job-board-api?page=1",
+  "last": null,
+  "prev": null,
+  "next": "https://www.arbeitnow.com/api/job-board-api?page=2"
+ },
+ "meta": {
+  "terms": "This is a free public API for jobs, please do not abuse. I would appreciate linking back to the site. By using the API, you agree to the terms of service present on Arbeitnow.com"
+ }
+}

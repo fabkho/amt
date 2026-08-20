@@ -10,6 +10,27 @@ export {
   resolveHome,
 } from './core/profile.js'
 export type { Profile, ProfileInput } from './core/profile.js'
+export {
+  CUT_REASONS,
+  dedupeKey,
+  JOB_STATUSES,
+  jobNoteSchema,
+  listNotes,
+  readNote,
+  renderIndex,
+  setStatus,
+  slugify,
+  upsertNote,
+  writeNote,
+} from './core/notes.js'
+export type {
+  CutReason,
+  JobNote,
+  JobNoteInput,
+  JobStatus,
+  StoredNote,
+  UpsertResult,
+} from './core/notes.js'
 export { cvDataSchema, loadCvData } from './core/cv-data.js'
 export type { CvData, CvLink } from './core/cv-data.js'
 export {

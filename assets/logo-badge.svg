@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <circle cx="200" cy="200" r="150" fill="#1f3a5f"/>
+  <!-- geometric lowercase a: bowl + right stem -->
+  <circle cx="186" cy="222" r="58" fill="none" stroke="#ffffff" stroke-width="36"/>
+  <rect x="246" y="140" width="36" height="140" rx="18" fill="#ffffff"/>
+</svg>

@@ -57,7 +57,7 @@ function profileFailure(home: string, error: unknown): HomeChecks {
       : `invalid: ${error instanceof Error ? error.message : String(error)}`,
     cvData: [],
     sources: '(profile missing)',
-    next: missing ? 'Run amt init to create your profile.' : `Fix ${home}/profile.config.ts.`,
+    next: missing ? 'Run amt init to create your profile.' : `Fix ${home}/profile.yaml.`,
   }
 }
 

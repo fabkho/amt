@@ -2,12 +2,7 @@ import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   pack: {
-    entry: [
-      "src/index.ts",
-      "src/bin.ts",
-      "src/mcp-bin.ts",
-      "src/define-profile.ts",
-    ],
+    entry: ["src/index.ts", "src/bin.ts", "src/mcp-bin.ts"],
     format: "esm",
     target: "node22",
     clean: true,

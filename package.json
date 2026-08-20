@@ -17,10 +17,6 @@
     ".": {
       "import": "./dist/index.mjs",
       "types": "./dist/index.d.mts"
-    },
-    "./config": {
-      "import": "./dist/define-profile.mjs",
-      "types": "./dist/define-profile.d.mts"
     }
   },
   "scripts": {
@@ -37,7 +33,6 @@
     "consola": "^3.4.2",
     "fast-xml-parser": "^5.11.0",
     "gray-matter": "^4.0.3",
-    "jiti": "^2.7.0",
     "nunjucks": "^3.2.4",
     "playwright": "^1.62.1",
     "turndown": "^7.2.4",

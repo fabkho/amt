@@ -70,10 +70,11 @@ export type Profile = z.output<typeof profileSchema>
 export type ProfileInput = z.input<typeof profileSchema>
 
 export function resolveHome(explicit?: string): string {
+  // || on purpose: an empty JOB_KIT_HOME means "unset", not "cwd".
   return (
     explicit
-    ?? process.env.JOB_KIT_HOME
-    ?? join(homedir(), '.config', 'job-kit')
+    || process.env.JOB_KIT_HOME
+    || join(homedir(), '.config', 'job-kit')
   )
 }
 

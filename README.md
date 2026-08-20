@@ -24,7 +24,8 @@ claude mcp add --scope user amt -- amt-mcp                    # or the plugin, s
 ```
 
 Then tell your agent who you are — your stack, salary floor, cities or remote,
-what your CV should say, how your cover letters should sound. It writes your
+what your CV should say (pointing it at an existing CV, PDF or LinkedIn export,
+works great as a starting point), how your cover letters should sound. It writes your
 `profile.config.ts` and `cv-data.<lang>.yaml` into `AMT_HOME` (default `~/.config/amt/`),
 which is exactly what the MCP server reads. No forms, no typing YAML by hand.
 

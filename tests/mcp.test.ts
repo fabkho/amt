@@ -8,14 +8,14 @@ import { upsertNote } from '../src/index.js'
 
 /**
  * In-process transport tests: linked client/server pair over the SDK's
- * in-memory transport against a real temp JOB_KIT_HOME.
+ * in-memory transport against a real temp AMT_HOME.
  */
 
 let home: string
 let client: Client
 
 function makeHome(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'job-kit-mcp-'))
+  const dir = mkdtempSync(join(tmpdir(), 'amt-mcp-'))
   const notesDir = join(dir, 'notes')
   mkdirSync(notesDir, { recursive: true })
   mkdirSync(join(dir, 'out'), { recursive: true })
@@ -28,7 +28,7 @@ function makeHome(): string {
     'utf-8',
   )
   profile = profile
-    .replace("from '../../../src/define-profile.js'", "from 'job-kit/config'")
+    .replace("from '../../../src/define-profile.js'", "from 'amt/config'")
     // keep MCP tests network-free: no ATS probing on import/shortlist
     .replace('maxYearsRequired: 4,', 'maxYearsRequired: 4,\n    autoTrackCompanies: false,')
     .replace("notesDir: '~/notes/jobs'", `notesDir: '${notesDir}'`)
@@ -66,7 +66,7 @@ async function call(name: string, args: Record<string, unknown> = {}) {
 
 beforeAll(async () => {
   home = makeHome()
-  process.env.JOB_KIT_HOME = home
+  process.env.AMT_HOME = home
   const { createServer } = await import('../src/mcp/server.js')
   const server = createServer()
   client = new Client({ name: 'test-client', version: '0.0.0' })
@@ -75,10 +75,10 @@ beforeAll(async () => {
 })
 
 afterAll(() => {
-  delete process.env.JOB_KIT_HOME
+  delete process.env.AMT_HOME
 })
 
-describe('job-kit mcp server', () => {
+describe('amt mcp server', () => {
   it('exposes the full tool surface', async () => {
     const { tools } = await client.listTools()
     const names = tools.map(t => t.name).sort()

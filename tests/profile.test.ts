@@ -11,13 +11,13 @@ describe('resolveHome', () => {
     expect(resolveHome('/tmp/x')).toBe('/tmp/x')
   })
 
-  it('falls back to ~/.config/job-kit', () => {
-    const prev = process.env.JOB_KIT_HOME
-    delete process.env.JOB_KIT_HOME
+  it('falls back to ~/.config/amt', () => {
+    const prev = process.env.AMT_HOME
+    delete process.env.AMT_HOME
     try {
-      expect(resolveHome()).toBe(join(homedir(), '.config', 'job-kit'))
+      expect(resolveHome()).toBe(join(homedir(), '.config', 'amt'))
     } finally {
-      if (prev !== undefined) process.env.JOB_KIT_HOME = prev
+      if (prev !== undefined) process.env.AMT_HOME = prev
     }
   })
 })
@@ -39,15 +39,15 @@ describe('loadProfile', () => {
   })
 
   it('fails with a coded error when the profile is missing', async () => {
-    await expect(loadProfile(mkdtempSync(join(tmpdir(), 'job-kit-'))))
+    await expect(loadProfile(mkdtempSync(join(tmpdir(), 'amt-'))))
       .rejects.toMatchObject({ code: 'PROFILE_NOT_FOUND' })
   })
 
-  it("resolves the bare 'job-kit/config' import via the loader alias", async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'job-kit-'))
+  it("resolves the bare 'amt/config' import via the loader alias", async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'amt-'))
     writeFileSync(
       join(dir, 'profile.config.ts'),
-      `import { defineProfile } from 'job-kit/config'\n`
+      `import { defineProfile } from 'amt/config'\n`
       + `import fixture from '${join(fixtureHome, 'profile.config.ts')}'\n`
       + `export default defineProfile(fixture)\n`,
     )
@@ -56,7 +56,7 @@ describe('loadProfile', () => {
   })
 
   it('fails with a coded error when validation fails', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'job-kit-'))
+    const dir = mkdtempSync(join(tmpdir(), 'amt-'))
     writeFileSync(
       join(dir, 'profile.config.ts'),
       'export default { identity: { name: "x" } }\n',

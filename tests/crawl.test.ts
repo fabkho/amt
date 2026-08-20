@@ -38,7 +38,7 @@ interface Env {
 }
 
 async function testEnv(stacks: string[]): Promise<Env> {
-  const home = mkdtempSync(join(tmpdir(), 'job-kit-crawl-'))
+  const home = mkdtempSync(join(tmpdir(), 'amt-crawl-'))
   const notesDir = join(home, 'notes')
   const base = await loadProfile(join(import.meta.dirname, 'fixtures/profile-home'))
   const profile = profileSchema.parse({

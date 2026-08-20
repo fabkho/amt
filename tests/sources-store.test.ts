@@ -51,7 +51,7 @@ describe('discoverCompany', () => {
 
 describe('sources.yaml lifecycle', () => {
   it('adds via discovery, dedupes, and removes', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'job-kit-home-'))
+    const home = mkdtempSync(join(tmpdir(), 'amt-home-'))
 
     const added = await addCompany(probingClient, home, 'shopware AG')
     expect(added.alreadyTracked).toBe(false)
@@ -67,7 +67,7 @@ describe('sources.yaml lifecycle', () => {
   })
 
   it('rejects undiscoverable companies with a coded error', async () => {
-    const home = mkdtempSync(join(tmpdir(), 'job-kit-home-'))
+    const home = mkdtempSync(join(tmpdir(), 'amt-home-'))
     await expect(addCompany(probingClient, home, 'nope-inc')).rejects.toMatchObject({
       code: 'COMPANY_NOT_DISCOVERED',
     })

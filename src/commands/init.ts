@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { defineCommand } from 'citty'
 import { consola } from 'consola'
-import { JobKitError, toErrorMessage } from '../core/errors.js'
+import { AmtError, toErrorMessage } from '../core/errors.js'
 import { resolveHome } from '../core/profile.js'
 import { loadSources, saveSources } from '../core/sources-store.js'
 import { log } from '../utils/logger.js'
@@ -20,7 +20,7 @@ function profileTemplate(answers: {
   const cities = answers.cities
     .map(c => `{ name: '${c}', minHomeOfficeDays: 3 }`)
     .join(', ')
-  return `import { defineProfile } from 'job-kit/config'
+  return `import { defineProfile } from 'amt/config'
 
 export default defineProfile({
   identity: {
@@ -84,9 +84,9 @@ export default defineCommand({
 
       log.success(`Profile written to ${profilePath} — refine role, stacks, and tone rules there.`)
       log.info(`CV data template at ${cvDataPath} — fill it before your first \`prepare\`.`)
-      log.info('Track companies with `job-kit sources add <company>`, then run `job-kit crawl`.')
+      log.info('Track companies with `amt sources add <company>`, then run `amt crawl`.')
     } catch (error) {
-      const code = error instanceof JobKitError ? error.code : 'UNEXPECTED'
+      const code = error instanceof AmtError ? error.code : 'UNEXPECTED'
       log.error(`[${code}] ${toErrorMessage(error)}`)
       process.exitCode = 1
     }
@@ -95,13 +95,13 @@ export default defineCommand({
 
 function assertInitPreconditions(profilePath: string, force: boolean): void {
   if (!process.stdout.isTTY || !process.stdin.isTTY) {
-    throw new JobKitError(
+    throw new AmtError(
       'INIT_NEEDS_TTY',
-      'init is interactive. In agent contexts, write profile.config.ts directly (import defineProfile from job-kit/config) and use `sources add`.',
+      'init is interactive. In agent contexts, write profile.config.ts directly (import defineProfile from amt/config) and use `sources add`.',
     )
   }
   if (existsSync(profilePath) && !force) {
-    throw new JobKitError(
+    throw new AmtError(
       'PROFILE_EXISTS',
       `${profilePath} exists — edit it directly or re-run with --force.`,
     )

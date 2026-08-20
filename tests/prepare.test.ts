@@ -11,7 +11,7 @@ import {
 } from '../src/index.js'
 
 async function setup(): Promise<{ profile: Profile; slug: string }> {
-  const root = mkdtempSync(join(tmpdir(), 'job-kit-prepare-'))
+  const root = mkdtempSync(join(tmpdir(), 'amt-prepare-'))
   const notesDir = join(root, 'notes')
   const outputBase = join(root, 'out')
   const cvDataDir = join(root, 'cv')

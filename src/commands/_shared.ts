@@ -1,5 +1,5 @@
 import { defineCommand, type ArgsDef, type ParsedArgs } from 'citty'
-import { JobKitError, toErrorMessage } from '../core/errors.js'
+import { AmtError, toErrorMessage } from '../core/errors.js'
 import { log } from '../utils/logger.js'
 import { writeResult } from '../utils/stdout-guard.js'
 
@@ -48,7 +48,7 @@ export function createCommand<A extends ArgsDef>(spec: CommandSpec<A>) {
           writeResult(`${(human ?? [JSON.stringify(result, null, 2)]).join('\n')}\n`)
         }
       } catch (error) {
-        const code = error instanceof JobKitError ? error.code : 'UNEXPECTED'
+        const code = error instanceof AmtError ? error.code : 'UNEXPECTED'
         if (asJson) {
           // Zero bytes on stdout is a parse error for consumers — always
           // emit a parseable envelope.

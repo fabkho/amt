@@ -3,7 +3,7 @@ import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { z } from 'zod'
-import { JobKitError } from './errors.js'
+import { AmtError } from './errors.js'
 
 // The user profile is authored as TypeScript (profile.config.ts with
 // defineProfile) and only ever edited by humans. Anything the tool itself
@@ -63,7 +63,7 @@ export const profileSchema = z.object({
   paths: z.object({
     notesDir: z.string(),
     outputBase: z.string(),
-    /** Where cv-data.<lang>.yaml live. Defaults to JOB_KIT_HOME. */
+    /** Where cv-data.<lang>.yaml live. Defaults to AMT_HOME. */
     cvDataDir: z.string().optional(),
   }),
 })
@@ -72,11 +72,13 @@ export type Profile = z.output<typeof profileSchema>
 export type ProfileInput = z.input<typeof profileSchema>
 
 export function resolveHome(explicit?: string): string {
-  // || on purpose: an empty JOB_KIT_HOME means "unset", not "cwd".
+  // || on purpose: an empty AMT_HOME means "unset", not "cwd".
+  // JOB_KIT_HOME is the pre-rename legacy variable.
   return (
     explicit
+    || process.env.AMT_HOME
     || process.env.JOB_KIT_HOME
-    || join(homedir(), '.config', 'job-kit')
+    || join(homedir(), '.config', 'amt')
   )
 }
 
@@ -97,15 +99,15 @@ export async function loadProfile(home?: string): Promise<Profile> {
   const dir = resolveHome(home)
   const file = CONFIG_CANDIDATES.map(name => join(dir, name)).find(existsSync)
   if (!file) {
-    throw new JobKitError(
+    throw new AmtError(
       'PROFILE_NOT_FOUND',
-      `No profile.config.ts in ${dir}. Set JOB_KIT_HOME or create one with defineProfile from 'job-kit/config'.`,
+      `No profile.config.ts in ${dir}. Set AMT_HOME or create one with defineProfile from 'amt/config'.`,
     )
   }
 
   const { createJiti } = await import('jiti')
   // A profile lives outside any node_modules tree, so its
-  // `import { defineProfile } from 'job-kit/config'` cannot resolve on its
+  // `import { defineProfile } from 'amt/config'` cannot resolve on its
   // own — alias it onto this package's own module (bundled and source path).
   const here = dirname(fileURLToPath(import.meta.url))
   const defineProfileModule = [
@@ -113,13 +115,15 @@ export async function loadProfile(home?: string): Promise<Profile> {
     join(here, '../define-profile.ts'),
   ].find(existsSync)
   const jiti = createJiti(import.meta.url, {
-    alias: defineProfileModule ? { 'job-kit/config': defineProfileModule } : {},
+    alias: defineProfileModule
+      ? { 'amt/config': defineProfileModule, 'job-kit/config': defineProfileModule }
+      : {},
   })
   let raw: unknown
   try {
     raw = await jiti.import(file, { default: true })
   } catch (error) {
-    throw new JobKitError(
+    throw new AmtError(
       'PROFILE_INVALID',
       `Failed to load ${file}: ${error instanceof Error ? error.message : String(error)}`,
     )
@@ -127,7 +131,7 @@ export async function loadProfile(home?: string): Promise<Profile> {
 
   const result = profileSchema.safeParse(raw)
   if (!result.success) {
-    throw new JobKitError(
+    throw new AmtError(
       'PROFILE_INVALID',
       `${file}:\n${z.prettifyError(result.error)}`,
     )

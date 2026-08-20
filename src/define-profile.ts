@@ -1,4 +1,4 @@
-// Separate build entry, exported as 'job-kit/config'. A profile.config.ts
+// Separate build entry, exported as 'amt/config'. A profile.config.ts
 // imports only this type helper — identity at runtime, editor types at edit
 // time — without pulling in the rest of the tool. Validation happens with
 // zod when the tool loads the profile, never here.

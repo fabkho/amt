@@ -7,7 +7,7 @@ import {
   defaultHttpClient,
   importPostingFromUrl,
   JOB_STATUSES,
-  JobKitError,
+  AmtError,
   listNotes,
   loadProfile,
   loadSources,
@@ -53,7 +53,7 @@ function jsonContent(data: unknown) {
 }
 
 function toolErrorResponse(doing: string, error: unknown) {
-  const code = error instanceof JobKitError ? error.code : 'UNEXPECTED'
+  const code = error instanceof AmtError ? error.code : 'UNEXPECTED'
   return {
     content: [
       {
@@ -86,16 +86,16 @@ function buildProfileSection(profile: Profile): string {
 const today = (): string => new Date().toISOString().slice(0, 10)
 
 export function createServer(): McpServer {
-  const server = new McpServer({ name: 'job-kit-mcp', version })
+  const server = new McpServer({ name: 'amt-mcp', version })
 
   // ─── Tool: discover ────────────────────────────────────────────
 
   server.registerTool(
     'discover',
     {
-      title: 'Discover job-kit Setup',
+      title: 'Discover amt Setup',
       description:
-        'Discover the job-kit environment: home directory, profile summary, configured sources '
+        'Discover the amt environment: home directory, profile summary, configured sources '
         + '(boards, tracked companies, agent channels with their recipes), and job-note counts by '
         + 'status. Call this first to understand the setup before using other tools.',
       inputSchema: z.object({}),
@@ -124,7 +124,7 @@ export function createServer(): McpServer {
           profileSummary = { missing: toErrorMessage(error) }
         }
         return jsonContent({
-          name: 'job-kit',
+          name: 'amt',
           version,
           home,
           profile: profileSummary,
@@ -387,7 +387,7 @@ export function createServer(): McpServer {
       try {
         const removed = removeCompany(resolveHome(), company)
         if (!removed) {
-          throw new JobKitError('COMPANY_NOT_TRACKED', `"${company}" is not tracked`)
+          throw new AmtError('COMPANY_NOT_TRACKED', `"${company}" is not tracked`)
         }
         return jsonContent({ removed: company })
       } catch (error) {

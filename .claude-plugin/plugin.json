@@ -1,6 +1,6 @@
 {
-  "name": "job-kit",
-  "description": "Job-search toolkit: crawl postings, manage job notes with statuses and scores, prepare applications (CV + cover letter). Bundles the job-kit MCP server and workflow skills. Requires the job-kit binaries: pnpm add -g git+ssh://git@github.com/fabkho/job-kit.git",
+  "name": "amt",
+  "description": "Job-search toolkit: crawl postings, manage job notes with statuses and scores, prepare applications (CV + cover letter). Bundles the amt MCP server and workflow skills. Requires the amt binaries: pnpm add -g git+ssh://git@github.com/fabkho/amt.git",
   "version": "0.1.0",
   "author": {
     "name": "fabkho"

@@ -29,7 +29,7 @@ describe('mcp over stdio', () => {
       expect(tools.map(t => t.name)).toContain('discover')
       const result = await client.callTool({ name: 'discover', arguments: {} })
       const text = (result.content as { text: string }[])[0]!.text
-      expect(JSON.parse(text).name).toBe('job-kit')
+      expect(JSON.parse(text).name).toBe('amt')
     } finally {
       await client.close()
     }

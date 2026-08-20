@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { JobKitError } from './errors.js'
+import { AmtError } from './errors.js'
 import { join } from 'node:path'
 import { stringify } from 'yaml'
 import { loadCvData } from './cv-data.js'
@@ -93,9 +93,9 @@ export async function prepareApplication(
   // CV
   const cvDataPath = join(profile.paths.cvDataDir ?? '', `cv-data.${lang}.yaml`)
   if (!existsSync(cvDataPath)) {
-    throw new JobKitError(
+    throw new AmtError(
       'CV_DATA_MISSING',
-      `No CV data for "${lang}" — create ${cvDataPath} (see the schema in the job-kit README; \`job-kit doctor\` lists which languages exist).`,
+      `No CV data for "${lang}" — create ${cvDataPath} (see the schema in the amt README; \`amt doctor\` lists which languages exist).`,
     )
   }
   const cvData = loadCvData(readFileSync(cvDataPath, 'utf-8'))
@@ -147,7 +147,7 @@ export async function prepareApplication(
   writeNote(profile.paths.notesDir, note, body)
 
   const next = letterIsPlaceholder
-    ? `Draft the letter in ${letterMdPath}, then re-run prepare (\`job-kit prepare\` / prepare_application) to render txt/html/pdf.`
-    : `Letter rendered. After submitting, mark it: \`job-kit status ${slug} applied\` / set_job_status with status "applied".`
+    ? `Draft the letter in ${letterMdPath}, then re-run prepare (\`amt prepare\` / prepare_application) to render txt/html/pdf.`
+    : `Letter rendered. After submitting, mark it: \`amt status ${slug} applied\` / set_job_status with status "applied".`
   return { folder, lang, letterScaffolded, letterIsPlaceholder, files, next }
 }

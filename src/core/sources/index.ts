@@ -1,4 +1,4 @@
-import { JobKitError } from '../errors.js'
+import { AmtError } from '../errors.js'
 import { arbeitnow } from './arbeitnow.js'
 import { ashby } from './ashby.js'
 import { greenhouse } from './greenhouse.js'
@@ -25,7 +25,7 @@ export function listAdapters(): readonly SourceAdapter[] {
 export function getAdapter(name: string): SourceAdapter {
   const adapter = adapters.find(a => a.name === name)
   if (!adapter) {
-    throw new JobKitError(
+    throw new AmtError(
       'SOURCE_UNKNOWN',
       `Unknown source "${name}". Available: ${adapters.map(a => a.name).join(', ')}`,
     )

@@ -1,12 +1,12 @@
 {
-  "name": "job-kit",
+  "name": "amt",
   "version": "0.1.0",
   "private": true,
   "description": "Job application toolkit: crawl postings, manage job notes, render CVs and cover letters",
   "license": "MIT",
   "bin": {
-    "job-kit": "./dist/bin.mjs",
-    "job-kit-mcp": "./dist/mcp-bin.mjs"
+    "amt": "./dist/bin.mjs",
+    "amt-mcp": "./dist/mcp-bin.mjs"
   },
   "files": [
     "dist",

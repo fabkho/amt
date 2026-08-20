@@ -1,7 +1,7 @@
 # amt
 
 <p align="center">
-  <img src="assets/sachbearbeiter.gif" width="420" alt="Der Sachbearbeiter bei der Arbeit"><br>
+  <img src="assets/sachbearbeiter.webp" width="420" alt="Der Sachbearbeiter bei der Arbeit"><br>
   <em>Der Sachbearbeiter bei der Arbeit.</em>
 </p>
 

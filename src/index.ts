@@ -31,6 +31,12 @@ export type {
   StoredNote,
   UpsertResult,
 } from './core/notes.js'
+export {
+  applyHardFilters,
+  extractYearsRequired,
+  isFresh,
+} from './core/match.js'
+export type { MatchResult } from './core/match.js'
 export { getAdapter, listAdapters } from './core/sources/index.js'
 export { defaultHttpClient } from './core/sources/http.js'
 export {

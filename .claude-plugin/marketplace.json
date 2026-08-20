@@ -1,0 +1,14 @@
+{
+  "name": "job-kit",
+  "owner": {
+    "name": "fabkho"
+  },
+  "plugins": [
+    {
+      "name": "job-kit",
+      "source": "./",
+      "description": "Job-search toolkit: MCP server + workflow skills for finding jobs and preparing applications."
+    }
+  ],
+  "description": "Private marketplace for the job-kit job-search toolkit."
+}

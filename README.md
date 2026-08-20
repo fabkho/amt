@@ -1,7 +1,5 @@
 # amt
 
-*Ein Amt, das für Sie arbeitet.* A bureaucracy for your job search — for once, on your side.
-
 <p align="center">
   <img src="assets/sachbearbeiter.gif" width="420" alt="Der Sachbearbeiter bei der Arbeit"><br>
   <em>Der Sachbearbeiter bei der Arbeit.</em>

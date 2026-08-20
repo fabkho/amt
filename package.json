@@ -1,0 +1,51 @@
+{
+  "name": "job-kit",
+  "version": "0.1.0",
+  "description": "Job application toolkit: crawl postings, manage job notes, render CVs and cover letters",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "packageManager": "pnpm@10.12.1",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "bin": {
+    "job-kit": "./dist/bin.mjs",
+    "job-kit-mcp": "./dist/mcp-bin.mjs"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    }
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "lint": "oxlint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
+    "citty": "^0.2.2",
+    "consola": "^3.4.2",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
+    "@types/node": "^26.2.0",
+    "fallow": "^3.17.0",
+    "husky": "^9.1.7",
+    "oxlint": "^1.79.0",
+    "tsdown": "^0.22.14",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
+  }
+}

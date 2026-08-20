@@ -24,10 +24,10 @@ claude mcp add --scope user amt -- amt-mcp                    # or the plugin, s
 Then tell your agent who you are — your stack, salary floor, cities or remote,
 what your CV should say (pointing it at an existing CV, PDF or LinkedIn export,
 works great as a starting point), how your cover letters should sound. It writes your
-`profile.config.ts` and `cv-data.<lang>.yaml` into `AMT_HOME` (default `~/.config/amt/`),
+`profile.yaml` and `cv-data.<lang>.yaml` into `AMT_HOME` (default `~/.config/amt/`),
 which is exactly what the MCP server reads. No forms, no typing YAML by hand.
 
-**Where things land** is yours to choose, via `paths` in `profile.config.ts`:
+**Where things land** is yours to choose, via `paths` in `profile.yaml`:
 `notesDir` is where the job notes go — any folder works, and an Obsidian vault works
 great (the frontmatter shows up as properties, and the self-updating `_index.md` links
 every note). `outputBase` is where `prepare` drops the upload-ready application folders.

@@ -24,16 +24,15 @@ function makeHome(): string {
     join(dir, 'cv-data.en.yaml'),
   )
   let profile = readFileSync(
-    join(import.meta.dirname, 'fixtures/profile-home/profile.config.ts'),
+    join(import.meta.dirname, 'fixtures/profile-home/profile.yaml'),
     'utf-8',
   )
   profile = profile
-    .replace("from '../../../src/define-profile.js'", "from 'amt/config'")
     // keep MCP tests network-free: no ATS probing on import/shortlist
-    .replace('maxYearsRequired: 4,', 'maxYearsRequired: 4,\n    autoTrackCompanies: false,')
-    .replace("notesDir: '~/notes/jobs'", `notesDir: '${notesDir}'`)
-    .replace("outputBase: '~/applications'", `outputBase: '${join(dir, 'out')}'`)
-  writeFileSync(join(dir, 'profile.config.ts'), profile)
+    .replace('maxYearsRequired: 4', 'maxYearsRequired: 4\n  autoTrackCompanies: false')
+    .replace('notesDir: ~/notes/jobs', `notesDir: ${notesDir}`)
+    .replace('outputBase: ~/applications', `outputBase: ${join(dir, 'out')}`)
+  writeFileSync(join(dir, 'profile.yaml'), profile)
   writeFileSync(
     join(dir, 'sources.yaml'),
     'boards: []\ncompanies: []\nchannels:\n  - name: linkedin-guest\n    description: guest search\n',

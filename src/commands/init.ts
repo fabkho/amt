@@ -3,7 +3,8 @@ import { join } from 'node:path'
 import { defineCommand } from 'citty'
 import { consola } from 'consola'
 import { AmtError, toErrorMessage } from '../core/errors.js'
-import { resolveHome } from '../core/profile.js'
+import { profileSchema, resolveHome } from '../core/profile.js'
+import { z } from 'zod'
 import { loadSources, saveSources } from '../core/sources-store.js'
 import { log } from '../utils/logger.js'
 
@@ -18,37 +19,39 @@ function profileTemplate(answers: {
   outputBase: string
 }): string {
   const cities = answers.cities
-    .map(c => `{ name: '${c}', minHomeOfficeDays: 3 }`)
-    .join(', ')
-  return `import { defineProfile } from 'amt/config'
-
-export default defineProfile({
-  identity: {
-    name: '${answers.name}',
-    role: { de: 'Software Engineer', en: 'Software Engineer' },
-    email: '${answers.email}',
-    phone: '${answers.phone}',
-    location: { de: '${answers.location}', en: '${answers.location}' },
-    links: [],
-  },
-  search: {
-    stacksPrimary: ['typescript'],
-    salaryFloor: ${answers.salaryFloor},
-    locations: {
-      remote: true,
-      cities: [${cities}],
-    },
-  },
-  tone: {
-    salutation: { de: 'Hallo,', en: 'Hi,' },
-    closing: { de: 'Viele Grüße', en: 'Best regards' },
-    rules: [],
-  },
-  paths: {
-    notesDir: '${answers.notesDir}',
-    outputBase: '${answers.outputBase}',
-  },
-})
+    .map(c => `    - name: ${c}\n      minHomeOfficeDays: 3`)
+    .join('\n')
+  return `# yaml-language-server: $schema=./profile.schema.json
+# amt profile — hand-edited only; tool-managed state lives in sources.yaml/seen.json
+identity:
+  name: "${answers.name}"
+  role:
+    de: Software Engineer
+    en: Software Engineer
+  email: "${answers.email}"
+  phone: "${answers.phone}"
+  location:
+    de: "${answers.location}"
+    en: "${answers.location}"
+  links: []
+search:
+  stacksPrimary: [typescript]
+  salaryFloor: ${answers.salaryFloor}
+  locations:
+    remote: true
+    cities:
+${cities || '      []'}
+tone:
+  salutation:
+    de: "Hallo,"
+    en: "Hi,"
+  closing:
+    de: Viele Grüße
+    en: Best regards
+  rules: []
+paths:
+  notesDir: "${answers.notesDir}"
+  outputBase: "${answers.outputBase}"
 `
 }
 
@@ -63,11 +66,17 @@ export default defineCommand({
   async run({ args }) {
     try {
       const home = resolveHome()
-      const profilePath = join(home, 'profile.config.ts')
+      const profilePath = join(home, 'profile.yaml')
       assertInitPreconditions(profilePath, args.force)
       const { answers, boardsAnswer } = await askOnboarding()
       mkdirSync(home, { recursive: true })
       writeFileSync(profilePath, profileTemplate(answers))
+
+      // Editor autocomplete for the YAML: generated JSON schema next to it.
+      writeFileSync(
+        join(home, 'profile.schema.json'),
+        `${JSON.stringify(z.toJSONSchema(profileSchema, { io: 'input' }), null, 2)}\n`,
+      )
 
       const sources = loadSources(home)
       if (boardsAnswer && !sources.boards.includes('arbeitnow')) {
@@ -97,7 +106,7 @@ function assertInitPreconditions(profilePath: string, force: boolean): void {
   if (!process.stdout.isTTY || !process.stdin.isTTY) {
     throw new AmtError(
       'INIT_NEEDS_TTY',
-      'init is interactive. In agent contexts, write profile.config.ts directly (import defineProfile from amt/config) and use `sources add`.',
+      'init is interactive. In agent contexts, write profile.yaml directly (schema: profile.schema.json in AMT_HOME) and use `sources add`.',
     )
   }
   if (existsSync(profilePath) && !force) {

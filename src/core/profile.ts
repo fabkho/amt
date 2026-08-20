@@ -1,14 +1,15 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { dirname, isAbsolute, join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { isAbsolute, join, resolve } from 'node:path'
+import { parse } from 'yaml'
 import { z } from 'zod'
 import { AmtError } from './errors.js'
 
-// The user profile is authored as TypeScript (profile.config.ts with
-// defineProfile) and only ever edited by humans. Anything the tool itself
-// writes over time lives elsewhere: statuses/scores in job notes, the crawl
-// list in sources.yaml, judgments in seen.json — never here.
+// The user profile (profile.yaml) is only ever edited by humans — schema-
+// validated on load, with editor autocomplete via the generated
+// profile.schema.json. Anything the tool itself writes over time lives
+// elsewhere: statuses/scores in job notes, the crawl list in sources.yaml,
+// judgments in seen.json — never here.
 
 const bilingual = z.object({ de: z.string(), en: z.string() })
 
@@ -90,53 +91,34 @@ export function expandPath(path: string): string {
   return isAbsolute(path) ? path : resolve(path)
 }
 
-const CONFIG_CANDIDATES = [
-  'profile.config.ts',
-  'profile.config.mts',
-  'profile.config.js',
-  'profile.config.mjs',
-]
+const PROFILE_FILE = 'profile.yaml'
 
 export async function loadProfile(home?: string): Promise<Profile> {
   const dir = resolveHome(home)
-  const file = CONFIG_CANDIDATES.map(name => join(dir, name)).find(existsSync)
-  if (!file) {
+  const file = join(dir, PROFILE_FILE)
+  if (!existsSync(file)) {
+    const legacy = join(dir, 'profile.config.ts')
     throw new AmtError(
       'PROFILE_NOT_FOUND',
-      `No profile.config.ts in ${dir}. Set AMT_HOME or create one with defineProfile from 'amt/config'.`,
+      existsSync(legacy)
+        ? `Found legacy ${legacy} — amt now reads profile.yaml. Convert it (same keys, YAML syntax) and rename the old file.`
+        : `No profile.yaml in ${dir}. Set AMT_HOME or create one (run \`amt init\`, or copy the template and edit).`,
     )
   }
 
-  const { createJiti } = await import('jiti')
-  // A profile lives outside any node_modules tree, so its
-  // `import { defineProfile } from 'amt/config'` cannot resolve on its
-  // own — alias it onto this package's own module (bundled and source path).
-  const here = dirname(fileURLToPath(import.meta.url))
-  const defineProfileModule = [
-    join(here, 'define-profile.mjs'),
-    join(here, '../define-profile.ts'),
-  ].find(existsSync)
-  const jiti = createJiti(import.meta.url, {
-    alias: defineProfileModule
-      ? { 'amt/config': defineProfileModule, 'job-kit/config': defineProfileModule }
-      : {},
-  })
   let raw: unknown
   try {
-    raw = await jiti.import(file, { default: true })
+    raw = parse(readFileSync(file, 'utf-8'))
   } catch (error) {
     throw new AmtError(
       'PROFILE_INVALID',
-      `Failed to load ${file}: ${error instanceof Error ? error.message : String(error)}`,
+      `${file} is not valid YAML: ${error instanceof Error ? error.message : String(error)}`,
     )
   }
 
   const result = profileSchema.safeParse(raw)
   if (!result.success) {
-    throw new AmtError(
-      'PROFILE_INVALID',
-      `${file}:\n${z.prettifyError(result.error)}`,
-    )
+    throw new AmtError('PROFILE_INVALID', `${file}:\n${z.prettifyError(result.error)}`)
   }
 
   const profile = result.data

@@ -9,7 +9,7 @@ import type { HttpClient, JobPosting } from './sources/types.js'
 
 // The crawl list is tool-managed state (hydrated by init, grown organically
 // by shortlist/apply/import), so it lives in sources.yaml — never in the
-// hand-edited profile.config.ts.
+// hand-edited profile.yaml.
 //
 // Three sections:
 //   boards    — clean zero-config APIs, crawled by the tool

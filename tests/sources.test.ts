@@ -158,7 +158,7 @@ describe('arbeitnow', () => {
     const [first] = postings
     expect(first!.company).toBe('Manzke Gruppe')
     expect(first!.publishedAt).toBe('2026-08-20')
-    expect(first!.tags.length).toBeGreaterThan(0)
+    expect(first!.tags).toEqual([]) // board categories are not a tech stack
   })
 })
 
@@ -195,7 +195,7 @@ describe('arbeitnow resilience', () => {
     }
     const postings = await getAdapter('arbeitnow').fetchBoard!(client)
     expect(postings).toHaveLength(3) // 2 fixtures + tolerant obj-types entry
-    expect(postings.find(p => p.nativeId === 'obj-types')!.tags.length).toBeGreaterThan(0)
+    expect(postings.find(p => p.nativeId === 'obj-types')).toBeDefined()
   })
 })
 

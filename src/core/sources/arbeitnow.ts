@@ -54,7 +54,9 @@ export const arbeitnow: SourceAdapter = {
           salaryMin: null,
           salaryMax: null,
           publishedAt: toIsoDate(j.created_at),
-          tags: [...j.tags, ...j.job_types],
+          // Board tags are categories ('entry', 'Full-time'), not a tech
+          // stack — relevance matching uses title+description instead.
+          tags: [],
         })),
       )
       url = data.links?.next ?? null

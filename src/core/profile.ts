@@ -46,6 +46,8 @@ export const profileSchema = z.object({
       .default(['agency', 'consulting', 'staffing', 'gambling']),
     companyBlocklist: z.array(z.string()).default([]),
     titleBlocklist: z.array(z.string()).default([]),
+    /** Location substrings that hard-cut a posting (e.g. 'london', 'united states'). */
+    locationBlocklist: z.array(z.string()).default([]),
     maxAgeDays: z.number().int().positive().default(7),
     /** shortlist/apply/import auto-add the company's ATS to sources.yaml. */
     autoTrackCompanies: z.boolean().default(true),

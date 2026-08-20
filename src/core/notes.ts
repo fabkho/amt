@@ -129,6 +129,21 @@ export function writeNote(notesDir: string, note: JobNote, body: string): string
   return path
 }
 
+/**
+ * Other notes at the same company — context for imports, never a blocker:
+ * applying to a different role (or again, if the offer changed) is fine.
+ */
+export function notesForCompany(
+  notesDir: string,
+  company: string,
+  excludeSlug?: string,
+): { slug: string; title: string; status: JobStatus }[] {
+  const needle = company.toLowerCase()
+  return listNotes(notesDir)
+    .filter(s => s.note.company.toLowerCase() === needle && s.note.slug !== excludeSlug)
+    .map(s => ({ slug: s.note.slug, title: s.note.title, status: s.note.status }))
+}
+
 export function listNotes(
   notesDir: string,
   filter: { status?: JobStatus[] } = {},

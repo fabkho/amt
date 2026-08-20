@@ -9,6 +9,7 @@ import {
   JOB_STATUSES,
   AmtError,
   listNotes,
+  notesForCompany,
   loadProfile,
   loadSources,
   addCompany,
@@ -178,7 +179,8 @@ export function createServer(): McpServer {
         + 'cannot fetch (LinkedIn, StepStone, agent channels). Auto-tracks the company when enabled '
         + '("tracked" = the ats:slug just added, or null when disabled, already tracked, or not '
         + 'discoverable). Dedupe hits return the existing note\'s "status" — never re-pitch a note '
-        + 'that is cut, rejected, or applied.',
+        + 'that is cut, rejected, or applied. "companyHistory" lists other notes at this company: '
+        + 'warn the user before a possible duplicate application; a different role is fine.',
       inputSchema: z.object({
         url: z.string().describe('Posting URL — ATS URLs resolve automatically.'),
         manual: z
@@ -247,7 +249,10 @@ export function createServer(): McpServer {
         // Dedupe hits surface the existing status so a cut/applied note is
         // never re-pitched by an agent re-running its channels.
         const { note } = readNote(profile.paths.notesDir, result.slug)
-        return jsonContent({ ...result, status: note.status, tracked })
+        // Context, not a blocker: a different role at the same company (or a
+        // changed offer) is a legitimate second application.
+        const companyHistory = notesForCompany(profile.paths.notesDir, note.company, result.slug)
+        return jsonContent({ ...result, status: note.status, tracked, companyHistory })
       } catch (error) {
         return toolErrorResponse('importing the posting', error)
       }

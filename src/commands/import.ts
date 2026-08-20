@@ -1,6 +1,6 @@
 import { createCommand } from './_shared.js'
 import { importPostingFromUrl } from '../core/import-url.js'
-import { upsertNote } from '../core/notes.js'
+import { notesForCompany, upsertNote } from '../core/notes.js'
 import { loadProfile, resolveHome } from '../core/profile.js'
 import { defaultHttpClient } from '../core/sources/http.js'
 import { htmlToMarkdown, postingToNoteInput } from '../core/sources/normalize.js'
@@ -53,6 +53,10 @@ export default createCommand({
       posting.descriptionHtml ? htmlToMarkdown(posting.descriptionHtml) : '',
     )
 
+    // Same company elsewhere? Warn, never block — a different role or a
+    // changed offer is a legitimate second application.
+    const companyHistory = notesForCompany(profile.paths.notesDir, posting.company, result.slug)
+
     // Interest shown → keep watching this company (organic source growth).
     const tracked = await tryAutoTrack(
       defaultHttpClient,
@@ -62,9 +66,12 @@ export default createCommand({
     )
 
     return {
-      result: { slug: result.slug, created: result.created, source, tracked },
+      result: { slug: result.slug, created: result.created, source, tracked, companyHistory },
       human: [
         `${result.created ? 'Imported' : 'Refreshed'} ${posting.company} — ${posting.title} → ${result.slug}`,
+        ...(companyHistory.length > 0
+          ? [`⚠ ${companyHistory.length} other note(s) at ${posting.company}: ${companyHistory.map(h => `${h.slug} (${h.status})`).join(', ')} — a different role is fine, just make sure this isn't the same one.`]
+          : []),
         ...(tracked
           ? [`Now tracking ${posting.company} (${tracked}) — future crawls include this company; \`amt sources remove\` to undo.`]
           : []),

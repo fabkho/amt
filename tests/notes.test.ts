@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vite-plus/test'
 import {
   listNotes,
+  notesForCompany,
   readNote,
   renderIndex,
   setStatus,
@@ -127,6 +128,18 @@ describe('notes CRUD', () => {
     upsertNote(dir, posting({ nativeId: '2', slug: 'other' }), 'b')
     setStatus(dir, 'other', 'applied')
     expect(listNotes(dir, { status: ['applied'] })).toHaveLength(1)
+  })
+})
+
+describe('notesForCompany', () => {
+  it('lists other notes at the company, excluding the given slug', () => {
+    const dir = freshDir()
+    upsertNote(dir, posting(), 'a')
+    upsertNote(dir, posting({ nativeId: '2', slug: 'acme-backend', title: 'Backend' }), 'b')
+    upsertNote(dir, posting({ nativeId: '3', slug: 'other-co', company: 'Other Co' }), 'c')
+    const history = notesForCompany(dir, 'Acme GmbH', 'acme-backend')
+    expect(history).toHaveLength(1)
+    expect(history[0]!.slug).toBe('acme-gmbh-senior-frontend')
   })
 })
 

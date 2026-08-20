@@ -147,7 +147,7 @@ export async function prepareApplication(
   writeNote(profile.paths.notesDir, note, body)
 
   const next = letterIsPlaceholder
-    ? `Draft the letter in ${letterMdPath}, then re-run prepare to render txt/html/pdf.`
-    : `Letter rendered. After submitting, run: job-kit status ${slug} applied`
+    ? `Draft the letter in ${letterMdPath}, then re-run prepare (\`job-kit prepare\` / prepare_application) to render txt/html/pdf.`
+    : `Letter rendered. After submitting, mark it: \`job-kit status ${slug} applied\` / set_job_status with status "applied".`
   return { folder, lang, letterScaffolded, letterIsPlaceholder, files, next }
 }

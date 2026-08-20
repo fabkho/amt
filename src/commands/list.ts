@@ -1,7 +1,7 @@
 import { createCommand } from './_shared.js'
 import { JOB_STATUSES, listNotes, type JobStatus } from '../core/notes.js'
 import { loadProfile, resolveHome } from '../core/profile.js'
-import { JobKitError } from '../core/errors.js'
+import { AmtError } from '../core/errors.js'
 
 export default createCommand({
   name: 'list',
@@ -19,7 +19,7 @@ export default createCommand({
       status = (args.status as string).split(',').map(s => s.trim()) as JobStatus[]
       const invalid = status.filter(s => !JOB_STATUSES.includes(s))
       if (invalid.length > 0) {
-        throw new JobKitError(
+        throw new AmtError(
           'STATUS_INVALID',
           `Unknown status: ${invalid.join(', ')} — valid: ${JOB_STATUSES.join(', ')}`,
         )

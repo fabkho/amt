@@ -66,7 +66,7 @@ export default createCommand({
       human: [
         `${result.created ? 'Imported' : 'Refreshed'} ${posting.company} — ${posting.title} → ${result.slug}`,
         ...(tracked
-          ? [`Now tracking ${posting.company} (${tracked}) — future crawls include this company; \`job-kit sources remove\` to undo.`]
+          ? [`Now tracking ${posting.company} (${tracked}) — future crawls include this company; \`amt sources remove\` to undo.`]
           : []),
       ],
     }

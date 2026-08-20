@@ -15,7 +15,7 @@ import {
 import { writeNote } from '../src/core/notes.js'
 
 function freshDir(): string {
-  return mkdtempSync(join(tmpdir(), 'job-kit-notes-'))
+  return mkdtempSync(join(tmpdir(), 'amt-notes-'))
 }
 
 function posting(overrides: Partial<JobNoteInput> = {}): JobNoteInput {

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { JobKitError } from '../errors.js'
+import { AmtError } from '../errors.js'
 import { toIsoDate, workModeFromFlags } from './normalize.js'
 import type { JobPosting, SourceAdapter } from './types.js'
 
@@ -45,7 +45,7 @@ export const smartrecruiters: SourceAdapter = {
     // legitimately empty boards — a distinct code lets slug probing treat it
     // as a miss while the crawler treats a tracked company as simply empty.
     if (totalFound === 0) {
-      throw new JobKitError(
+      throw new AmtError(
         'SOURCE_EMPTY',
         `SmartRecruiters returned no postings for "${company}" — wrong identifier or an empty board.`,
       )

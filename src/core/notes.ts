@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { join } from 'node:path'
 import matter from 'gray-matter'
 import { z } from 'zod'
-import { JobKitError } from './errors.js'
+import { AmtError } from './errors.js'
 
 // One markdown note per job posting. The frontmatter is the single source of
 // truth for tracking state — "never surface again" is a status query here,
@@ -109,12 +109,12 @@ export interface StoredNote {
 export function readNote(notesDir: string, slug: string): StoredNote {
   const path = notePath(notesDir, slug)
   if (!existsSync(path)) {
-    throw new JobKitError('NOTE_NOT_FOUND', `No job note at ${path} — run \`job-kit list\` or call list_jobs to see available slugs.`)
+    throw new AmtError('NOTE_NOT_FOUND', `No job note at ${path} — run \`amt list\` or call list_jobs to see available slugs.`)
   }
   const parsed = matter(readFileSync(path, 'utf-8'))
   const result = jobNoteSchema.safeParse(parsed.data)
   if (!result.success) {
-    throw new JobKitError(
+    throw new AmtError(
       'NOTE_INVALID',
       `${path}:\n${z.prettifyError(result.error)}`,
     )
@@ -189,7 +189,7 @@ export function upsertNote(
 
   if (!existing) {
     if (existsSync(notePath(notesDir, note.slug))) {
-      throw new JobKitError(
+      throw new AmtError(
         'NOTE_SLUG_TAKEN',
         `Slug "${note.slug}" exists but belongs to a different posting (${key}).`,
       )
@@ -255,7 +255,7 @@ export function setStatus(
 ): JobNote {
   const { note, body } = readNote(notesDir, slug)
   if (status === 'cut' && !options.cutReason && !note.cutReason) {
-    throw new JobKitError(
+    throw new AmtError(
       'CUT_REASON_REQUIRED',
       `Cutting a job requires a cutReason so it can be queried later — valid: ${CUT_REASONS.join(', ')}.`,
     )

@@ -7,10 +7,10 @@ import { createServer } from './mcp/server.js'
 try {
   serveStdio(() => createServer(), {
     onerror: (error) => {
-      process.stderr.write(`[job-kit-mcp] ${toErrorMessage(error)}\n`)
+      process.stderr.write(`[amt-mcp] ${toErrorMessage(error)}\n`)
     },
   })
 } catch (error) {
-  process.stderr.write(`[job-kit-mcp] Fatal error: ${toErrorMessage(error)}\n`)
+  process.stderr.write(`[amt-mcp] Fatal error: ${toErrorMessage(error)}\n`)
   process.exit(1)
 }

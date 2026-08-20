@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import nunjucks from 'nunjucks'
 import { parse } from 'yaml'
 import { z } from 'zod'
-import { JobKitError } from '../errors.js'
+import { AmtError } from '../errors.js'
 
 export type Lang = 'de' | 'en'
 
@@ -33,7 +33,7 @@ export function defaultTemplatesDir(): string {
     const candidate = join(here, levels, 'templates')
     if (existsSync(join(candidate, 'cv.njk'))) return candidate
   }
-  throw new JobKitError(
+  throw new AmtError(
     'TEMPLATES_NOT_FOUND',
     `No templates directory found relative to ${here}`,
   )
@@ -51,7 +51,7 @@ export function createTemplateEnv(templatesDir: string): nunjucks.Environment {
 export function loadLabels(lang: Lang, templatesDir: string): Labels {
   const path = join(templatesDir, `labels.${lang}.yaml`)
   if (!existsSync(path)) {
-    throw new JobKitError('LABELS_NOT_FOUND', `No labels file at ${path}`)
+    throw new AmtError('LABELS_NOT_FOUND', `No labels file at ${path}`)
   }
   return labelsSchema.parse(parse(readFileSync(path, 'utf-8')))
 }

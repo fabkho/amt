@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { parse, stringify } from 'yaml'
 import { z } from 'zod'
-import { JobKitError } from './errors.js'
+import { AmtError } from './errors.js'
 import { getAdapter } from './sources/index.js'
 import { slugify } from './notes.js'
 import type { HttpClient, JobPosting } from './sources/types.js'
@@ -49,7 +49,7 @@ export function loadSources(home: string): Sources {
   if (!existsSync(path)) return sourcesSchema.parse({})
   const result = sourcesSchema.safeParse(parse(readFileSync(path, 'utf-8')))
   if (!result.success) {
-    throw new JobKitError('SOURCES_INVALID', `${path}:\n${z.prettifyError(result.error)}`)
+    throw new AmtError('SOURCES_INVALID', `${path}:\n${z.prettifyError(result.error)}`)
   }
   return result.data
 }
@@ -115,7 +115,7 @@ export async function addCompany(
   const sources = loadSources(home)
   const found = await discoverCompany(client, name)
   if (!found) {
-    throw new JobKitError(
+    throw new AmtError(
       'COMPANY_NOT_DISCOVERED',
       `No ATS found for "${name}" — probed ${ATS_ORDER.join(', ')} with slug variants ${slugCandidates(name).join(', ')}.`,
     )

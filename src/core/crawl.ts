@@ -1,4 +1,4 @@
-import { JobKitError } from './errors.js'
+import { AmtError } from './errors.js'
 import { applyHardFilters, isFresh, isRelevant } from './match.js'
 import { dedupeKey, listNotes, renderIndex, upsertNote } from './notes.js'
 import { loadSeen, markSeen, saveSeen, type SeenLedger } from './seen.js'
@@ -77,7 +77,7 @@ async function fetchAll(
     } catch (error) {
       // An empty-or-unknown board is legitimate for a tracked company
       // (all roles filled) — only slug *probing* treats it as a miss.
-      if (error instanceof JobKitError && error.code === 'SOURCE_EMPTY') continue
+      if (error instanceof AmtError && error.code === 'SOURCE_EMPTY') continue
       errors.push({
         source: job.source,
         message: String(error instanceof Error ? error.message : error),
@@ -107,7 +107,7 @@ function upsertWithDecollide(ctx: IngestContext, posting: JobPosting): { slug: s
   try {
     return upsertNote(ctx.profile.paths.notesDir, input, noteBody(posting))
   } catch (error) {
-    if (!(error instanceof JobKitError) || error.code !== 'NOTE_SLUG_TAKEN') throw error
+    if (!(error instanceof AmtError) || error.code !== 'NOTE_SLUG_TAKEN') throw error
     input.slug = `${input.slug}-${slugify(posting.nativeId).slice(0, 8)}`
     return upsertNote(ctx.profile.paths.notesDir, input, noteBody(posting))
   }
@@ -163,17 +163,17 @@ async function ingest(posting: JobPosting, batch: FetchedBatch, ctx: IngestConte
 
 function assertCrawlableSources(sources: Sources): void {
   if (sources.boards.length > 0 || sources.companies.length > 0) return
-  throw new JobKitError(
+  throw new AmtError(
     'NO_SOURCES',
     sources.channels.length > 0
-      ? 'Only agent channels are configured — run those via your agent and feed findings through import. For tool crawling, add boards or companies (`job-kit init`, `job-kit sources add <company>`).'
-      : 'No sources configured. Run `job-kit init` or add some with `job-kit sources add <company>`.',
+      ? 'Only agent channels are configured — run those via your agent and feed findings through import. For tool crawling, add boards or companies (`amt init`, `amt sources add <company>`).'
+      : 'No sources configured. Run `amt init` or add some with `amt sources add <company>`.',
   )
 }
 
 function nextHint(summary: CrawlSummary): string {
   return summary.created > 0
-    ? `Review the new candidates: \`job-kit list --status new\` / call list_jobs with status ["new"] (new slugs: ${summary.createdSlugs.join(', ')})`
+    ? `Review the new candidates: \`amt list --status new\` / call list_jobs with status ["new"] (new slugs: ${summary.createdSlugs.join(', ')})`
     : 'Nothing new — all fetched postings were already judged or off-stack.'
 }
 

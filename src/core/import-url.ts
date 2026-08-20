@@ -1,4 +1,4 @@
-import { JobKitError } from './errors.js'
+import { AmtError } from './errors.js'
 import { getAdapter } from './sources/index.js'
 import type { HttpClient, JobPosting } from './sources/types.js'
 
@@ -38,9 +38,9 @@ export async function importPostingFromUrl(
 ): Promise<{ parsed: ParsedPostingUrl; posting: JobPosting }> {
   const parsed = parsePostingUrl(url)
   if (!parsed) {
-    throw new JobKitError(
+    throw new AmtError(
       'URL_NOT_RECOGNIZED',
-      `Not a recognized ATS posting URL: ${url}. For other sources, pass explicit fields: job-kit import <url> --company <name> --title <title> (or the MCP import_job manual fields).`,
+      `Not a recognized ATS posting URL: ${url}. For other sources, pass explicit fields: amt import <url> --company <name> --title <title> (or the MCP import_job manual fields).`,
     )
   }
   const postings = await getAdapter(parsed.ats).fetchCompany!(client, parsed.company)
@@ -50,7 +50,7 @@ export async function importPostingFromUrl(
       || p.url.includes(`/${parsed.postingRef}`),
   )
   if (!posting) {
-    throw new JobKitError(
+    throw new AmtError(
       'POSTING_NOT_FOUND',
       `Posting ${parsed.postingRef} not found on ${parsed.ats}:${parsed.company} — it may be closed.`,
     )

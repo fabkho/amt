@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { createCommand } from './_shared.js'
-import { JobKitError } from '../core/errors.js'
+import { AmtError } from '../core/errors.js'
 import { loadProfile, resolveHome, type Profile } from '../core/profile.js'
 import { chromiumInstalled, installChromium } from '../core/render/pdf.js'
 import { loadSources } from '../core/sources-store.js'
@@ -39,7 +39,7 @@ async function checkHome(home: string): Promise<HomeChecks> {
   if (cvData.length === 0) {
     next = `Create cv-data.en.yaml (and/or .de) in ${profile.paths.cvDataDir} — prepare needs it.`
   } else if (sources.boards.length === 0 && sources.companies.length === 0) {
-    next = 'Add crawl sources: job-kit sources add <company>'
+    next = 'Add crawl sources: amt sources add <company>'
   }
   return {
     profile: 'ok',
@@ -50,14 +50,14 @@ async function checkHome(home: string): Promise<HomeChecks> {
 }
 
 function profileFailure(home: string, error: unknown): HomeChecks {
-  const missing = error instanceof JobKitError && error.code === 'PROFILE_NOT_FOUND'
+  const missing = error instanceof AmtError && error.code === 'PROFILE_NOT_FOUND'
   return {
     profile: missing
       ? 'missing'
       : `invalid: ${error instanceof Error ? error.message : String(error)}`,
     cvData: [],
     sources: '(profile missing)',
-    next: missing ? 'Run job-kit init to create your profile.' : `Fix ${home}/profile.config.ts.`,
+    next: missing ? 'Run amt init to create your profile.' : `Fix ${home}/profile.config.ts.`,
   }
 }
 
@@ -75,7 +75,7 @@ async function collectChecks(chromium: boolean): Promise<Checks> {
 
 export default createCommand({
   name: 'doctor',
-  description: 'Check that the job-kit environment is ready to use',
+  description: 'Check that the amt environment is ready to use',
   args: {
     'no-install': {
       type: 'boolean',

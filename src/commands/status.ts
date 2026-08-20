@@ -3,7 +3,7 @@ import { CUT_REASONS, JOB_STATUSES, setStatus, updateNote, type CutReason, type 
 import { loadProfile, resolveHome } from '../core/profile.js'
 import { defaultHttpClient } from '../core/sources/http.js'
 import { tryAutoTrack } from '../core/sources-store.js'
-import { JobKitError } from '../core/errors.js'
+import { AmtError } from '../core/errors.js'
 
 export default createCommand({
   name: 'status',
@@ -24,7 +24,7 @@ export default createCommand({
     const profile = await loadProfile(home)
     const status = args.status as JobStatus
     if (!JOB_STATUSES.includes(status)) {
-      throw new JobKitError(
+      throw new AmtError(
         'STATUS_INVALID',
         `Unknown status "${status}" — valid: ${JOB_STATUSES.join(', ')}`,
       )
@@ -50,7 +50,7 @@ export default createCommand({
       human: [
         `${note.slug} → ${note.status}${note.cutReason ? ` (${note.cutReason})` : ''}`,
         ...(tracked
-          ? [`Now tracking ${note.company} (${tracked}) — future crawls include this company; \`job-kit sources remove\` to undo.`]
+          ? [`Now tracking ${note.company} (${tracked}) — future crawls include this company; \`amt sources remove\` to undo.`]
           : []),
       ],
     }

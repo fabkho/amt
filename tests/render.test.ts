@@ -106,7 +106,7 @@ describe('pdf rendering', async () => {
   it.skipIf(!hasChromium)('produces a PDF from CV html', async () => {
     const data = loadCvData(cvYaml)
     const html = renderCvHtml(data, cvConfig, 'en')
-    const out = join(mkdtempSync(join(tmpdir(), 'job-kit-')), 'cv.pdf')
+    const out = join(mkdtempSync(join(tmpdir(), 'amt-')), 'cv.pdf')
     await htmlToPdf(html, out)
     const bytes = readFileSync(out)
     expect(bytes.subarray(0, 5).toString()).toBe('%PDF-')

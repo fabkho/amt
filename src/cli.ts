@@ -9,7 +9,7 @@ const { version, description } = require('../package.json') as {
 
 const main = defineCommand({
   meta: {
-    name: 'job-kit',
+    name: 'amt',
     version,
     description,
   },

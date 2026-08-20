@@ -14,7 +14,7 @@ src/
 ├── mcp-bin.ts        # MCP entry: serveStdio over createServer
 ├── mcp/server.ts     # tools/resources/prompts — imports ONLY from src/index.ts
 ├── index.ts          # curated public API (the contract for MCP and wrappers)
-├── define-profile.ts # `job-kit/config` subpath: the defineProfile type helper
+├── define-profile.ts # `amt/config` subpath: the defineProfile type helper
 └── utils/            # logger (consola → stderr), stdout-guard
 templates/            # Nunjucks CV + letter templates, labels.<lang>.yaml, shared.css
 pi-extension/         # thin pi wrapper (own runtime — lint/fallow-ignored)
@@ -33,7 +33,7 @@ skills/               # Agent Skills (open standard) — shipped via the Claude 
 ## Onboarding (colleagues)
 
 1. Node ≥ 22 and pnpm (`corepack enable`).
-2. `pnpm add -g "git+ssh://git@github.com/fabkho/job-kit.git"` — installs `job-kit` and `job-kit-mcp`.
-3. `job-kit doctor` — installs Chromium for PDF rendering, reports what's missing.
-4. `job-kit init` — scaffolds your `profile.config.ts`, a `cv-data.en.yaml` template, and seeds the boards. Fill both files.
+2. `pnpm add -g "git+ssh://git@github.com/fabkho/amt.git"` — installs `amt` and `amt-mcp`.
+3. `amt doctor` — installs Chromium for PDF rendering, reports what's missing.
+4. `amt init` — scaffolds your `profile.config.ts`, a `cv-data.en.yaml` template, and seeds the boards. Fill both files.
 5. Wire up your agent — see "Agent integration" in the README.

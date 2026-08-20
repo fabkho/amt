@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { JobKitError } from '../errors.js'
+import { AmtError } from '../errors.js'
 
 // Playwright is imported lazily so every command that doesn't render PDFs
 // works without a Chromium download.
@@ -40,7 +40,7 @@ export function installChromium(): void {
     stdio: ['ignore', 2, 2],
   })
   if (result.status !== 0) {
-    throw new JobKitError(
+    throw new AmtError(
       'CHROMIUM_INSTALL_FAILED',
       `playwright install chromium exited with ${result.status}`,
     )

@@ -1,6 +1,6 @@
 import { parse } from 'yaml'
 import { z } from 'zod'
-import { JobKitError } from './errors.js'
+import { AmtError } from './errors.js'
 
 // Bullets and skill values may contain inline HTML (<b>, <code>, &amp;) —
 // the templates render them unescaped, matching the original Jinja2 setup.
@@ -49,14 +49,14 @@ export function loadCvData(yamlText: string): CvData {
   try {
     raw = parse(yamlText)
   } catch (error) {
-    throw new JobKitError(
+    throw new AmtError(
       'CV_DATA_INVALID',
       `CV data is not valid YAML: ${error instanceof Error ? error.message : String(error)}`,
     )
   }
   const result = cvDataSchema.safeParse(raw)
   if (!result.success) {
-    throw new JobKitError('CV_DATA_INVALID', z.prettifyError(result.error))
+    throw new AmtError('CV_DATA_INVALID', z.prettifyError(result.error))
   }
   return result.data
 }

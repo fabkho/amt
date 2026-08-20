@@ -1,4 +1,4 @@
-import { JobKitError } from '../errors.js'
+import { AmtError } from '../errors.js'
 import {
   createTemplateEnv,
   defaultTemplatesDir,
@@ -40,7 +40,7 @@ export function parseLetterMarkdown(markdown: string): LetterModel {
     .filter(Boolean)
 
   if (blocks.length < 4) {
-    throw new JobKitError(
+    throw new AmtError(
       'LETTER_INVALID',
       'A letter needs at least subject, salutation, one paragraph, and a sign-off block.',
     )
@@ -48,7 +48,7 @@ export function parseLetterMarkdown(markdown: string): LetterModel {
 
   const [subject, salutation] = blocks as [string, string, ...string[]]
   if (!/^(subject|betreff):/i.test(subject)) {
-    throw new JobKitError(
+    throw new AmtError(
       'LETTER_INVALID',
       `The first line must start with "Subject:" or "Betreff:", got: ${subject.slice(0, 40)}`,
     )

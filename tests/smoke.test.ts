@@ -3,11 +3,11 @@ import { existsSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vite-plus/test";
-import { JobKitError, toErrorMessage } from "../src/index.js";
+import { AmtError, toErrorMessage } from "../src/index.js";
 
 describe("core errors", () => {
   it("carries a machine-readable code", () => {
-    const err = new JobKitError("PROFILE_NOT_FOUND", "no profile.yaml");
+    const err = new AmtError("PROFILE_NOT_FOUND", "no profile.yaml");
     expect(err.code).toBe("PROFILE_NOT_FOUND");
     expect(toErrorMessage(err)).toBe("no profile.yaml");
   });
@@ -30,10 +30,10 @@ describe("built CLI artifact", () => {
 
   it.skipIf(!existsSync("dist/bin.mjs"))("doctor reports findings honestly on an empty home", () => {
     // A controlled empty home: profile missing → ok:false and gate exit 2,
-    // regardless of what the developer's real ~/.config/job-kit contains.
+    // regardless of what the developer's real ~/.config/amt contains.
     const result = spawnSync(process.execPath, ["dist/bin.mjs", "doctor", "--no-install"], {
       encoding: "utf-8",
-      env: { ...process.env, JOB_KIT_HOME: mkdtempSync(join(tmpdir(), "job-kit-doctor-")) },
+      env: { ...process.env, AMT_HOME: mkdtempSync(join(tmpdir(), "amt-doctor-")) },
     });
     expect(result.status).toBe(2);
     const parsed = JSON.parse(result.stdout) as { ok: boolean; profile: string; next: string };

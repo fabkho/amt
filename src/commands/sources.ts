@@ -3,7 +3,7 @@ import { createCommand } from './_shared.js'
 import { resolveHome } from '../core/profile.js'
 import { defaultHttpClient } from '../core/sources/http.js'
 import { addCompany, loadSources, removeCompany } from '../core/sources-store.js'
-import { JobKitError } from '../core/errors.js'
+import { AmtError } from '../core/errors.js'
 
 const list = createCommand({
   name: 'list',
@@ -60,7 +60,7 @@ const remove = createCommand({
   run(args) {
     const removed = removeCompany(resolveHome(), args.company as string)
     if (!removed) {
-      throw new JobKitError('COMPANY_NOT_TRACKED', `"${args.company}" is not in sources.yaml`)
+      throw new AmtError('COMPANY_NOT_TRACKED', `"${args.company}" is not in sources.yaml`)
     }
     return { result: { removed: args.company }, human: [`Removed ${args.company}.`] }
   },

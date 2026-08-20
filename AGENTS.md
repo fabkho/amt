@@ -26,14 +26,14 @@ release. Add a tool name to select part of the graph. For example, run
 
 <!--VITE PLUS END-->
 
-<!--JOB-KIT START-->
+<!--AMT START-->
 
-# job-kit specifics for agents
+# amt specifics for agents
 
 - **stdout is machine-readable.** Every CLI command supports `--json`; errors come as `{"error":{"code","message"}}` on stdout with exit 1. Exit 2 = findings (doctor). Diagnostics are on stderr.
-- **State ownership:** `profile.config.ts` in `JOB_KIT_HOME` is human-edited only — never rewrite it programmatically. `sources.yaml` and `seen.json` are tool-managed (use `job-kit sources add/remove`, never hand-edit). Job-note bodies: only the region between `<!-- job-kit:description -->` markers is machine-owned; text outside it is the user's.
-- **Never run `job-kit init` from an agent** (TTY-interactive). Write `profile.config.ts` directly using `defineProfile` from `job-kit/config` instead.
-- Persist scoring via `job-kit status <slug> <status> --score N` or the MCP `set_job_status` tool (score/flags/assessment) — do not hand-edit frontmatter.
-- Agent channels (LinkedIn guest, StepStone) in `sources.yaml` are data for YOU to execute; the tool never fetches them. Feed findings via `job-kit import <url> --company … --title …`.
+- **State ownership:** `profile.config.ts` in `AMT_HOME` is human-edited only — never rewrite it programmatically. `sources.yaml` and `seen.json` are tool-managed (use `amt sources add/remove`, never hand-edit). Job-note bodies: only the region between `<!-- job-kit:description -->` markers is machine-owned; text outside it is the user's.
+- **Never run `amt init` from an agent** (TTY-interactive). Write `profile.config.ts` directly using `defineProfile` from `amt/config` instead.
+- Persist scoring via `amt status <slug> <status> --score N` or the MCP `set_job_status` tool (score/flags/assessment) — do not hand-edit frontmatter.
+- Agent channels (LinkedIn guest, StepStone) in `sources.yaml` are data for YOU to execute; the tool never fetches them. Feed findings via `amt import <url> --company … --title …`.
 
-<!--JOB-KIT END-->
+<!--AMT END-->

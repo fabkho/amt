@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { parseItems } from './parse.js'
 import { toIsoDate } from './normalize.js'
 import type { JobPosting, SourceAdapter } from './types.js'
 
@@ -19,7 +20,8 @@ const posting = z.looseObject({
     .nullish(),
 })
 
-const response = z.array(posting)
+// Items are validated one by one — a single malformed entry never sinks the batch.
+const response = z.array(z.unknown())
 
 export const lever: SourceAdapter = {
   name: 'lever',
@@ -28,7 +30,8 @@ export const lever: SourceAdapter = {
     const data = response.parse(
       await client.json(`https://api.lever.co/v0/postings/${company}?mode=json`),
     )
-    return data.map(p => ({
+    const postings = parseItems(data, posting)
+    return postings.map(p => ({
       source: 'lever',
       nativeId: p.id,
       company,

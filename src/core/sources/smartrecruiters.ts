@@ -41,12 +41,13 @@ export const smartrecruiters: SourceAdapter = {
       items.push(...data.content)
       if (items.length >= totalFound || data.content.length === 0) break
     }
-    // The API answers 200 with totalFound 0 for unknown identifiers — treat
-    // that as "wrong slug", not "no openings", so probing stays honest.
+    // The API answers 200 with totalFound 0 for unknown identifiers AND for
+    // legitimately empty boards — a distinct code lets slug probing treat it
+    // as a miss while the crawler treats a tracked company as simply empty.
     if (totalFound === 0) {
       throw new JobKitError(
-        'SOURCE_UNREACHABLE',
-        `SmartRecruiters returned no postings for "${company}" — likely a wrong company identifier.`,
+        'SOURCE_EMPTY',
+        `SmartRecruiters returned no postings for "${company}" — wrong identifier or an empty board.`,
       )
     }
 
@@ -56,8 +57,8 @@ export const smartrecruiters: SourceAdapter = {
       company: item.company?.name ?? company,
       title: item.name,
       url: `https://jobs.smartrecruiters.com/${item.company?.identifier ?? company}/${item.id}`,
-      // Descriptions need one extra request per posting — deferred until a
-      // posting actually becomes a note worth reading.
+      // Descriptions need one extra request per posting — the crawler calls
+      // fetchDetail below once per NEW posting.
       descriptionHtml: null,
       location: item.location?.fullLocation ?? null,
       workMode: workModeFromFlags(item.location?.remote, item.location?.hybrid),
@@ -67,4 +68,31 @@ export const smartrecruiters: SourceAdapter = {
       tags: [],
     }))
   },
+
+  async fetchDetail(client, company, nativeId): Promise<string | null> {
+    const detail = detailResponse.parse(
+      await client.json(
+        `https://api.smartrecruiters.com/v1/companies/${company}/postings/${nativeId}`,
+      ),
+    )
+    const sections = Object.values(detail.jobAd?.sections ?? {})
+    const html = sections
+      .map(section => (section?.title ? `<h3>${section.title}</h3>\n${section.text ?? ''}` : section?.text ?? ''))
+      .join('\n')
+      .trim()
+    return html || null
+  },
 }
+
+const detailSection = z.looseObject({
+  title: z.string().nullish(),
+  text: z.string().nullish(),
+})
+
+const detailResponse = z.looseObject({
+  jobAd: z
+    .looseObject({
+      sections: z.record(z.string(), detailSection.nullish()).nullish(),
+    })
+    .nullish(),
+})

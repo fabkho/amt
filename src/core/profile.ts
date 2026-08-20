@@ -7,7 +7,8 @@ import { JobKitError } from './errors.js'
 
 // The user profile is authored as TypeScript (profile.config.ts with
 // defineProfile) and only ever edited by humans. Anything the tool itself
-// writes over time — statuses, cut lists — lives in job notes, never here.
+// writes over time lives elsewhere: statuses/scores in job notes, the crawl
+// list in sources.yaml, judgments in seen.json — never here.
 
 const bilingual = z.object({ de: z.string(), en: z.string() })
 
@@ -39,6 +40,7 @@ export const profileSchema = z.object({
         .array(z.object({ name: z.string(), minHomeOfficeDays: z.number().int() }))
         .default([]),
     }),
+    /** Agent-judged during scoring — no deterministic detector exists. */
     companyTypesBlocked: z
       .array(z.string())
       .default(['agency', 'consulting', 'staffing', 'gambling']),
@@ -111,9 +113,7 @@ export async function loadProfile(home?: string): Promise<Profile> {
     join(here, '../define-profile.ts'),
   ].find(existsSync)
   const jiti = createJiti(import.meta.url, {
-    alias: defineProfileModule
-      ? { 'job-kit/config': defineProfileModule, 'job-kit': defineProfileModule }
-      : {},
+    alias: defineProfileModule ? { 'job-kit/config': defineProfileModule } : {},
   })
   let raw: unknown
   try {

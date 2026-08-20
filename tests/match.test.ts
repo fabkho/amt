@@ -67,6 +67,14 @@ describe('isRelevant', () => {
     ).toBe(true)
   })
 
+  it('matches keywords with non-word edges (c++, .net, c#)', () => {
+    const edgy = { stacksPrimary: ['c++', '.net', 'c#'], stacksSecondary: [] }
+    expect(isRelevant(posting({ descriptionHtml: 'modern C++ services' }), edgy)).toBe(true)
+    expect(isRelevant(posting({ descriptionHtml: 'ASP.NET experience' }), edgy)).toBe(true)
+    expect(isRelevant(posting({ descriptionHtml: 'we use C# daily' }), edgy)).toBe(true)
+    expect(isRelevant(posting({ descriptionHtml: 'plain c programming' }), edgy)).toBe(false)
+  })
+
   it('treats empty stacks as match-all', () => {
     expect(
       isRelevant(posting({ title: 'Anything' }), { stacksPrimary: [], stacksSecondary: [] }),

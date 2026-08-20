@@ -84,10 +84,10 @@ describe('job-kit mcp server', () => {
       'add_source',
       'crawl_jobs',
       'discover',
-      'generate_application',
       'get_job',
       'import_job',
       'list_jobs',
+      'prepare_application',
       'remove_source',
       'set_job_status',
     ])
@@ -108,6 +108,22 @@ describe('job-kit mcp server', () => {
     expect((note.json!.body as string)).toContain('Great job.')
   })
 
+  it('persists score, flags, and assessment via set_job_status', async () => {
+    // status 'new' avoids the shortlist auto-track (real network probing)
+    const { json } = await call('set_job_status', {
+      slug: 'acme-frontend',
+      status: 'new',
+      score: 85,
+      flags: ['top_pick'],
+      assessment: 'Strong stack fit.',
+    })
+    expect(json!.score).toBe(85)
+    const note = await call('get_job', { slug: 'acme-frontend' })
+    expect((note.json!.note as { score: number }).score).toBe(85)
+    expect(note.json!.body as string).toContain('## Assessment')
+    expect(note.json!.body as string).toContain('Strong stack fit.')
+  })
+
   it('rejects a cut without reason as a tool error', async () => {
     const result = await call('set_job_status', { slug: 'acme-frontend', status: 'cut' })
     expect(result.isError).toBe(true)
@@ -115,7 +131,7 @@ describe('job-kit mcp server', () => {
   })
 
   it('generates an application folder without pdf', async () => {
-    const { json } = await call('generate_application', {
+    const { json } = await call('prepare_application', {
       slug: 'acme-frontend',
       lang: 'en',
       pdf: false,
@@ -147,6 +163,6 @@ describe('job-kit mcp server', () => {
     })
     const writeText = (write.messages[0]!.content as { text: string }).text
     expect(writeText).toContain('TONE RULES')
-    expect(writeText).toContain('generate_application')
+    expect(writeText).toContain('prepare_application')
   })
 })

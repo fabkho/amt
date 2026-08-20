@@ -40,7 +40,7 @@ export async function importPostingFromUrl(
   if (!parsed) {
     throw new JobKitError(
       'URL_NOT_RECOGNIZED',
-      `Not a recognized ATS posting URL: ${url}. For other sources, create a manual note with explicit fields.`,
+      `Not a recognized ATS posting URL: ${url}. For other sources, pass explicit fields: job-kit import <url> --company <name> --title <title> (or the MCP import_job manual fields).`,
     )
   }
   const postings = await getAdapter(parsed.ats).fetchCompany!(client, parsed.company)

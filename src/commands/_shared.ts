@@ -26,7 +26,7 @@ interface CommandSpec<A extends ArgsDef> {
 interface CommandResult {
   /** Machine-readable payload — the only thing stdout ever carries. */
   result: unknown
-  /** Human summary lines, rendered to stdout in TTY mode, stderr otherwise. */
+  /** Human summary lines — rendered instead of JSON in TTY mode. */
   human?: string[]
 }
 

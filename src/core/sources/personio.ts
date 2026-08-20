@@ -1,5 +1,6 @@
 import { XMLParser } from 'fast-xml-parser'
 import { z } from 'zod'
+import { parseItems } from './parse.js'
 import { toIsoDate } from './normalize.js'
 import type { JobPosting, SourceAdapter } from './types.js'
 
@@ -26,9 +27,10 @@ const position = z.looseObject({
     .nullish(),
 })
 
+// Items are validated one by one — a single malformed entry never sinks the batch.
 const feed = z.looseObject({
   'workzag-jobs': z.looseObject({
-    position: z.union([position, z.array(position)]).nullish(),
+    position: z.unknown().nullish(),
   }),
 })
 
@@ -56,7 +58,7 @@ export const personio: SourceAdapter = {
   async fetchCompany(client, company): Promise<JobPosting[]> {
     const xml = await client.text(`https://${company}.jobs.personio.de/xml`)
     const parsed = feed.parse(new XMLParser({ ignoreAttributes: true }).parse(xml))
-    const positions = asArray(parsed['workzag-jobs'].position)
+    const positions = parseItems(asArray(parsed['workzag-jobs'].position as unknown), position)
 
     return positions.map((p) => {
       return {

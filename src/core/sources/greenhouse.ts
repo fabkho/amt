@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { parseItems } from './parse.js'
 import { toIsoDate, unescapeHtml } from './normalize.js'
 import type { JobPosting, SourceAdapter } from './types.js'
 
@@ -13,7 +14,8 @@ const job = z.looseObject({
   departments: z.array(z.looseObject({ name: z.string() })).nullish(),
 })
 
-const response = z.looseObject({ jobs: z.array(job) })
+// Items are validated one by one — a single malformed entry never sinks the batch.
+const response = z.looseObject({ jobs: z.array(z.unknown()) })
 
 export const greenhouse: SourceAdapter = {
   name: 'greenhouse',
@@ -24,7 +26,8 @@ export const greenhouse: SourceAdapter = {
         `https://boards-api.greenhouse.io/v1/boards/${company}/jobs?content=true`,
       ),
     )
-    return data.jobs.map((j) => {
+    const jobs = parseItems(data.jobs, job)
+    return jobs.map((j) => {
       const location = j.location?.name ?? null
       return {
         source: 'greenhouse',

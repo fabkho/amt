@@ -1,15 +1,81 @@
-import { defineCommand } from 'citty'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
+import { createCommand } from './_shared.js'
 import { JobKitError } from '../core/errors.js'
-import { loadProfile, resolveHome } from '../core/profile.js'
+import { loadProfile, resolveHome, type Profile } from '../core/profile.js'
 import { chromiumInstalled, installChromium } from '../core/render/pdf.js'
+import { loadSources } from '../core/sources-store.js'
 import { log } from '../utils/logger.js'
-import { writeResult } from '../utils/stdout-guard.js'
 
-export default defineCommand({
-  meta: {
-    name: 'doctor',
-    description: 'Check that the job-kit environment is ready to use',
-  },
+interface Checks {
+  node: string
+  home: string
+  chromium: boolean
+  profile: string
+  cvData: string[]
+  sources: string
+  ok: boolean
+  next: string | null
+}
+
+function cvDataLangs(profile: Profile): string[] {
+  return (['de', 'en'] as const).filter(lang =>
+    existsSync(join(profile.paths.cvDataDir ?? '', `cv-data.${lang}.yaml`)),
+  )
+}
+
+interface HomeChecks {
+  profile: string
+  cvData: string[]
+  sources: string
+  next: string | null
+}
+
+async function checkHome(home: string): Promise<HomeChecks> {
+  const profile = await loadProfile(home)
+  const cvData = cvDataLangs(profile)
+  const sources = loadSources(home)
+  let next: string | null = null
+  if (cvData.length === 0) {
+    next = `Create cv-data.en.yaml (and/or .de) in ${profile.paths.cvDataDir} — prepare needs it.`
+  } else if (sources.boards.length === 0 && sources.companies.length === 0) {
+    next = 'Add crawl sources: job-kit sources add <company>'
+  }
+  return {
+    profile: 'ok',
+    cvData,
+    sources: `${sources.boards.length} board(s), ${sources.companies.length} companies, ${sources.channels.length} agent channel(s)`,
+    next,
+  }
+}
+
+function profileFailure(home: string, error: unknown): HomeChecks {
+  const missing = error instanceof JobKitError && error.code === 'PROFILE_NOT_FOUND'
+  return {
+    profile: missing
+      ? 'missing'
+      : `invalid: ${error instanceof Error ? error.message : String(error)}`,
+    cvData: [],
+    sources: '(profile missing)',
+    next: missing ? 'Run job-kit init to create your profile.' : `Fix ${home}/profile.config.ts.`,
+  }
+}
+
+async function collectChecks(chromium: boolean): Promise<Checks> {
+  const home = resolveHome()
+  const state = await checkHome(home).catch(error => profileFailure(home, error))
+  return {
+    node: process.version,
+    home,
+    chromium,
+    ...state,
+    ok: chromium && state.profile === 'ok' && state.cvData.length > 0,
+  }
+}
+
+export default createCommand({
+  name: 'doctor',
+  description: 'Check that the job-kit environment is ready to use',
   args: {
     'no-install': {
       type: 'boolean',
@@ -17,39 +83,24 @@ export default defineCommand({
       default: false,
     },
   },
-  async run({ args }) {
+  async run(args) {
     let chromium = await chromiumInstalled()
     if (!chromium && !args['no-install']) {
       log.info('Chromium for PDF rendering is missing — installing (~300 MB)…')
       installChromium()
       chromium = await chromiumInstalled()
     }
-
-    // Missing profile is expected before `job-kit init`; an invalid one is a
-    // real defect and fails the check.
-    const home = resolveHome()
-    let profile: string
-    let profileBroken = false
-    try {
-      await loadProfile(home)
-      profile = 'ok'
-    } catch (error) {
-      if (error instanceof JobKitError && error.code === 'PROFILE_NOT_FOUND') {
-        profile = `missing — create ${home}/profile.config.ts`
-      } else {
-        profile = error instanceof Error ? error.message : String(error)
-        profileBroken = true
-      }
+    const checks = await collectChecks(chromium)
+    // Findings exist but the check itself ran fine — gate semantics, exit 2.
+    if (!checks.ok) process.exitCode = 2
+    return {
+      result: checks,
+      human: [
+        `node ${checks.node} · home ${checks.home}`,
+        `chromium: ${checks.chromium ? 'ok' : 'missing'} · profile: ${checks.profile} · cv-data: ${checks.cvData.join(', ') || 'none'}`,
+        `sources: ${checks.sources}`,
+        checks.ok ? 'Ready.' : `→ ${checks.next}`,
+      ],
     }
-
-    const checks = {
-      node: process.version,
-      home,
-      chromium,
-      profile,
-      ok: chromium && !profileBroken,
-    }
-    writeResult(`${JSON.stringify(checks, null, 2)}\n`)
-    if (!checks.ok) process.exitCode = 1
   },
 })

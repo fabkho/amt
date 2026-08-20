@@ -49,11 +49,18 @@ export function isRelevant(
   if (keywords.length === 0) return true
   const haystack = `${posting.title}\n${posting.tags.join('\n')}\n${posting.descriptionHtml ?? ''}`
   // Word boundaries, not substrings — "vue" must not match "Fanvue", nor
-  // "node" match inside longer words. Dots/pluses in keywords are escaped.
-  return keywords.some((keyword) => {
-    const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)
-    return new RegExp(`\\b${escaped}\\b`, 'i').test(haystack)
-  })
+  // "node" match inside longer words. \b fails at non-word edges ("c++",
+  // ".net", "c#"), so the boundary is chosen per edge character.
+  return keywords.some(keyword => keywordPattern(keyword).test(haystack))
+}
+
+function keywordPattern(keyword: string): RegExp {
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)
+  // Word-initial keywords must not match inside words ("vue" in "Fanvue");
+  // symbol-initial ones ('.net') legitimately attach to words ("ASP.NET").
+  const prefix = /^\w/.test(keyword) ? String.raw`\b` : String.raw`(?<![.+#])`
+  const suffix = /\w$/.test(keyword) ? String.raw`\b` : String.raw`(?![\w.+#])`
+  return new RegExp(`${prefix}${escaped}${suffix}`, 'i')
 }
 
 export function isFresh(

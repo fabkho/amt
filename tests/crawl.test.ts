@@ -81,6 +81,30 @@ describe('crawl', () => {
     expect(listNotes(notesDir)).toHaveLength(noteCount)
   })
 
+  it('de-collides slugs when two postings share company and title', async () => {
+    const { home, notesDir, profile } = await testEnv(['vue'])
+    const twin = (id: string) => ({
+      slug: `same-role-${id}`,
+      title: 'Vue Developer',
+      company_name: 'Twin GmbH',
+      url: `https://example.com/${id}`,
+      description: 'Vue work',
+      location: 'Berlin',
+      remote: true,
+      created_at: 1787238038,
+      tags: [],
+      job_types: [],
+    })
+    const twinClient: HttpClient = {
+      json: async () => ({ data: [twin('a'), twin('b')], links: null }),
+      text: async () => '',
+    }
+    const summary = await crawl(twinClient, home, profile, sourcesSchema.parse({ boards: ['arbeitnow'] }), { today: '2026-08-20' })
+    expect(summary.errors).toHaveLength(0)
+    expect(summary.created).toBe(2) // second one got a de-collided slug
+    expect(listNotes(notesDir)).toHaveLength(2)
+  })
+
   it('isolates per-source failures', async () => {
     const { home, profile } = await testEnv(['databricks'])
     const broken = sourcesSchema.parse({

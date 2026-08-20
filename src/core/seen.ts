@@ -8,6 +8,8 @@ import type { CutReason } from './notes.js'
 // "never surface again" works without flooding the notes directory with
 // files nobody wants to read.
 
+// Data VALUES are kebab-case ('off-stack'), JSON summary KEYS are camelCase
+// (offStack) — deliberate, do not "fix" one into the other.
 const LEGACY_REASONS: Record<string, string> = { cut: 'filtered', irrelevant: 'off-stack' }
 
 const entry = z.object({

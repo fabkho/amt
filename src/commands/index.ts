@@ -7,10 +7,11 @@ export default createCommand({
   description: 'Regenerate the _index.md overview from the job notes',
   async run() {
     const profile = await loadProfile(resolveHome())
-    const content = renderIndex(profile.paths.notesDir)
+    renderIndex(profile.paths.notesDir)
+    const path = `${profile.paths.notesDir}/_index.md`
     return {
-      result: { notesDir: profile.paths.notesDir, bytes: content.length },
-      human: [`Regenerated ${profile.paths.notesDir}/_index.md`],
+      result: { indexFile: path },
+      human: [`Regenerated ${path}`],
     }
   },
 })

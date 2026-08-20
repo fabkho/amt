@@ -17,6 +17,8 @@ import {
   readNote,
   resolveHome,
   setStatus,
+  updateNote,
+  htmlToMarkdown,
   toErrorMessage,
   tryAutoTrack,
   upsertNote,
@@ -43,9 +45,6 @@ function readVersion(): string {
 }
 const version = readVersion()
 
-// Every handler must default its home to this — falling through to a cwd
-// default would ignore JOB_KIT_HOME (the documented env contract).
-const DEFAULT_HOME = process.env.JOB_KIT_HOME ?? undefined
 
 function jsonContent(data: unknown) {
   return {
@@ -76,6 +75,7 @@ function buildProfileSection(profile: Profile): string {
     `Salary: floor ${search.salaryFloor}${search.salaryTarget ? `, target ${search.salaryTarget}` : ''}`,
     `Seniority: ${search.seniority.join(', ')}`,
     `Locations: remote ${search.locations.remote ? 'yes' : 'no'}; cities: ${search.locations.cities.map(c => `${c.name} (≥${c.minHomeOfficeDays} HO days)`).join(', ') || '—'}`,
+    `Company types to reject (agent-judged — no deterministic check exists): ${search.companyTypesBlocked.join(', ') || '—'}`,
     '',
     'TONE RULES (cover letters)',
     ...tone.rules.map(r => `- ${r}`),
@@ -102,7 +102,7 @@ export function createServer(): McpServer {
     },
     async () => {
       try {
-        const home = resolveHome(DEFAULT_HOME)
+        const home = resolveHome()
         const sources = loadSources(home)
         let profileSummary: unknown = null
         let noteCounts: Record<string, number> = {}
@@ -153,7 +153,7 @@ export function createServer(): McpServer {
     },
     async () => {
       try {
-        const home = resolveHome(DEFAULT_HOME)
+        const home = resolveHome()
         const profile = await loadProfile(home)
         const sources = loadSources(home)
         const summary = await crawl(defaultHttpClient, home, profile, sources)
@@ -171,8 +171,8 @@ export function createServer(): McpServer {
     {
       title: 'Import Job Posting',
       description:
-        'Import a posting into the job notes. Pass an ATS URL (recruitee/greenhouse/lever/personio/'
-        + 'smartrecruiters) to resolve it automatically, or pass explicit fields for sources the tool '
+        'Import a posting into the job notes. Pass an ATS URL (recruitee/ashby/greenhouse/lever/'
+        + 'personio/smartrecruiters) to resolve it automatically, or pass explicit fields for sources the tool '
         + 'cannot fetch (LinkedIn, StepStone, agent channels). Auto-tracks the company when enabled.',
       inputSchema: z.object({
         url: z.string().describe('Posting URL — ATS URLs resolve automatically.'),
@@ -194,14 +194,14 @@ export function createServer(): McpServer {
     },
     async ({ url, manual }) => {
       try {
-        const home = resolveHome(DEFAULT_HOME)
+        const home = resolveHome()
         const profile = await loadProfile(home)
         let company: string
         let body: string
         let result
         if (manual) {
           company = manual.company
-          body = manual.descriptionHtml ?? ''
+          body = manual.descriptionHtml ? htmlToMarkdown(manual.descriptionHtml) : ''
           result = upsertNote(
             profile.paths.notesDir,
             postingToNoteInput(
@@ -226,7 +226,7 @@ export function createServer(): McpServer {
         } else {
           const imported = await importPostingFromUrl(defaultHttpClient, url)
           company = imported.posting.company
-          body = imported.posting.descriptionHtml ?? ''
+          body = imported.posting.descriptionHtml ? htmlToMarkdown(imported.posting.descriptionHtml) : ''
           result = upsertNote(
             profile.paths.notesDir,
             postingToNoteInput(imported.posting, today()),
@@ -261,7 +261,7 @@ export function createServer(): McpServer {
     },
     async ({ status }) => {
       try {
-        const profile = await loadProfile(resolveHome(DEFAULT_HOME))
+        const profile = await loadProfile(resolveHome())
         const notes = listNotes(profile.paths.notesDir, { status })
         return jsonContent(notes.map(n => n.note))
       } catch (error) {
@@ -281,7 +281,7 @@ export function createServer(): McpServer {
     },
     async ({ slug }) => {
       try {
-        const profile = await loadProfile(resolveHome(DEFAULT_HOME))
+        const profile = await loadProfile(resolveHome())
         const stored = readNote(profile.paths.notesDir, slug)
         return jsonContent(stored)
       } catch (error) {
@@ -297,31 +297,40 @@ export function createServer(): McpServer {
     {
       title: 'Set Job Status',
       description:
-        'Set the status of a job note. Cutting requires cutReason. Shortlisting auto-tracks the '
-        + 'company ATS when the profile allows it. Use this to persist scores and decisions.',
+        'Set the status of a job note and persist the judgment behind it: score (0-100), flags, and '
+        + 'an assessment text stored under "## Assessment" in the note body. Cutting requires '
+        + 'cutReason. Shortlisting auto-tracks the company ATS when the profile allows it.',
       inputSchema: z.object({
         slug: z.string(),
         status: z.enum(JOB_STATUSES),
         cutReason: z.enum(CUT_REASONS).optional(),
         cutNote: z.string().optional(),
+        score: z.number().int().min(0).max(100).optional()
+          .describe('Fit score 0-100 — persist it so the next session can sort on it.'),
+        flags: z.array(z.string()).optional(),
+        assessment: z.string().optional()
+          .describe('Your reasoning — written into the note under "## Assessment".'),
       }),
       annotations: { readOnlyHint: false },
     },
-    async ({ slug, status, cutReason, cutNote }) => {
+    async ({ slug, status, cutReason, cutNote, score, flags, assessment }) => {
       try {
-        const home = resolveHome(DEFAULT_HOME)
+        const home = resolveHome()
         const profile = await loadProfile(home)
         const note = setStatus(profile.paths.notesDir, slug, status as JobStatus, {
           cutReason: cutReason as CutReason | undefined,
           cutNote,
         })
+        if (score !== undefined || flags !== undefined || assessment !== undefined) {
+          updateNote(profile.paths.notesDir, slug, { score, flags, assessment })
+        }
         const tracked = await tryAutoTrack(
           defaultHttpClient,
           home,
           status === 'shortlist' && profile.search.autoTrackCompanies,
           note.company,
         )
-        return jsonContent({ slug: note.slug, status: note.status, tracked })
+        return jsonContent({ slug: note.slug, status: note.status, score: score ?? note.score, tracked })
       } catch (error) {
         return toolErrorResponse('setting the job status', error)
       }
@@ -335,14 +344,15 @@ export function createServer(): McpServer {
     {
       title: 'Track Company',
       description:
-        'Start tracking a company: probes the five ATS API patterns to discover where it hosts its '
+        'Start tracking a company: probes the known ATS API patterns (recruitee, ashby, greenhouse, '
+        + 'lever, personio, smartrecruiters) to discover where it hosts its '
         + 'jobs, then adds it to sources.yaml. Use when the user names companies to watch.',
       inputSchema: z.object({ company: z.string() }),
       annotations: { readOnlyHint: false },
     },
     async ({ company }) => {
       try {
-        const result = await addCompany(defaultHttpClient, resolveHome(DEFAULT_HOME), company)
+        const result = await addCompany(defaultHttpClient, resolveHome(), company)
         return jsonContent({
           name: result.name,
           ats: result.ats,
@@ -366,7 +376,7 @@ export function createServer(): McpServer {
     },
     async ({ company }) => {
       try {
-        const removed = removeCompany(resolveHome(DEFAULT_HOME), company)
+        const removed = removeCompany(resolveHome(), company)
         if (!removed) {
           throw new JobKitError('COMPANY_NOT_TRACKED', `"${company}" is not tracked`)
         }
@@ -380,9 +390,9 @@ export function createServer(): McpServer {
   // ─── Tool: generate_application ────────────────────────────────
 
   server.registerTool(
-    'generate_application',
+    'prepare_application',
     {
-      title: 'Generate Application',
+      title: 'Prepare Application',
       description:
         'Materialize the application folder for a job note: frozen snapshot, CV (html+pdf), and the '
         + 'cover-letter pipeline around cover-letter.<lang>.md. On first run the letter is scaffolded '
@@ -396,7 +406,7 @@ export function createServer(): McpServer {
     },
     async ({ slug, lang, pdf }) => {
       try {
-        const profile = await loadProfile(resolveHome(DEFAULT_HOME))
+        const profile = await loadProfile(resolveHome())
         const result = await prepareApplication(profile, slug, { lang: lang as Lang | undefined, pdf })
         return jsonContent(result)
       } catch (error) {
@@ -412,7 +422,7 @@ export function createServer(): McpServer {
     new ResourceTemplate('job://{slug}', {
       list: async () => {
         try {
-          const profile = await loadProfile(resolveHome(DEFAULT_HOME))
+          const profile = await loadProfile(resolveHome())
           return {
             resources: listNotes(profile.paths.notesDir).map(({ note }) => ({
               uri: `job://${note.slug}`,
@@ -428,7 +438,7 @@ export function createServer(): McpServer {
     }),
     { description: 'A job note: frontmatter facts plus the posting description.' },
     async (uri, { slug }) => {
-      const profile = await loadProfile(resolveHome(DEFAULT_HOME))
+      const profile = await loadProfile(resolveHome())
       const { note, body } = readNote(profile.paths.notesDir, slug as string)
       return {
         contents: [
@@ -456,7 +466,7 @@ export function createServer(): McpServer {
       let context = ''
       let channels = ''
       try {
-        const home = resolveHome(DEFAULT_HOME)
+        const home = resolveHome()
         context = buildProfileSection(await loadProfile(home))
         const sources = loadSources(home)
         channels = sources.channels.length
@@ -502,7 +512,7 @@ export function createServer(): McpServer {
     async ({ slug }) => {
       let context = ''
       try {
-        context = buildProfileSection(await loadProfile(resolveHome(DEFAULT_HOME)))
+        context = buildProfileSection(await loadProfile(resolveHome()))
       } catch {
         // profile missing — workflow still applies
       }
@@ -516,9 +526,9 @@ export function createServer(): McpServer {
                 `Write the application for job note "${slug}":`,
                 '1. Read the posting via get_job (or the job:// resource).',
                 '2. Decide the language using the LANGUAGE RULE below; confirm with the user.',
-                '3. Call generate_application once — it scaffolds cover-letter.<lang>.md.',
+                '3. Call prepare_application once — it scaffolds cover-letter.<lang>.md.',
                 '4. Draft the letter WITH the user in chat, strictly following the TONE RULES below. Iterate until they approve, writing the agreed text into the markdown file.',
-                '5. Call generate_application again to render txt/html/pdf, then set the status to applied once the user has submitted.',
+                '5. Write the agreed text into the markdown file (requires filesystem access — in a pure MCP client, hand the text to the user instead), call prepare_application again to render txt/html/pdf, and set the status to applied once the user has submitted.',
                 '',
                 context,
               ].join('\n'),

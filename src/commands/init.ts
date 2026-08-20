@@ -61,59 +61,13 @@ export default defineCommand({
     force: { type: 'boolean', description: 'Overwrite an existing profile', default: false },
   },
   async run({ args }) {
-    if (!process.stdout.isTTY || !process.stdin.isTTY) {
-      throw new JobKitError(
-        'INIT_NEEDS_TTY',
-        'init is interactive. In agent contexts, write profile.config.ts directly and use `sources add`.',
-      )
-    }
-    const home = resolveHome()
-    const profilePath = join(home, 'profile.config.ts')
-    if (existsSync(profilePath) && !args.force) {
-      throw new JobKitError(
-        'PROFILE_EXISTS',
-        `${profilePath} exists — edit it directly or re-run with --force.`,
-      )
-    }
-
     try {
-      const name = await consola.prompt('Your full name:', { type: 'text' })
-      const email = await consola.prompt('Email for applications:', { type: 'text' })
-      const phone = await consola.prompt('Phone:', { type: 'text' })
-      const location = await consola.prompt('Location line (e.g. "Cologne, Germany / Remote"):', { type: 'text' })
-      const salaryFloor = Number(
-        await consola.prompt('Salary floor (hard cut below, e.g. 68000):', { type: 'text' }),
-      )
-      const citiesRaw = await consola.prompt('Hybrid-acceptable cities (comma-separated, empty for remote-only):', { type: 'text' })
-      const notesDir = await consola.prompt('Directory for job notes (markdown):', {
-        type: 'text',
-        default: '~/job-search/jobs',
-      })
-      const outputBase = await consola.prompt('Directory for application folders:', {
-        type: 'text',
-        default: '~/Applications-out',
-      })
-      const boardsAnswer = await consola.prompt('Crawl the Arbeitnow board (German market, free API)?', {
-        type: 'confirm',
-      })
-
+      const home = resolveHome()
+      const profilePath = join(home, 'profile.config.ts')
+      assertInitPreconditions(profilePath, args.force)
+      const { answers, boardsAnswer } = await askOnboarding()
       mkdirSync(home, { recursive: true })
-      writeFileSync(
-        profilePath,
-        profileTemplate({
-          name: String(name),
-          email: String(email),
-          phone: String(phone),
-          location: String(location),
-          salaryFloor: Number.isFinite(salaryFloor) ? salaryFloor : 0,
-          cities: String(citiesRaw)
-            .split(',')
-            .map(c => c.trim())
-            .filter(Boolean),
-          notesDir: String(notesDir),
-          outputBase: String(outputBase),
-        }),
-      )
+      writeFileSync(profilePath, profileTemplate(answers))
 
       const sources = loadSources(home)
       if (boardsAnswer && !sources.boards.includes('arbeitnow')) {
@@ -121,11 +75,110 @@ export default defineCommand({
       }
       saveSources(home, sources)
 
+      // A colleague's first prepare needs CV data — scaffold a commented
+      // template so the requirement is visible from day one.
+      const cvDataPath = join(home, 'cv-data.en.yaml')
+      if (!existsSync(cvDataPath)) {
+        writeFileSync(cvDataPath, CV_DATA_TEMPLATE)
+      }
+
       log.success(`Profile written to ${profilePath} — refine role, stacks, and tone rules there.`)
+      log.info(`CV data template at ${cvDataPath} — fill it before your first \`prepare\`.`)
       log.info('Track companies with `job-kit sources add <company>`, then run `job-kit crawl`.')
     } catch (error) {
-      log.error(toErrorMessage(error))
+      const code = error instanceof JobKitError ? error.code : 'UNEXPECTED'
+      log.error(`[${code}] ${toErrorMessage(error)}`)
       process.exitCode = 1
     }
   },
 })
+
+function assertInitPreconditions(profilePath: string, force: boolean): void {
+  if (!process.stdout.isTTY || !process.stdin.isTTY) {
+    throw new JobKitError(
+      'INIT_NEEDS_TTY',
+      'init is interactive. In agent contexts, write profile.config.ts directly (import defineProfile from job-kit/config) and use `sources add`.',
+    )
+  }
+  if (existsSync(profilePath) && !force) {
+    throw new JobKitError(
+      'PROFILE_EXISTS',
+      `${profilePath} exists — edit it directly or re-run with --force.`,
+    )
+  }
+}
+
+async function askOnboarding() {
+  const name = String(await consola.prompt('Your full name:', { type: 'text' }))
+  const email = String(await consola.prompt('Email for applications:', { type: 'text' }))
+  const phone = String(await consola.prompt('Phone:', { type: 'text' }))
+  const location = String(
+    await consola.prompt('Location line (e.g. "Cologne, Germany / Remote"):', { type: 'text' }),
+  )
+  const salaryFloor = Number(
+    await consola.prompt('Salary floor (hard cut below, e.g. 68000):', { type: 'text' }),
+  )
+  const citiesRaw = String(
+    await consola.prompt('Hybrid-acceptable cities (comma-separated, empty for remote-only):', { type: 'text' }),
+  )
+  const notesDir = String(
+    await consola.prompt('Directory for job notes (markdown):', { type: 'text', default: '~/job-search/jobs' }),
+  )
+  const outputBase = String(
+    await consola.prompt('Directory for application folders:', { type: 'text', default: '~/Applications-out' }),
+  )
+  const boardsAnswer = await consola.prompt('Crawl the Arbeitnow board (German market, free API)?', {
+    type: 'confirm',
+  })
+  return {
+    boardsAnswer,
+    answers: {
+      name,
+      email,
+      phone,
+      location,
+      salaryFloor: Number.isFinite(salaryFloor) ? salaryFloor : 0,
+      cities: citiesRaw.split(',').map(c => c.trim()).filter(Boolean),
+      notesDir,
+      outputBase,
+    },
+  }
+}
+
+const CV_DATA_TEMPLATE = `# CV data — the single source your CVs render from (schema: cvDataSchema).
+# Bullets may contain inline HTML (<b>, <code>). One file per language.
+personal:
+  name: "Your Name"
+  role: "Software Engineer"
+
+profile: |
+  One or two sentences about how you work.
+
+links:
+  - label: "github.com/you"
+    url: "https://github.com/you"
+
+experience:
+  - company: "Company GmbH"
+    location: "City / Remote"
+    date: "2022 – present"
+    position: "Software Engineer"
+    bullets:
+      - "<b>Topic:</b> what you did and why it mattered."
+
+education:
+  - school: "University"
+    program: "Computer Science (B.Sc.)"
+    date: "2016 – 2020"
+    bullets:
+      - "Focus areas."
+
+skills:
+  - key: "Frontend"
+    val: "…"
+
+projects:
+  - name: "project"
+    url: "https://github.com/you/project"
+    desc: "One line."
+`

@@ -109,7 +109,7 @@ export interface StoredNote {
 export function readNote(notesDir: string, slug: string): StoredNote {
   const path = notePath(notesDir, slug)
   if (!existsSync(path)) {
-    throw new JobKitError('NOTE_NOT_FOUND', `No job note at ${path}`)
+    throw new JobKitError('NOTE_NOT_FOUND', `No job note at ${path} — run \`job-kit list\` to see available slugs.`)
   }
   const parsed = matter(readFileSync(path, 'utf-8'))
   const result = jobNoteSchema.safeParse(parsed.data)
@@ -149,15 +149,39 @@ export interface UpsertResult {
   created: boolean
 }
 
+// The description is the machine-owned region of a note body; everything a
+// human writes outside these markers survives every crawler refresh.
+const DESC_START = '<!-- job-kit:description -->'
+const DESC_END = '<!-- /job-kit:description -->'
+
+function wrapDescription(description: string): string {
+  return `${DESC_START}\n${description.trim()}\n${DESC_END}`
+}
+
+function refreshDescription(existingBody: string, description: string): string {
+  const start = existingBody.indexOf(DESC_START)
+  const end = existingBody.indexOf(DESC_END)
+  if (start === -1 || end === -1 || end < start) {
+    // No machine-owned region (legacy or hand-written note) — never clobber.
+    return existingBody
+  }
+  return (
+    existingBody.slice(0, start)
+    + wrapDescription(description)
+    + existingBody.slice(end + DESC_END.length)
+  )
+}
+
 /**
  * Insert or refresh a crawled posting. Dedupe runs on `source:nativeId`;
- * on refresh, posting facts are updated while human state (status, score,
- * cut info, application) is preserved.
+ * on refresh, posting facts and the marked description region are updated
+ * while human state (status, score, cut info, application) and any body
+ * text outside the description markers are preserved.
  */
 export function upsertNote(
   notesDir: string,
   incoming: JobNoteInput,
-  body: string,
+  description: string,
 ): UpsertResult {
   const note = jobNoteSchema.parse(incoming)
   const key = dedupeKey(note)
@@ -170,7 +194,7 @@ export function upsertNote(
         `Slug "${note.slug}" exists but belongs to a different posting (${key}).`,
       )
     }
-    writeNote(notesDir, note, body)
+    writeNote(notesDir, note, wrapDescription(description))
     return { slug: note.slug, created: true }
   }
 
@@ -179,8 +203,48 @@ export function upsertNote(
     // @ts-expect-error — same schema on both sides, field-wise copy
     merged[field] = existing.note[field]
   }
-  writeNote(notesDir, merged, body || existing.body)
+  const body = description
+    ? refreshDescription(existing.body, description)
+    : existing.body
+  writeNote(notesDir, merged, body)
   return { slug: existing.note.slug, created: false }
+}
+
+const ASSESS_START = '<!-- job-kit:assessment -->'
+const ASSESS_END = '<!-- /job-kit:assessment -->'
+
+function setAssessment(body: string, assessment: string): string {
+  const block = `${ASSESS_START}\n## Assessment\n\n${assessment.trim()}\n${ASSESS_END}`
+  const start = body.indexOf(ASSESS_START)
+  const end = body.indexOf(ASSESS_END)
+  if (start !== -1 && end !== -1 && end > start) {
+    return body.slice(0, start) + block + body.slice(end + ASSESS_END.length)
+  }
+  return `${body.trimEnd()}\n\n${block}`
+}
+
+export interface NoteUpdate {
+  score?: number | null
+  flags?: string[]
+  /** Agent reasoning — stored under an "## Assessment" heading in the body. */
+  assessment?: string
+}
+
+/** Persist the judgment a search round produces: score, flags, reasoning. */
+export function updateNote(
+  notesDir: string,
+  slug: string,
+  update: NoteUpdate,
+): JobNote {
+  const { note, body } = readNote(notesDir, slug)
+  if (update.score !== undefined) {
+    note.score = update.score === null ? null : jobNoteSchema.shape.score.parse(update.score)
+  }
+  if (update.flags !== undefined) note.flags = update.flags
+  const newBody
+    = update.assessment !== undefined ? setAssessment(body, update.assessment) : body
+  writeNote(notesDir, note, newBody)
+  return note
 }
 
 export function setStatus(
@@ -193,7 +257,7 @@ export function setStatus(
   if (status === 'cut' && !options.cutReason && !note.cutReason) {
     throw new JobKitError(
       'CUT_REASON_REQUIRED',
-      'Cutting a job requires a cutReason so it can be queried later.',
+      `Cutting a job requires a cutReason so it can be queried later — valid: ${CUT_REASONS.join(', ')}.`,
     )
   }
   note.status = status

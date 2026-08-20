@@ -19,8 +19,9 @@ export default function (pi: ExtensionAPI) {
     description:
       "Run a job-kit CLI command and return its JSON result. Commands: doctor, crawl, "
       + "sources list|add <company>|remove <company>, import <url>, list [--status s], "
-      + "status <slug> <status> [--reason r] [--note n], show <slug>, "
-      + "prepare <slug> [--lang de|en] [--no-pdf], index. "
+      + "status <slug> <status> [--reason r] [--cut-note n] [--score 0-100], show <slug>, "
+      + "prepare <slug> [--lang de|en] [--no-pdf], index. Non-ATS finds (LinkedIn, StepStone): "
+      + "import <url> --company <name> --title <title>. "
       + "Pass arguments as an array, e.g. [\"status\", \"acme-frontend\", \"shortlist\"].",
     parameters: Type.Object({
       args: Type.Array(Type.String(), {
@@ -35,12 +36,14 @@ export default function (pi: ExtensionAPI) {
         });
         return { content: [{ type: "text", text: stdout.trim() }], details: {} };
       } catch (err: any) {
+        // The structured {error:{code,message}} envelope is on STDOUT.
+        const stdout = typeof err?.stdout === "string" ? err.stdout.trim() : "";
         const stderr = typeof err?.stderr === "string" ? err.stderr.trim() : "";
         return {
           content: [
             {
               type: "text",
-              text: `job-kit failed (exit ${err?.status ?? "?"}): ${stderr || err?.message || err}`,
+              text: `job-kit failed (exit ${err?.status ?? "?"}): ${stdout || stderr || err?.message || err}`,
             },
           ],
           details: {},

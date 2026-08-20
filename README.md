@@ -2,33 +2,43 @@
 
 *Ein Amt, das für Sie arbeitet.* A bureaucracy for your job search — for once, on your side.
 
+<p align="center">
+  <img src="https://media1.tenor.com/m/CRkxMqGBhzQAAAAC/friedrich-merz.gif" width="420" alt="Der Sachbearbeiter bei der Arbeit"><br>
+  <em>Der Sachbearbeiter bei der Arbeit.</em>
+</p>
+
 `amt` is a personal job-search toolkit: a CLI plus an MCP server (`amt-mcp`) that puts a
 clerk — *der Sachbearbeiter* — inside your AI coding agent. It crawls job APIs
-(7 ATS platforms + Arbeitnow), opens one markdown *Vorgang* per posting that matches
-your stack, and files everything else in a seen-ledger so it never resurfaces.
-You judge, it stamps, and `prepare` renders CV + cover letter (PDF/txt/md) into an
-upload-ready folder.
+(7 ATS platforms + Arbeitnow), keeps one markdown note per posting that matches your
+stack, and files everything else in a seen-ledger so it never resurfaces. You judge,
+it stamps, and `prepare` renders CV + cover letter (PDF/txt/md) into an upload-ready folder.
 
-Ihr Antrag wird bearbeitet. Genuinely, this time.
+## Setup — let the agent do the paperwork
 
-## Antragstellung (Setup)
+The easiest way to set up amt is to not set it up yourself. Install the binaries,
+wire up your agent, and then just *talk*:
 
 ```bash
-pnpm add -g "git+ssh://git@github.com/fabkho/amt.git"   # installs amt + amt-mcp
-amt doctor   # is the office open? installs Chromium for PDFs, reports what's missing
-amt init     # take a number — interactive: profile, cv-data template, boards
+pnpm add -g "git+ssh://git@github.com/fabkho/amt.git"        # installs amt + amt-mcp
+claude mcp add --scope user amt -- amt-mcp                    # or the plugin, see below
 ```
 
-Then fill in your paperwork in `AMT_HOME` (default `~/.config/amt/`):
-`cv-data.en.yaml` (your CV content) and `profile.config.ts` (stacks, hard filters,
-salary floor, tone rules — typed via `defineProfile` from `amt/config`). Notes land
-in your notes directory; `sources.yaml` and `seen.json` are the office's own records.
+Then tell your agent who you are — your stack, salary floor, cities or remote,
+what your CV should say, how your cover letters should sound. It writes your
+`profile.config.ts` and `cv-data.<lang>.yaml` into `AMT_HOME` (default `~/.config/amt/`),
+which is exactly what the MCP server reads. No forms, no typing YAML by hand.
+
+> *"Set up amt for me: I'm a senior Vue/TypeScript dev in Cologne, remote or ≥3 home-office
+> days, floor 68k. Here's my CV: …"*
+
+Prefer doing it by hand? `amt doctor` checks the office is open (and installs Chromium
+for PDFs), `amt init` walks you through it interactively.
 
 ## Der Dienstweg (the loop)
 
 ```bash
 amt sources add shopware   # track a company — its ATS is discovered automatically
-amt crawl                  # fetch everything; a Vorgang only for relevant postings
+amt crawl                  # fetch everything; a note only for relevant postings
 amt list --status new      # today's stack of files
 amt show <slug>            # one posting, full description
 amt status <slug> shortlist --score 85   # der Stempel
@@ -48,7 +58,7 @@ The `_index.md` overview in your notes directory keeps itself current.
 The agent drafts with you in chat; the logic stays in code.
 
 - **Claude Code:** `/plugin marketplace add fabkho/amt` → `/plugin install amt@amt`
-  (or `claude mcp add --scope user amt -- amt-mcp`)
+  (bundles the MCP server + workflow skills, with auto-updates)
 - **Codex CLI:** `codex mcp add amt -- amt-mcp` + copy `skills/` to `~/.agents/skills/`
 - **Cursor / Zed:** point a stdio MCP server at `amt-mcp`
 - **pi:** copy `pi-extension/` to `~/.pi/agent/extensions/amt/`

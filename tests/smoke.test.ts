@@ -1,5 +1,7 @@
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vite-plus/test";
 import { JobKitError, toErrorMessage } from "../src/index.js";
 
@@ -26,12 +28,17 @@ describe("built CLI artifact", () => {
     expect(result.stdout).toMatch(/\d+\.\d+\.\d+/);
   });
 
-  it.skipIf(!existsSync("dist/bin.mjs"))("runs doctor with JSON on stdout", () => {
-    const result = spawnSync(process.execPath, ["dist/bin.mjs", "doctor"], {
+  it.skipIf(!existsSync("dist/bin.mjs"))("doctor reports findings honestly on an empty home", () => {
+    // A controlled empty home: profile missing → ok:false and gate exit 2,
+    // regardless of what the developer's real ~/.config/job-kit contains.
+    const result = spawnSync(process.execPath, ["dist/bin.mjs", "doctor", "--no-install"], {
       encoding: "utf-8",
+      env: { ...process.env, JOB_KIT_HOME: mkdtempSync(join(tmpdir(), "job-kit-doctor-")) },
     });
-    expect(result.status).toBe(0);
-    const parsed = JSON.parse(result.stdout) as { ok: boolean };
-    expect(parsed.ok).toBe(true);
+    expect(result.status).toBe(2);
+    const parsed = JSON.parse(result.stdout) as { ok: boolean; profile: string; next: string };
+    expect(parsed.ok).toBe(false);
+    expect(parsed.profile).toBe("missing");
+    expect(parsed.next).toContain("init");
   });
 });

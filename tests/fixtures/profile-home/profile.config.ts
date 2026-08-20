@@ -28,10 +28,6 @@ export default defineProfile({
     },
     titleBlocklist: ['vibe coding'],
   },
-  sources: {
-    ats: { recruitee: ['examplecorp'] },
-    boards: ['arbeitnow'],
-  },
   tone: {
     salutation: { de: 'Hallo,', en: 'Hi,' },
     closing: { de: 'Viele Grüße', en: 'Best regards' },

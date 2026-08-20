@@ -27,6 +27,11 @@ works great as a starting point), how your cover letters should sound. It writes
 `profile.config.ts` and `cv-data.<lang>.yaml` into `AMT_HOME` (default `~/.config/amt/`),
 which is exactly what the MCP server reads. No forms, no typing YAML by hand.
 
+**Where things land** is yours to choose, via `paths` in `profile.config.ts`:
+`notesDir` is where the job notes go — any folder works, and an Obsidian vault works
+great (the frontmatter shows up as properties, and the self-updating `_index.md` links
+every note). `outputBase` is where `prepare` drops the upload-ready application folders.
+
 > *"Set up amt for me: I'm a senior Vue/TypeScript dev in Cologne, remote or ≥3 home-office
 > days, floor 68k. Here's my CV: …"*
 

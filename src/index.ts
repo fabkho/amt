@@ -42,8 +42,8 @@ export {
 export type { MatchResult } from './core/match.js'
 export { crawl } from './core/crawl.js'
 export type { CrawlSummary } from './core/crawl.js'
-export { importPostingFromUrl, parsePostingUrl } from './core/import-url.js'
-export type { ParsedPostingUrl } from './core/import-url.js'
+export { importPostingFromUrl, manualPosting, parsePostingUrl } from './core/import-url.js'
+export type { ManualFields, ParsedPostingUrl } from './core/import-url.js'
 export { prepareApplication } from './core/prepare.js'
 export type { PrepareOptions, PrepareResult } from './core/prepare.js'
 export {

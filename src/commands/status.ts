@@ -1,9 +1,50 @@
 import { createCommand } from './_shared.js'
-import { CUT_REASONS, JOB_STATUSES, setStatus, updateNote, type CutReason, type JobStatus } from '../core/notes.js'
-import { loadProfile, resolveHome } from '../core/profile.js'
+import {
+  CUT_REASONS,
+  JOB_STATUSES,
+  renderIndex,
+  setStatus,
+  updateNote,
+  type CutReason,
+  type JobNote,
+  type JobStatus,
+} from '../core/notes.js'
+import { loadProfile, resolveHome, type Profile } from '../core/profile.js'
 import { defaultHttpClient } from '../core/sources/http.js'
 import { tryAutoTrack } from '../core/sources-store.js'
 import { AmtError } from '../core/errors.js'
+
+interface StatusArgs {
+  slug: string
+  status: string
+  reason?: string
+  'cut-note'?: string
+  score?: string
+  assessment?: string
+}
+
+function changeStatus(profile: Profile, args: StatusArgs): JobNote {
+  const status = args.status as JobStatus
+  if (!JOB_STATUSES.includes(status)) {
+    throw new AmtError(
+      'STATUS_INVALID',
+      `Unknown status "${status}" — valid: ${JOB_STATUSES.join(', ')}`,
+    )
+  }
+  return setStatus(profile.paths.notesDir, args.slug, status, {
+    cutReason: args.reason as CutReason | undefined,
+    cutNote: args['cut-note'],
+  })
+}
+
+function persistJudgment(profile: Profile, slug: string, args: StatusArgs): number | null | undefined {
+  if (args.score === undefined && args.assessment === undefined) return undefined
+  const updated = updateNote(profile.paths.notesDir, slug, {
+    ...(args.score !== undefined ? { score: Number(args.score) } : {}),
+    ...(args.assessment !== undefined ? { assessment: args.assessment } : {}),
+  })
+  return updated.score
+}
 
 export default createCommand({
   name: 'status',
@@ -23,33 +64,19 @@ export default createCommand({
   async run(args) {
     const home = resolveHome()
     const profile = await loadProfile(home)
-    const status = args.status as JobStatus
-    if (!JOB_STATUSES.includes(status)) {
-      throw new AmtError(
-        'STATUS_INVALID',
-        `Unknown status "${status}" — valid: ${JOB_STATUSES.join(', ')}`,
-      )
-    }
-    const note = setStatus(profile.paths.notesDir, args.slug as string, status, {
-      cutReason: args.reason as CutReason | undefined,
-      cutNote: args['cut-note'] as string | undefined,
-    })
-    let score = note.score
-    if (args.score !== undefined || args.assessment !== undefined) {
-      const updated = updateNote(profile.paths.notesDir, note.slug, {
-        ...(args.score !== undefined ? { score: Number(args.score) } : {}),
-        ...(args.assessment !== undefined ? { assessment: args.assessment as string } : {}),
-      })
-      score = updated.score
-    }
+    const typed = args as unknown as StatusArgs
+
+    const note = changeStatus(profile, typed)
+    const score = persistJudgment(profile, note.slug, typed) ?? note.score
 
     // Shortlisting is interest — start watching the company's ATS.
     const tracked = await tryAutoTrack(
       defaultHttpClient,
       home,
-      status === 'shortlist' && profile.search.autoTrackCompanies,
+      note.status === 'shortlist' && profile.search.autoTrackCompanies,
       note.company,
     )
+    renderIndex(profile.paths.notesDir)
 
     return {
       result: { slug: note.slug, status: note.status, score, cutReason: note.cutReason, tracked },

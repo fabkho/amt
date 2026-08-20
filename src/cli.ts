@@ -23,7 +23,6 @@ const main = defineCommand({
     status: () => import('./commands/status.js').then(m => m.default),
     show: () => import('./commands/show.js').then(m => m.default),
     prepare: () => import('./commands/prepare.js').then(m => m.default),
-    index: () => import('./commands/index.js').then(m => m.default),
   },
 })
 

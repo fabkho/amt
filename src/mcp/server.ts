@@ -6,6 +6,7 @@ import {
   crawl,
   defaultHttpClient,
   importPostingFromUrl,
+  manualPosting,
   JOB_STATUSES,
   AmtError,
   listNotes,
@@ -16,6 +17,7 @@ import {
   removeCompany,
   postingToNoteInput,
   readNote,
+  renderIndex,
   resolveHome,
   setStatus,
   updateNote,
@@ -207,29 +209,10 @@ export function createServer(): McpServer {
         let body: string
         let result
         if (manual) {
-          company = manual.company
-          body = manual.descriptionHtml ? htmlToMarkdown(manual.descriptionHtml) : ''
-          result = upsertNote(
-            profile.paths.notesDir,
-            postingToNoteInput(
-              {
-                source: 'manual',
-                nativeId: url,
-                company: manual.company,
-                title: manual.title,
-                url,
-                descriptionHtml: manual.descriptionHtml ?? null,
-                location: manual.location ?? null,
-                workMode: manual.workMode ?? null,
-                salaryMin: manual.salaryMin ?? null,
-                salaryMax: manual.salaryMax ?? null,
-                publishedAt: manual.publishedAt ?? null,
-                tags: [],
-              },
-              today(),
-            ),
-            body,
-          )
+          const posting = manualPosting(url, manual)
+          company = posting.company
+          body = posting.descriptionHtml ? htmlToMarkdown(posting.descriptionHtml) : ''
+          result = upsertNote(profile.paths.notesDir, postingToNoteInput(posting, today()), body)
         } else {
           const imported = await importPostingFromUrl(defaultHttpClient, url)
           company = imported.posting.company
@@ -252,6 +235,7 @@ export function createServer(): McpServer {
         // Context, not a blocker: a different role at the same company (or a
         // changed offer) is a legitimate second application.
         const companyHistory = notesForCompany(profile.paths.notesDir, note.company, result.slug)
+        renderIndex(profile.paths.notesDir)
         return jsonContent({ ...result, status: note.status, tracked, companyHistory })
       } catch (error) {
         return toolErrorResponse('importing the posting', error)
@@ -344,6 +328,7 @@ export function createServer(): McpServer {
           status === 'shortlist' && profile.search.autoTrackCompanies,
           note.company,
         )
+        renderIndex(profile.paths.notesDir)
         return jsonContent({ slug: note.slug, status: note.status, score: score ?? note.score, tracked })
       } catch (error) {
         return toolErrorResponse('setting the job status', error)
@@ -422,6 +407,7 @@ export function createServer(): McpServer {
       try {
         const profile = await loadProfile(resolveHome())
         const result = await prepareApplication(profile, slug, { lang: lang as Lang | undefined, pdf })
+        renderIndex(profile.paths.notesDir)
         return jsonContent(result)
       } catch (error) {
         return toolErrorResponse('generating the application', error)

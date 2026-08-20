@@ -1,5 +1,6 @@
 import { createCommand } from './_shared.js'
 import { prepareApplication } from '../core/prepare.js'
+import { renderIndex } from '../core/notes.js'
 import { loadProfile, resolveHome } from '../core/profile.js'
 import type { Lang } from '../core/render/templates.js'
 
@@ -22,6 +23,7 @@ export default createCommand({
       lang: args.lang as Lang | undefined,
       pdf: args.pdf as boolean,
     })
+    renderIndex(profile.paths.notesDir)
     return {
       result,
       human: [

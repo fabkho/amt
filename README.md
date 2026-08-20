@@ -38,8 +38,8 @@ amt status <slug> applied                # case closed. next window, please
 
 Statuses: `new → shortlist → applied → interview` (or `rejected` / `cut` — with
 `--reason`, because an Amt files even its rejections properly). Also on duty:
-`amt import <url>` for pasted ATS links (`--company/--title` for LinkedIn & co.)
-and `amt index` to regenerate the `_index.md` overview.
+`amt import <url>` for pasted ATS links (`--company/--title` for LinkedIn & co.).
+The `_index.md` overview in your notes directory keeps itself current.
 
 ## Der Sachbearbeiter (agent integration)
 

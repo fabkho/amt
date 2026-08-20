@@ -1,12 +1,12 @@
 import { createCommand } from './_shared.js'
-import { applyToJob } from '../core/apply.js'
+import { prepareApplication } from '../core/prepare.js'
 import { loadProfile, resolveHome } from '../core/profile.js'
 import type { Lang } from '../core/render/templates.js'
 
 export default createCommand({
-  name: 'apply',
+  name: 'prepare',
   description:
-    'Materialize the application folder: CV, cover-letter pipeline, snapshots. Re-run after editing the letter.',
+    'Prepare the application folder: CV, cover-letter pipeline, snapshots. Re-run after editing the letter. Submitting stays yours — mark it with `status <slug> applied`.',
   args: {
     slug: { type: 'positional', description: 'Note slug', required: true },
     lang: { type: 'string', description: 'de|en (default: previous choice or en)' },
@@ -18,7 +18,7 @@ export default createCommand({
   },
   async run(args) {
     const profile = await loadProfile(resolveHome())
-    const result = await applyToJob(profile, args.slug as string, {
+    const result = await prepareApplication(profile, args.slug as string, {
       lang: args.lang as Lang | undefined,
       pdf: args.pdf as boolean,
     })
@@ -27,7 +27,7 @@ export default createCommand({
       human: [
         `Application folder: ${result.folder} (${result.lang})`,
         ...(result.letterScaffolded
-          ? [`Cover letter scaffolded — draft it, then re-run apply to render the PDF.`]
+          ? [`Cover letter scaffolded — draft it, then re-run prepare to render the PDF.`]
           : ['Cover letter rendered from the existing markdown.']),
       ],
     }

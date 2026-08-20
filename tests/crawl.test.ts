@@ -63,8 +63,8 @@ describe('crawl', () => {
     })
     expect(summary.fetched).toBe(4) // 2 arbeitnow + 2 recruitee
     expect(summary.errors).toHaveLength(0)
-    expect(summary.irrelevant).toBe(3)
-    expect(summary.created + summary.cut).toBe(1)
+    expect(summary.offStack).toBe(3)
+    expect(summary.created + summary.filtered).toBe(1)
     // files exist only for real candidates — never for ledger entries
     expect(listNotes(notesDir)).toHaveLength(summary.created)
   })
@@ -77,7 +77,7 @@ describe('crawl', () => {
     const second = await crawl(routedClient, home, profile, sources, { today: '2026-08-20' })
     expect(second.created).toBe(0)
     expect(second.refreshed).toBe(first.created)
-    expect(second.seenBefore).toBe(first.irrelevant + first.cut)
+    expect(second.known).toBe(first.offStack + first.filtered)
     expect(listNotes(notesDir)).toHaveLength(noteCount)
   })
 

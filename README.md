@@ -18,7 +18,7 @@ job-kit keeps a per-user `profile.yaml` (your stack focus, hard filters, tone ru
 job-kit doctor        # is my environment ready?
 job-kit crawl         # what's new that matches my profile?   (phase 2/3)
 job-kit list          # where do my applications stand?       (phase 3)
-job-kit apply <slug>  # render CV + cover letter to a folder  (phase 3)
+job-kit prepare <slug> # render CV + cover letter to a folder
 ```
 
 **An MCP server** (`job-kit-mcp`) that plugs into AI coding agents: your agent reads the job note and your tone rules, drafts the cover letter with you in chat, then calls the render tools — the judgment stays in the conversation, the logic stays in code.

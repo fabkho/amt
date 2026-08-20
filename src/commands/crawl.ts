@@ -28,7 +28,7 @@ export default createCommand({
       result: summary,
       human: [
         `Fetched ${summary.fetched} postings — ${summary.created} new notes, ${summary.refreshed} refreshed; `
-        + `ledger-only: ${summary.cut} auto-cut, ${summary.irrelevant} off-stack, ${summary.seenBefore} seen before, ${summary.stale} stale.`,
+        + `ledger-only: ${summary.filtered} filtered, ${summary.offStack} off-stack, ${summary.known} known, ${summary.stale} stale.`,
         ...(summary.errors.length
           ? summary.errors.map(e => `⚠ ${e.source}: ${e.message}`)
           : []),

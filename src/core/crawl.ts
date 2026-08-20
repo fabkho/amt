@@ -13,12 +13,12 @@ export interface CrawlSummary {
   created: number
   /** Existing notes refreshed with current posting facts. */
   refreshed: number
-  /** Auto-cut by the hard filters — ledger only, no file. */
-  cut: number
+  /** Mechanically filtered out by the hard rules — ledger only, no file. */
+  filtered: number
   /** No stack keyword matched — ledger only, no file. */
-  irrelevant: number
+  offStack: number
   /** Already judged in an earlier crawl. */
-  seenBefore: number
+  known: number
   stale: number
   errors: { source: string; message: string }[]
 }
@@ -92,19 +92,19 @@ function ingest(posting: JobPosting, ctx: IngestContext): void {
     return
   }
   if (ctx.ledger[key]) {
-    ctx.summary.seenBefore++
+    ctx.summary.known++
     return
   }
 
   if (!isRelevant(posting, ctx.profile.search)) {
-    markSeen(ctx.ledger, key, 'irrelevant', null, ctx.today)
-    ctx.summary.irrelevant++
+    markSeen(ctx.ledger, key, 'off-stack', null, ctx.today)
+    ctx.summary.offStack++
     return
   }
   const verdict = applyHardFilters(posting, ctx.profile)
   if (!verdict.passed) {
-    markSeen(ctx.ledger, key, 'cut', verdict.cutReason, ctx.today)
-    ctx.summary.cut++
+    markSeen(ctx.ledger, key, 'filtered', verdict.cutReason, ctx.today)
+    ctx.summary.filtered++
     return
   }
 
@@ -129,9 +129,9 @@ export async function crawl(
     fetched: 0,
     created: 0,
     refreshed: 0,
-    cut: 0,
-    irrelevant: 0,
-    seenBefore: 0,
+    filtered: 0,
+    offStack: 0,
+    known: 0,
     stale: 0,
     errors: [],
   }

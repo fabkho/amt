@@ -8,8 +8,13 @@ import type { CutReason } from './notes.js'
 // "never surface again" works without flooding the notes directory with
 // files nobody wants to read.
 
+const LEGACY_REASONS: Record<string, string> = { cut: 'filtered', irrelevant: 'off-stack' }
+
 const entry = z.object({
-  reason: z.enum(['cut', 'irrelevant']),
+  reason: z.preprocess(
+    value => LEGACY_REASONS[value as string] ?? value,
+    z.enum(['filtered', 'off-stack']),
+  ),
   cutReason: z.string().nullable().default(null),
   at: z.string(),
 })
@@ -36,7 +41,7 @@ export function saveSeen(home: string, ledger: SeenLedger): void {
 export function markSeen(
   ledger: SeenLedger,
   key: string,
-  reason: 'cut' | 'irrelevant',
+  reason: 'filtered' | 'off-stack',
   cutReason: CutReason | null,
   at: string,
 ): void {

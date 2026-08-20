@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vite-plus/test'
 import {
-  applyToJob,
+  prepareApplication,
   loadProfile,
   profileSchema,
   upsertNote,
@@ -11,7 +11,7 @@ import {
 } from '../src/index.js'
 
 async function setup(): Promise<{ profile: Profile; slug: string }> {
-  const root = mkdtempSync(join(tmpdir(), 'job-kit-apply-'))
+  const root = mkdtempSync(join(tmpdir(), 'job-kit-prepare-'))
   const notesDir = join(root, 'notes')
   const outputBase = join(root, 'out')
   const cvDataDir = join(root, 'cv')
@@ -43,10 +43,10 @@ async function setup(): Promise<{ profile: Profile; slug: string }> {
   return { profile, slug: 'acme-senior-frontend' }
 }
 
-describe('applyToJob', () => {
+describe('prepareApplication', () => {
   it('materializes snapshot, cv html, and a scaffolded letter', async () => {
     const { profile, slug } = await setup()
-    const result = await applyToJob(profile, slug, { pdf: false, lang: 'en' })
+    const result = await prepareApplication(profile, slug, { pdf: false, lang: 'en' })
 
     expect(result.letterScaffolded).toBe(true)
     expect(existsSync(join(result.folder, 'job.yaml'))).toBe(true)
@@ -56,19 +56,19 @@ describe('applyToJob', () => {
     expect(letterMd).toContain('Hi,')
 
     // the language choice is remembered on the note
-    const second = await applyToJob(profile, slug, { pdf: false })
+    const second = await prepareApplication(profile, slug, { pdf: false })
     expect(second.lang).toBe('en')
     expect(second.letterScaffolded).toBe(false)
   })
 
   it('renders the edited letter into txt and html', async () => {
     const { profile, slug } = await setup()
-    const first = await applyToJob(profile, slug, { pdf: false, lang: 'en' })
+    const first = await prepareApplication(profile, slug, { pdf: false, lang: 'en' })
     writeFileSync(
       join(first.folder, 'cover-letter.en.md'),
       'Subject: Senior Frontend Engineer\n\nHi,\n\nI would love to join.\n\nBest regards\nJane Doe\n',
     )
-    const second = await applyToJob(profile, slug, { pdf: false })
+    const second = await prepareApplication(profile, slug, { pdf: false })
     const txt = readFileSync(join(second.folder, 'cover-letter.en.txt'), 'utf-8')
     const html = readFileSync(join(second.folder, 'cover-letter.en.html'), 'utf-8')
     expect(txt).toContain('I would love to join.')

@@ -14,14 +14,14 @@ import {
 import { htmlToPdf } from './render/pdf.js'
 import type { Lang } from './render/templates.js'
 
-export interface ApplyOptions {
+export interface PrepareOptions {
   lang?: Lang
   /** Skip PDF generation (tests, machines without Chromium). */
   pdf?: boolean
   templatesDir?: string
 }
 
-export interface ApplyResult {
+export interface PrepareResult {
   folder: string
   lang: Lang
   letterScaffolded: boolean
@@ -64,11 +64,11 @@ function scaffoldLetter(profile: Profile, title: string, lang: Lang): string {
  * CV (html + pdf), and the cover letter pipeline around the editable
  * cover-letter.<lang>.md. Safe to re-run after every letter edit.
  */
-export async function applyToJob(
+export async function prepareApplication(
   profile: Profile,
   slug: string,
-  options: ApplyOptions = {},
-): Promise<ApplyResult> {
+  options: PrepareOptions = {},
+): Promise<PrepareResult> {
   const lang = options.lang ?? readNote(profile.paths.notesDir, slug).note.application?.lang as Lang | undefined ?? 'en'
   const pdf = options.pdf ?? true
   const { note, body } = readNote(profile.paths.notesDir, slug)

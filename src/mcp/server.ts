@@ -2,7 +2,7 @@ import { createRequire } from 'node:module'
 import { McpServer, ResourceTemplate } from '@modelcontextprotocol/server'
 import { z } from 'zod'
 import {
-  applyToJob,
+  prepareApplication,
   crawl,
   defaultHttpClient,
   importPostingFromUrl,
@@ -397,7 +397,7 @@ export function createServer(): McpServer {
     async ({ slug, lang, pdf }) => {
       try {
         const profile = await loadProfile(resolveHome(DEFAULT_HOME))
-        const result = await applyToJob(profile, slug, { lang: lang as Lang | undefined, pdf })
+        const result = await prepareApplication(profile, slug, { lang: lang as Lang | undefined, pdf })
         return jsonContent(result)
       } catch (error) {
         return toolErrorResponse('generating the application', error)

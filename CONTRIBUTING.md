@@ -32,7 +32,7 @@ skills/               # Agent Skills (open standard) — shipped via the Claude 
 ## Onboarding (colleagues)
 
 1. Node ≥ 22 and pnpm (`corepack enable`).
-2. `pnpm add -g "git+https://github.com/fabkho/amt.git"` — installs `amt` and `amt-mcp`.
+2. `pnpm add -g @fabkho/amt` — installs `amt` and `amt-mcp`.
 3. `amt doctor` — installs Chromium for PDF rendering, reports what's missing.
 4. `amt init` — scaffolds your `profile.yaml` (+ its JSON schema), a `cv-data.en.yaml` template, and seeds the boards. Fill both files.
 5. Wire up your agent — see "Agent integration" in the README.

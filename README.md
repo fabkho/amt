@@ -17,7 +17,7 @@ The easiest way to set up amt is to not set it up yourself. Install the binaries
 wire up your agent, and then just *talk*:
 
 ```bash
-pnpm add -g "git+https://github.com/fabkho/amt.git"          # installs amt + amt-mcp
+pnpm add -g @fabkho/amt        # installs the amt + amt-mcp binaries
 claude mcp add --scope user amt -- amt-mcp                    # or the plugin, see below
 ```
 

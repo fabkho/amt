@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/fabkho/amt/compare/amt-0.2.0...amt-0.2.1) (2026-08-21)
+
+
+### Features
+
+* probable-duplicate detection, board pagination, truncation warning ([c77dc23](https://github.com/fabkho/amt/commit/c77dc23bba41ec5f01113f763a91945f2dc8a45c))
+
 ## [0.2.0](https://github.com/fabkho/amt/compare/amt-0.1.0...amt-0.2.0) (2026-08-20)
 
 

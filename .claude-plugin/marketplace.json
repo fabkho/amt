@@ -1,0 +1,14 @@
+{
+  "name": "amt",
+  "owner": {
+    "name": "fabkho"
+  },
+  "plugins": [
+    {
+      "name": "amt",
+      "source": "./",
+      "description": "Job-search toolkit: MCP server + workflow skills for finding jobs and preparing applications."
+    }
+  ],
+  "description": "Private marketplace for the amt job-search toolkit."
+}

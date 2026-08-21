@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "ignorePatterns": [
+    "pi-extension/**"
+  ],
+  "rules": {
+    "unused-files": "warn",
+    "unused-exports": "warn",
+    "unused-dependencies": "warn",
+    "duplicate-exports": "warn"
+  },
+  "duplicates": {
+    "threshold": 15
+  },
+  "health": {
+    "maxCyclomatic": 20,
+    "maxCognitive": 15,
+    "maxCrap": 100
+  },
+  "audit": {
+    "gate": "new-only"
+  }
+}

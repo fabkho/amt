@@ -1,0 +1,137 @@
+{
+ "jobs": [
+  {
+   "absolute_url": "https://n26.com/en-eu/careers/positions/7965433?gh_jid=7965433",
+   "data_compliance": [
+    {
+     "type": "gdpr",
+     "requires_consent": false,
+     "requires_processing_consent": false,
+     "requires_retention_consent": false,
+     "retention_period": null,
+     "demographic_data_consent_applies": false
+    }
+   ],
+   "internal_job_id": 3458153,
+   "location": {
+    "name": "Paris"
+   },
+   "metadata": [
+    {
+     "id": 746453,
+     "name": "Time Type",
+     "value": "Full time",
+     "value_type": "single_select"
+    }
+   ],
+   "id": 7965433,
+   "updated_at": "2026-08-05T05:59:35-04:00",
+   "requisition_id": "R6557",
+   "title": "AFC Associate - SAR Delegate (CDD / Fixed-term contract)",
+   "company_name": "N26",
+   "first_published": "2026-06-09T11:38:32-04:00",
+   "language": "en",
+   "application_deadline": null,
+   "content": "&lt;h2&gt;&lt;strong&gt;About the opportunity&lt;/strong&gt;&lt;/h2&gt;\n&lt;p&gt;We are currently seeking an AFC Associate / SAR Delegate (D\u00e9clarant Tracfin) to join the French MLRO function on a CDD/fixed-term basis (6 months). In this role, you will be responsible for coordinating and taking ownership of key Anti-Financial Crime Operations activities, including decision-making on matters such as: review AML-CFT investigations, support the teams in charge of ongoing due diligence and EDD process (including decisions on requests for information to the customer), as well as review and submissio\u2026",
+   "departments": [
+    {
+     "id": 78128,
+     "name": "Risk",
+     "child_ids": [
+      220856,
+      363971,
+      363972,
+      363973,
+      363974,
+      363975,
+      363976
+     ],
+     "parent_id": null
+    }
+   ],
+   "offices": [
+    {
+     "id": 63741,
+     "name": "Paris",
+     "location": "Paris, Paris, France",
+     "child_ids": [],
+     "parent_id": null
+    }
+   ],
+   "ai_disclaimer": null,
+   "include_ai_disclaimer": null,
+   "ai_opt_out_request_url": null
+  },
+  {
+   "absolute_url": "https://n26.com/en-eu/careers/positions/8132219?gh_jid=8132219",
+   "data_compliance": [
+    {
+     "type": "gdpr",
+     "requires_consent": false,
+     "requires_processing_consent": false,
+     "requires_retention_consent": false,
+     "retention_period": null,
+     "demographic_data_consent_applies": false
+    }
+   ],
+   "internal_job_id": 3521385,
+   "location": {
+    "name": "Berlin"
+   },
+   "metadata": [
+    {
+     "id": 746453,
+     "name": "Time Type",
+     "value": "Full time",
+     "value_type": "single_select"
+    }
+   ],
+   "id": 8132219,
+   "updated_at": "2026-08-17T10:36:11-04:00",
+   "requisition_id": "R6768",
+   "title": "Anti-Financial Crime Subject Matter Expert (Senior Associate)",
+   "company_name": "N26",
+   "first_published": "2026-08-17T10:27:40-04:00",
+   "language": "en",
+   "application_deadline": null,
+   "content": "&lt;h2&gt;&lt;strong&gt;&lt;strong&gt;About the opportunity&lt;/strong&gt;&lt;/strong&gt;&lt;/h2&gt;\n&lt;p&gt;We are on the hunt for a high-impact &lt;strong data-path-to-node=&quot;0&quot; data-index-in-node=&quot;37&quot;&gt;Anti-Financial Crime Subject Matter Expert (Senior Associate)&lt;/strong&gt; to join our frontline global team! In this role you will be working closely with all AFC and Sanctions functions ensuring that regulatory requirements are embedded in our operational processes and assessments. Additionally, you will have end-to-end responsibilities for cross functional projects \u2026",
+   "departments": [
+    {
+     "id": 78128,
+     "name": "Risk",
+     "child_ids": [
+      220856,
+      363971,
+      363972,
+      363973,
+      363974,
+      363975,
+      363976,
+      389688
+     ],
+     "parent_id": null
+    }
+   ],
+   "offices": [
+    {
+     "id": 49747,
+     "name": "Berlin",
+     "location": "Berlin, Berlin, Germany",
+     "child_ids": [
+      270550,
+      270551,
+      270552,
+      354771
+     ],
+     "parent_id": null
+    }
+   ],
+   "ai_disclaimer": null,
+   "include_ai_disclaimer": null,
+   "ai_opt_out_request_url": null
+  }
+ ],
+ "meta": {
+  "total": 71
+ }
+}

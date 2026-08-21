@@ -1,0 +1,288 @@
+{
+ "offset": 0,
+ "limit": 2,
+ "totalFound": 4787,
+ "content": [
+  {
+   "id": "744000144588559",
+   "name": "Academic Internship in Corporate Governance Information Security & Data Protection (f/m/div.)",
+   "uuid": "b0db876b-2908-4454-8561-6e8128c8cdd1",
+   "jobAdId": "4d1ae2f3-3a89-4383-8158-5a57198fdcdd",
+   "defaultJobAd": true,
+   "refNumber": "REF293230N",
+   "company": {
+    "identifier": "BoschGroup",
+    "name": "Bosch Group"
+   },
+   "releasedDate": "2026-08-20T15:40:28.637Z",
+   "location": {
+    "city": "Braga",
+    "region": "Braga",
+    "country": "pt",
+    "address": "Rua Max Grundig",
+    "remote": false,
+    "hybrid": true,
+    "latitude": "41.5323579",
+    "longitude": "-8.4351741",
+    "fullLocation": "Braga, Braga, Portugal"
+   },
+   "industry": {
+    "id": "mechanical_engineering",
+    "label": "Mechanical Or Industrial Engineering"
+   },
+   "department": {},
+   "function": {
+    "id": "engineering",
+    "label": "Engineering"
+   },
+   "typeOfEmployment": {
+    "id": "permanent",
+    "label": "Full-time"
+   },
+   "experienceLevel": {
+    "id": "associate",
+    "label": "Associate"
+   },
+   "customField": [
+    {
+     "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+     "fieldLabel": "Contract type",
+     "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+     "valueLabel": "Limited"
+    },
+    {
+     "fieldId": "5abe28e96d8bc56863dd9746",
+     "fieldLabel": "Tariff Area",
+     "valueId": "7174fab4-934a-47da-81a5-cb2d914a4719",
+     "valueLabel": "Portugal Local Grades"
+    },
+    {
+     "fieldId": "586a997ee4b05fd937b86098",
+     "fieldLabel": "Legal Entity(acronym)",
+     "valueId": "801a758b-8dfb-45d2-8b60-0c54967b2096",
+     "valueLabel": "RBPB"
+    },
+    {
+     "fieldId": "586a99b5e4b0daa006ae1079",
+     "fieldLabel": "Working Location",
+     "valueId": "dc6a02c1-7f24-4092-8ce6-d4d26912a17e",
+     "valueLabel": "Braga"
+    },
+    {
+     "fieldId": "5abe295a6d8bc56863dd9747",
+     "fieldLabel": "Global Salary Level",
+     "valueId": "80ae06a1-4738-48e8-8aea-4613f58ecd57",
+     "valueLabel": "Others"
+    },
+    {
+     "fieldId": "69ca83a2489188782a1e9f87",
+     "fieldLabel": "Direct Or Indirect",
+     "valueId": "1aefbf4c-c10a-422e-a975-a504a7117792",
+     "valueLabel": "Indirect"
+    },
+    {
+     "fieldId": "5abe29f9b60a5e486a2d9b1c",
+     "fieldLabel": "Working hours",
+     "valueId": "60756b3e-dbab-4353-ac3a-0064d2bb27d8",
+     "valueLabel": "Full-time"
+    },
+    {
+     "fieldId": "586a9995e4b0daa006ae1078",
+     "fieldLabel": "Legal Entity",
+     "valueId": "ef6010c4-6f14-4e2a-a7e6-47aaf4b50a61",
+     "valueLabel": "Bosch Car Multimedia Portugal"
+    },
+    {
+     "fieldId": "691cf1c93001c782b9560ab7",
+     "fieldLabel": "Division full name",
+     "valueId": "777edb90-530c-4977-8107-f92e85b58876",
+     "valueLabel": "Corporate"
+    },
+    {
+     "fieldId": "5abe27936d8bc56863dd9745",
+     "fieldLabel": "Position type",
+     "valueId": "e4a3c0db-920d-4356-8ce0-c0b44a54e497",
+     "valueLabel": "Working student"
+    },
+    {
+     "fieldId": "COUNTRY",
+     "fieldLabel": "Country/Region",
+     "valueId": "pt",
+     "valueLabel": "Portugal"
+    },
+    {
+     "fieldId": "586a971ee4b0daa006ae1077",
+     "fieldLabel": "Brands",
+     "valueId": "default",
+     "valueLabel": "Bosch Group"
+    },
+    {
+     "fieldId": "586a996ce4b05fd937b86097",
+     "fieldLabel": "Working Country",
+     "valueId": "5ec12aa3-3c77-41f9-9e2c-af98140190a3",
+     "valueLabel": "Portugal"
+    },
+    {
+     "fieldId": "586a9b22e4b05fd937b8609a",
+     "fieldLabel": "Local Grade",
+     "valueId": "40553c59-5155-4004-a841-6491941fb1bd",
+     "valueLabel": "PT_Tariff"
+    },
+    {
+     "fieldId": "586a99a5e4b05fd937b86099",
+     "fieldLabel": "Division",
+     "valueId": "C",
+     "valueLabel": "C"
+    }
+   ],
+   "visibility": "PUBLIC",
+   "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000144588559",
+   "language": {
+    "code": "en",
+    "label": "English",
+    "labelNative": "English (US)"
+   }
+  },
+  {
+   "id": "744000144587769",
+   "name": "Junior Management Program \u2013 HR \u2013 Corporate",
+   "uuid": "60dbc9ae-3c02-4305-90fa-8b30425e6899",
+   "jobAdId": "0026b81e-4032-4ef9-9ee9-36dd5faee7f4",
+   "defaultJobAd": true,
+   "refNumber": "REF293589D",
+   "company": {
+    "identifier": "BoschGroup",
+    "name": "Bosch Group"
+   },
+   "releasedDate": "2026-08-20T15:36:02.552Z",
+   "location": {
+    "city": "Farmington Hills",
+    "region": "MI",
+    "country": "us",
+    "address": "38000 Hills Tech Drive",
+    "postalCode": "48331",
+    "remote": false,
+    "hybrid": false,
+    "latitude": "42.4922209",
+    "longitude": "-83.4230436",
+    "fullLocation": "Farmington Hills, MI, United States"
+   },
+   "industry": {
+    "id": "mechanical_engineering",
+    "label": "Mechanical Or Industrial Engineering"
+   },
+   "department": {},
+   "function": {
+    "id": "human_resources",
+    "label": "Human Resources"
+   },
+   "typeOfEmployment": {
+    "id": "permanent",
+    "label": "Full-time"
+   },
+   "experienceLevel": {
+    "id": "entry_level",
+    "label": "Entry Level"
+   },
+   "customField": [
+    {
+     "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+     "fieldLabel": "Contract type",
+     "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+     "valueLabel": "Unlimited"
+    },
+    {
+     "fieldId": "5abe28e96d8bc56863dd9746",
+     "fieldLabel": "Tariff Area",
+     "valueId": "82f1dd4b-de9d-4134-9f1a-8d315be380ae",
+     "valueLabel": "United States Local Grades"
+    },
+    {
+     "fieldId": "586a997ee4b05fd937b86098",
+     "fieldLabel": "Legal Entity(acronym)",
+     "valueId": "RBUS",
+     "valueLabel": "RBUS"
+    },
+    {
+     "fieldId": "586a99b5e4b0daa006ae1079",
+     "fieldLabel": "Working Location",
+     "valueId": "Farmington Hills, MI",
+     "valueLabel": "Farmington Hills, MI"
+    },
+    {
+     "fieldId": "5abe295a6d8bc56863dd9747",
+     "fieldLabel": "Global Salary Level",
+     "valueId": "427b1359-5057-4375-a2ae-6c649782296d",
+     "valueLabel": "Experienced/ Middle Tariff"
+    },
+    {
+     "fieldId": "69ca83a2489188782a1e9f87",
+     "fieldLabel": "Direct Or Indirect",
+     "valueId": "1aefbf4c-c10a-422e-a975-a504a7117792",
+     "valueLabel": "Indirect"
+    },
+    {
+     "fieldId": "5abe29f9b60a5e486a2d9b1c",
+     "fieldLabel": "Working hours",
+     "valueId": "60756b3e-dbab-4353-ac3a-0064d2bb27d8",
+     "valueLabel": "Full-time"
+    },
+    {
+     "fieldId": "586a9995e4b0daa006ae1078",
+     "fieldLabel": "Legal Entity",
+     "valueId": "Robert Bosch LLC",
+     "valueLabel": "Robert Bosch LLC"
+    },
+    {
+     "fieldId": "691cf1c93001c782b9560ab7",
+     "fieldLabel": "Division full name",
+     "valueId": "777edb90-530c-4977-8107-f92e85b58876",
+     "valueLabel": "Corporate"
+    },
+    {
+     "fieldId": "5abe27936d8bc56863dd9745",
+     "fieldLabel": "Position type",
+     "valueId": "c7b4da31-6f38-405a-b2e8-08a76e3c3f2c",
+     "valueLabel": "Professional"
+    },
+    {
+     "fieldId": "COUNTRY",
+     "fieldLabel": "Country/Region",
+     "valueId": "us",
+     "valueLabel": "United States"
+    },
+    {
+     "fieldId": "586a971ee4b0daa006ae1077",
+     "fieldLabel": "Brands",
+     "valueId": "default",
+     "valueLabel": "Bosch Group"
+    },
+    {
+     "fieldId": "586a996ce4b05fd937b86097",
+     "fieldLabel": "Working Country",
+     "valueId": "US",
+     "valueLabel": "United States"
+    },
+    {
+     "fieldId": "586a9b22e4b05fd937b8609a",
+     "fieldLabel": "Local Grade",
+     "valueId": "US_E3",
+     "valueLabel": "US_E3"
+    },
+    {
+     "fieldId": "586a99a5e4b05fd937b86099",
+     "fieldLabel": "Division",
+     "valueId": "C",
+     "valueLabel": "C"
+    }
+   ],
+   "visibility": "PUBLIC",
+   "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000144587769",
+   "language": {
+    "code": "en",
+    "label": "English",
+    "labelNative": "English (US)"
+   }
+  }
+ ]
+}

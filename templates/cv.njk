@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="{{ labels.lang }}">
+<head>
+<meta charset="utf-8" />
+<title>{{ personal.name }} – {{ labels.docTitle }}</title>
+<style>
+  @page {
+    size: A4;
+    margin: 16mm 17mm 14mm 17mm;
+    @bottom-right {
+      content: "{{ personal.name }} · {{ labels.page }} " counter(page) " / " counter(pages);
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 7.5pt;
+      color: #9aa3ad;
+    }
+  }
+
+  {% include "shared.css" %}
+
+  html {
+    font-size: 9.7pt;
+    line-height: 1.42;
+  }
+
+  header { {% if border %}border-bottom: 2px solid #1f3a5f; {% endif %}padding-bottom: 7px; margin-bottom: 14px; }
+
+  /* ---------- Sections ---------- */
+  h2 {
+    font-size: 9.2pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.1px;
+    color: #1f3a5f;
+    margin: 24px 0 10px 0;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #d9dee4;
+    page-break-after: avoid;
+  }
+
+  .profile { margin: 0 0 2px 0; color: #2e353d; }
+
+  /* ---------- Entries ---------- */
+  .entry { margin-bottom: 10px; page-break-inside: avoid; }
+  .entry:last-child { margin-bottom: 2px; }
+
+  .entry-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .org { font-weight: 700; font-size: 10.2pt; color: #14243b; }
+  .place { font-weight: 400; color: #6b757f; font-size: 8.8pt; }
+
+  .date {
+    font-size: 8.6pt;
+    color: #6b757f;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .position { font-weight: 600; color: #2e353d; margin-top: 1px; }
+  .subtitle { font-style: italic; color: #7b858f; font-size: 8.7pt; margin-top: 1px; }
+
+  ul { margin: 5px 0 0 0; padding-left: 13px; }
+  li { margin-bottom: 3.5px; padding-left: 2px; }
+  li::marker { color: #9aa8b8; }
+  li:last-child { margin-bottom: 0; }
+  li b, li strong { color: #14243b; font-weight: 600; }
+
+  /* ---------- Skills ---------- */
+  .skills { margin-top: 2px; }
+  .skill-row { display: flex; gap: 10px; margin-bottom: 4.5px; }
+  .skill-key {
+    flex: 0 0 108px;
+    font-weight: 600;
+    color: #1f3a5f;
+    font-size: 9.2pt;
+  }
+  .skill-val { flex: 1; color: #2e353d; }
+
+  /* ---------- Projects ---------- */
+  .project { margin-bottom: 5px; page-break-inside: avoid; }
+  .project-name { font-weight: 600; color: #14243b; }
+  .project-desc { color: #3d454e; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>{{ personal.name }}</h1>
+  <div class="role">{{ personal.role }}</div>
+  <div class="contact">
+    <span><a href="mailto:{{ email }}">{{ email }}</a></span>
+    <span>{{ phone }}</span>
+    <span>{{ location }}</span>
+    {% if languages %}
+    <span>{{ languages }}</span>
+    {% endif %}
+    {% for link in links %}
+    <span><a href="{{ link.url }}">{{ link.label }}</a></span>
+    {% endfor %}
+  </div>
+</header>
+
+<h2>{{ labels.profile }}</h2>
+<p class="profile">{{ profile }}</p>
+
+<h2>{{ labels.experience }}</h2>
+{% for exp in experience %}
+<div class="entry">
+  <div class="entry-head">
+    <div class="org">{{ exp.company }} <span class="place">— {{ exp.location }}</span></div>
+    <div class="date">{{ exp.date }}</div>
+  </div>
+  {% if exp.position %}
+  <div class="position">{{ exp.position }}</div>
+  {% endif %}
+  {% if exp.subtitle %}
+  <div class="subtitle">{{ exp.subtitle }}</div>
+  {% endif %}
+  <ul>
+    {% for bullet in exp.bullets %}
+    <li>{{ bullet }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endfor %}
+
+<h2>{{ labels.education }}</h2>
+{% for edu in education %}
+<div class="entry">
+  <div class="entry-head">
+    <div class="org">{{ edu.school }} <span class="place">— {{ edu.program }}</span></div>
+    <div class="date">{{ edu.date }}</div>
+  </div>
+  <ul>
+    {% for bullet in edu.bullets %}
+    <li>{{ bullet }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endfor %}
+
+<h2>{{ labels.skills }}</h2>
+<div class="skills">
+  {% for skill in skills %}
+  <div class="skill-row"><div class="skill-key">{{ skill.key }}</div><div class="skill-val">{{ skill.val }}</div></div>
+  {% endfor %}
+</div>
+
+<h2>{{ labels.projects }}</h2>
+{% for project in projects %}
+<div class="project">
+  <span class="project-name"><a href="{{ project.url }}">{{ project.name }}</a></span>
+  <span class="project-desc">— {{ project.desc }}</span>
+</div>
+{% endfor %}
+
+</body>
+</html>

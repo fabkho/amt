@@ -1,0 +1,59 @@
+{
+  "name": "amt",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Job application toolkit: crawl postings, manage job notes, render CVs and cover letters",
+  "license": "MIT",
+  "bin": {
+    "amt": "./dist/bin.mjs",
+    "amt-mcp": "./dist/mcp-bin.mjs"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    }
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "lint": "vp lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vp test run",
+    "prepare": "node .husky/install.mjs && pnpm build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
+    "citty": "^0.2.2",
+    "consola": "^3.4.2",
+    "fast-xml-parser": "^5.11.0",
+    "gray-matter": "^4.0.3",
+    "nunjucks": "^3.2.4",
+    "playwright": "^1.62.1",
+    "turndown": "^7.2.4",
+    "yaml": "^2.9.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
+    "@modelcontextprotocol/client": "^2.0.0",
+    "@types/node": "^26.2.0",
+    "@types/nunjucks": "^3.2.6",
+    "@types/turndown": "^5.0.6",
+    "fallow": "^3.17.0",
+    "husky": "^9.1.7",
+    "typescript": "^7.0.2",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "pnpm@10.12.1"
+}

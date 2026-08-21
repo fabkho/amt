@@ -1,0 +1,46 @@
+# Fixture person — no real data. Covers every section and inline HTML.
+personal:
+  name: "Jane Doe"
+  role: "Senior Software Engineer"
+
+profile: |
+  I build reliable software and the tooling around it.
+
+links:
+  - label: "github.com/janedoe"
+    url: "https://github.com/janedoe"
+
+experience:
+  - company: "Acme GmbH"
+    location: "Berlin / Remote"
+    date: "2022 – present"
+    position: "Software Engineer"
+    subtitle: "B2B SaaS platform"
+    bullets:
+      - "<b>Migration:</b> Led the framework migration of the core product."
+      - "Built the CI/CD pipelines &amp; developer tooling."
+
+  - company: "Beta AG"
+    location: "Hamburg"
+    date: "2020 – 2022"
+    position: "Junior Developer"
+    bullets:
+      - "Full-stack feature work in <code>TypeScript</code>."
+
+education:
+  - school: "TU Example"
+    program: "Computer Science (B.Sc.)"
+    date: "2016 – 2020"
+    bullets:
+      - "Focus: distributed systems."
+
+skills:
+  - key: "Frontend"
+    val: "Vue 3, TypeScript"
+  - key: "Backend"
+    val: "PHP (Laravel), PostgreSQL"
+
+projects:
+  - name: "demo-kit"
+    url: "https://github.com/janedoe/demo-kit"
+    desc: "CLI for demo workflows."

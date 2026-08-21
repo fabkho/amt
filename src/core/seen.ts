@@ -1,0 +1,59 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { z } from 'zod'
+import { AmtError } from './errors.js'
+import type { CutReason } from './notes.js'
+
+// Notes are for postings worth a human look. Everything else the crawler has
+// ever judged (auto-cut or stack-irrelevant) is remembered here instead, so
+// "never surface again" works without flooding the notes directory with
+// files nobody wants to read.
+
+// Data VALUES are kebab-case ('off-stack'), JSON summary KEYS are camelCase
+// (offStack) — deliberate, do not "fix" one into the other.
+const LEGACY_REASONS: Record<string, string> = { cut: 'filtered', irrelevant: 'off-stack' }
+
+const entry = z.object({
+  reason: z.preprocess(
+    value => LEGACY_REASONS[value as string] ?? value,
+    z.enum(['filtered', 'off-stack']),
+  ),
+  cutReason: z.string().nullable().default(null),
+  at: z.string(),
+})
+
+const ledgerSchema = z.record(z.string(), entry)
+
+export type SeenLedger = z.output<typeof ledgerSchema>
+
+function ledgerPath(home: string): string {
+  return join(home, 'seen.json')
+}
+
+export function loadSeen(home: string): SeenLedger {
+  const path = ledgerPath(home)
+  if (!existsSync(path)) return {}
+  try {
+    return ledgerSchema.parse(JSON.parse(readFileSync(path, 'utf-8')))
+  } catch (error) {
+    throw new AmtError(
+      'SEEN_LEDGER_INVALID',
+      `${path} is corrupt: ${error instanceof Error ? error.message : String(error)} — fix or delete it (postings will simply be re-judged).`,
+    )
+  }
+}
+
+export function saveSeen(home: string, ledger: SeenLedger): void {
+  mkdirSync(home, { recursive: true })
+  writeFileSync(ledgerPath(home), `${JSON.stringify(ledger, null, 1)}\n`)
+}
+
+export function markSeen(
+  ledger: SeenLedger,
+  key: string,
+  reason: 'filtered' | 'off-stack',
+  cutReason: CutReason | null,
+  at: string,
+): void {
+  ledger[key] = { reason, cutReason, at }
+}

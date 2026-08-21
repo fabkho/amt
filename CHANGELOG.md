@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/fabkho/amt/compare/amt-0.2.0...amt-0.2.1) (2026-08-21)
+
+
+### Features
+
+* amt 0.2.0 — das Amt ist eröffnet ([85438e3](https://github.com/fabkho/amt/commit/85438e309fd6c18d04c15a3deb2ee01a83010a23))
+* publish to npm as @fabkho/amt ([51885b1](https://github.com/fabkho/amt/commit/51885b1c215ff5281fa387b044c9de29b9b8aaa5))
+
 ## 0.2.0 (2026-08-20)
 
 Initial public release. One day, one office:

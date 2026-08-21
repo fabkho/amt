@@ -9,6 +9,7 @@ import {
   manualPosting,
   JOB_STATUSES,
   AmtError,
+  findProbableDuplicates,
   listNotes,
   notesForCompany,
   loadProfile,
@@ -236,8 +237,14 @@ export function createServer(): McpServer {
         // Context, not a blocker: a different role at the same company (or a
         // changed offer) is a legitimate second application.
         const companyHistory = notesForCompany(profile.paths.notesDir, note.company, result.slug)
+        const probableDuplicates = findProbableDuplicates(
+          profile.paths.notesDir,
+          note.company,
+          note.title,
+          result.slug,
+        )
         renderIndex(profile.paths.notesDir)
-        return jsonContent({ ...result, status: note.status, tracked, companyHistory })
+        return jsonContent({ ...result, status: note.status, tracked, companyHistory, probableDuplicates })
       } catch (error) {
         return toolErrorResponse('importing the posting', error)
       }

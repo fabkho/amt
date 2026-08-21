@@ -1,6 +1,6 @@
 import { AmtError } from './errors.js'
 import { applyHardFilters, isFresh, isRelevant } from './match.js'
-import { dedupeKey, listNotes, renderIndex, slugify, upsertNote } from './notes.js'
+import { dedupeKey, findProbableDuplicates, listNotes, renderIndex, slugify, upsertNote } from './notes.js'
 import { loadSeen, markSeen, saveSeen, type SeenLedger } from './seen.js'
 import { htmlToMarkdown, postingToNoteInput } from './sources/normalize.js'
 import { getAdapter } from './sources/index.js'
@@ -22,6 +22,8 @@ export interface CrawlSummary {
   /** Already judged in an earlier crawl. */
   known: number
   stale: number
+  /** New notes that fuzzy-match an existing note at the same company. */
+  probableDuplicates: { slug: string; of: string }[]
   errors: { source: string; message: string }[]
   /** What to do now — surfaced verbatim by the CLI and MCP layers. */
   next: string
@@ -35,12 +37,16 @@ interface FetchedBatch {
   applyFreshness: boolean
 }
 
+// Boards rotate fast — one page misses postings that scrolled past between
+// crawls. Three pages plus the freshness window keeps coverage and cost sane.
+const BOARD_PAGES = 3
+
 async function fetchBoardBatch(client: HttpClient, board: string): Promise<FetchedBatch> {
   const adapter = getAdapter(board)
   return {
     adapter,
     companySlug: null,
-    postings: await adapter.fetchBoard!(client),
+    postings: await adapter.fetchBoard!(client, { pages: BOARD_PAGES }),
     applyFreshness: true,
   }
 }
@@ -158,6 +164,14 @@ async function ingest(posting: JobPosting, batch: FetchedBatch, ctx: IngestConte
   ctx.noted.set(key, result.slug)
   ctx.summary.created++
   ctx.summary.createdSlugs.push(result.slug)
+  for (const dupe of findProbableDuplicates(
+    ctx.profile.paths.notesDir,
+    posting.company,
+    posting.title,
+    result.slug,
+  )) {
+    ctx.summary.probableDuplicates.push({ slug: result.slug, of: dupe.slug })
+  }
 }
 
 function assertCrawlableSources(sources: Sources): void {
@@ -195,6 +209,7 @@ export async function crawl(
     offStack: 0,
     known: 0,
     stale: 0,
+    probableDuplicates: [],
     errors: [],
     next: '',
   }

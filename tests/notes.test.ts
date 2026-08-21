@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vite-plus/test'
 import {
+  findProbableDuplicates,
   listNotes,
   notesForCompany,
   readNote,
@@ -188,6 +189,23 @@ describe('notesForCompany', () => {
     const history = notesForCompany(dir, 'Acme GmbH', 'acme-backend')
     expect(history).toHaveLength(1)
     expect(history[0]!.slug).toBe('acme-gmbh-senior-frontend')
+  })
+})
+
+describe('findProbableDuplicates', () => {
+  it('fuzzy-matches titles across gender suffixes and separators', () => {
+    const dir = freshDir()
+    upsertNote(dir, posting({ title: 'Senior Frontend Engineer (m/w/d)' }), 'a')
+    upsertNote(
+      dir,
+      posting({ nativeId: '2', slug: 'octopus-li', source: 'manual', title: 'Senior  Frontend Engineer' }),
+      'b',
+    )
+    const dupes = findProbableDuplicates(dir, 'Acme GmbH', 'Senior Frontend Engineer!', 'octopus-li')
+    expect(dupes).toHaveLength(1)
+    expect(dupes[0]!.slug).toBe('acme-gmbh-senior-frontend')
+    // different role at the same company is NOT a duplicate
+    expect(findProbableDuplicates(dir, 'Acme GmbH', 'Backend Engineer')).toHaveLength(0)
   })
 })
 

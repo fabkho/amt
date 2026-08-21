@@ -22,7 +22,9 @@ function fixture(file: string): unknown {
 
 const routedClient: HttpClient = {
   json: async (url) => {
-    if (url.includes('arbeitnow.com')) return fixture('arbeitnow.json')
+    // terminate pagination: the fixture would otherwise loop for every page
+    if (url.includes('arbeitnow.com'))
+      return { ...(fixture('arbeitnow.json') as Record<string, unknown>), links: null }
     if (url.includes('shopwareag.recruitee.com')) return fixture('recruitee.json')
     throw new Error(`404: ${url}`)
   },

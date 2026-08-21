@@ -17,6 +17,9 @@ export default createCommand({
       human: [
         `Fetched ${summary.fetched} postings — ${summary.created} new notes, ${summary.refreshed} refreshed; `
         + `ledger-only: ${summary.filtered} filtered, ${summary.offStack} off-stack, ${summary.known} known, ${summary.stale} stale.`,
+        ...(summary.probableDuplicates.length
+          ? summary.probableDuplicates.map(d => `⚠ probable duplicate: ${d.slug} ≈ ${d.of}`)
+          : []),
         ...(summary.errors.length
           ? summary.errors.map(e => `⚠ ${e.source}: ${e.message}`)
           : []),

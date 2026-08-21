@@ -146,6 +146,32 @@ export function notesForCompany(
     .map(s => ({ slug: s.note.slug, title: s.note.title, status: s.note.status }))
 }
 
+/** "Senior Frontend Engineer (m/w/d)" ≈ "Senior Frontend Engineer" */
+function normalizeTitle(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/\(.*?\)/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
+/**
+ * Same company + fuzzy-equal title across sources (manual import vs ATS
+ * crawl of the same role). Surfaced as a warning — never auto-merged: a
+ * reposted or changed offer is a legitimate second note.
+ */
+export function findProbableDuplicates(
+  notesDir: string,
+  company: string,
+  title: string,
+  excludeSlug?: string,
+): { slug: string; title: string; status: JobStatus }[] {
+  const wanted = normalizeTitle(title)
+  return notesForCompany(notesDir, company, excludeSlug).filter(
+    h => normalizeTitle(h.title) === wanted,
+  )
+}
+
 export function listNotes(
   notesDir: string,
   filter: { status?: JobStatus[] } = {},

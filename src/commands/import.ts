@@ -1,6 +1,6 @@
 import { createCommand } from './_shared.js'
 import { importPostingFromUrl, manualPosting } from '../core/import-url.js'
-import { notesForCompany, renderIndex, upsertNote } from '../core/notes.js'
+import { findProbableDuplicates, notesForCompany, renderIndex, upsertNote } from '../core/notes.js'
 import { loadProfile, resolveHome } from '../core/profile.js'
 import { defaultHttpClient } from '../core/sources/http.js'
 import { htmlToMarkdown, postingToNoteInput } from '../core/sources/normalize.js'
@@ -63,6 +63,12 @@ export default createCommand({
     // Same company elsewhere? Warn, never block — a different role or a
     // changed offer is a legitimate second application.
     const companyHistory = notesForCompany(profile.paths.notesDir, posting.company, result.slug)
+    const probableDuplicates = findProbableDuplicates(
+      profile.paths.notesDir,
+      posting.company,
+      posting.title,
+      result.slug,
+    )
     // Interest shown → keep watching this company (organic source growth).
     const tracked = await tryAutoTrack(
       defaultHttpClient,
@@ -73,12 +79,14 @@ export default createCommand({
     renderIndex(profile.paths.notesDir)
 
     return {
-      result: { slug: result.slug, created: result.created, source, tracked, companyHistory },
+      result: { slug: result.slug, created: result.created, source, tracked, companyHistory, probableDuplicates },
       human: [
         `${result.created ? 'Imported' : 'Refreshed'} ${posting.company} — ${posting.title} → ${result.slug}`,
-        ...(companyHistory.length > 0
-          ? [`⚠ ${companyHistory.length} other note(s) at ${posting.company}: ${companyHistory.map(h => `${h.slug} (${h.status})`).join(', ')} — a different role is fine, just make sure this isn't the same one.`]
-          : []),
+        ...(probableDuplicates.length > 0
+          ? [`⚠⚠ Probable duplicate — same title exists: ${probableDuplicates.map(h => `${h.slug} (${h.status})`).join(', ')}. Re-applying is your call, but check first.`]
+          : companyHistory.length > 0
+            ? [`⚠ ${companyHistory.length} other note(s) at ${posting.company}: ${companyHistory.map(h => `${h.slug} (${h.status})`).join(', ')} — a different role is fine, just make sure this isn't the same one.`]
+            : []),
         ...(tracked
           ? [`Now tracking ${posting.company} (${tracked}) — future crawls include this company; \`amt sources remove\` to undo.`]
           : []),

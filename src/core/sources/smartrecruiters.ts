@@ -24,7 +24,7 @@ const listResponse = z.looseObject({
   content: z.array(z.unknown()),
 })
 
-const MAX_PAGES = 5
+const MAX_PAGES = 10
 const PAGE_SIZE = 100
 
 export const smartrecruiters: SourceAdapter = {
@@ -44,6 +44,12 @@ export const smartrecruiters: SourceAdapter = {
       rawSeen += data.content.length
       items.push(...parseItems(data.content, listItem))
       if (rawSeen >= totalFound || data.content.length === 0) break
+    }
+    if (rawSeen < totalFound) {
+      // Silent truncation is the failure mode a crawler must never have.
+      process.stderr.write(
+        `[amt] smartrecruiters:${company} truncated — fetched ${rawSeen} of ${totalFound} postings (page cap)\n`,
+      )
     }
     // The API answers 200 with totalFound 0 for unknown identifiers AND for
     // legitimately empty boards — a distinct code lets slug probing treat it

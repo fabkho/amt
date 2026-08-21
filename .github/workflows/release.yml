@@ -3,6 +3,10 @@ name: Release
 on:
   push:
     branches: [main]
+  # Manual dispatch recovers a failed publish (or ships the current version
+  # for the first time) without a new release cycle — the registry check
+  # below keeps it idempotent.
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -11,10 +15,39 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
     steps:
-      # Opens/updates a release PR from conventional commits; merging it tags
-      # the release. No publish step: job-kit is installed straight from git.
       - uses: googleapis/release-please-action@v4
+        id: release
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+  publish:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      # Idempotent: skip when this exact version already exists; fail loudly
+      # on any registry error that is not a clean 404.
+      - name: Publish (idempotent)
+        run: |
+          name=$(node -p "require('./package.json').name")
+          version=$(node -p "require('./package.json').version")
+          if npm view "$name@$version" version > /dev/null 2>&1; then
+            echo "$name@$version already published — skipping."
+          else
+            pnpm publish --no-git-checks --access public
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

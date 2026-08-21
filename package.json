@@ -1,7 +1,6 @@
 {
-  "name": "amt",
+  "name": "@fabkho/amt",
   "version": "0.2.0",
-  "private": true,
   "description": "Job application toolkit: crawl postings, manage job notes, render CVs and cover letters",
   "license": "MIT",
   "bin": {
@@ -55,5 +54,12 @@
   "engines": {
     "node": ">=22.0.0"
   },
-  "packageManager": "pnpm@10.12.1"
+  "packageManager": "pnpm@10.12.1",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fabkho/amt.git"
+  }
 }

@@ -68,6 +68,19 @@ describe('isRelevant', () => {
     ).toBe(true)
   })
 
+  it('ignores HTML markup — keywords in attributes do not count', () => {
+    const nodeOnly = { stacksPrimary: ['node'], stacksSecondary: [] }
+    expect(
+      isRelevant(
+        posting({ descriptionHtml: '<ul data-is-last-node="" data-is-only-node=""><li>Marketing</li></ul>' }),
+        nodeOnly,
+      ),
+    ).toBe(false)
+    expect(
+      isRelevant(posting({ descriptionHtml: '<p>We run <b>Node</b> services.</p>' }), nodeOnly),
+    ).toBe(true)
+  })
+
   it('matches keywords with non-word edges (c++, .net, c#)', () => {
     const edgy = { stacksPrimary: ['c++', '.net', 'c#'], stacksSecondary: [] }
     expect(isRelevant(posting({ descriptionHtml: 'modern C++ services' }), edgy)).toBe(true)

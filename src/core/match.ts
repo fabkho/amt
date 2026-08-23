@@ -47,7 +47,10 @@ export function isRelevant(
 ): boolean {
   const keywords = [...search.stacksPrimary, ...search.stacksSecondary]
   if (keywords.length === 0) return true
-  const haystack = `${posting.title}\n${posting.tags.join('\n')}\n${posting.descriptionHtml ?? ''}`
+  // Match against visible text only — raw HTML is full of attribute noise
+  // ("data-is-last-node" must not count as "node").
+  const description = (posting.descriptionHtml ?? '').replace(/<[^>]*>/g, ' ')
+  const haystack = `${posting.title}\n${posting.tags.join('\n')}\n${description}`
   // Word boundaries, not substrings — "vue" must not match "Fanvue", nor
   // "node" match inside longer words. \b fails at non-word edges ("c++",
   // ".net", "c#"), so the boundary is chosen per edge character.

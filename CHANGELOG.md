@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.2](https://github.com/fabkho/amt/compare/amt-0.2.1...amt-0.2.2) (2026-08-23)
+
+
+### Features
+
+* arbeitsagentur board adapter — Bundesagentur für Arbeit Jobsuche ([e032c16](https://github.com/fabkho/amt/commit/e032c161831d9427dcfa895c38e814a11f7435d3))
+
+
+### Bug Fixes
+
+* match keywords against visible text, not raw HTML ([93470cd](https://github.com/fabkho/amt/commit/93470cd054cb4ebbce7d6dc4789cdeaa402e0cc6))
+
 ## [0.2.1](https://github.com/fabkho/amt/compare/amt-0.2.0...amt-0.2.1) (2026-08-21)
 
 

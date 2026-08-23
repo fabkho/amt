@@ -36,7 +36,7 @@ describe('normalize helpers', () => {
 })
 
 describe('registry', () => {
-  it('knows all seven adapters', () => {
+  it('knows all eight adapters', () => {
     expect(listAdapters().map(a => a.name)).toEqual([
       'recruitee',
       'ashby',
@@ -45,6 +45,7 @@ describe('registry', () => {
       'personio',
       'smartrecruiters',
       'arbeitnow',
+      'arbeitsagentur',
     ])
   })
 

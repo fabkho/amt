@@ -79,8 +79,10 @@ export default defineCommand({
       )
 
       const sources = loadSources(home)
-      if (boardsAnswer && !sources.boards.includes('arbeitnow')) {
-        sources.boards.push('arbeitnow')
+      for (const board of ['arbeitnow', 'arbeitsagentur']) {
+        if (boardsAnswer && !sources.boards.includes(board)) {
+          sources.boards.push(board)
+        }
       }
       saveSources(home, sources)
 

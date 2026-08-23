@@ -41,12 +41,22 @@ interface FetchedBatch {
 // crawls. Three pages plus the freshness window keeps coverage and cost sane.
 const BOARD_PAGES = 3
 
-async function fetchBoardBatch(client: HttpClient, board: string): Promise<FetchedBatch> {
+async function fetchBoardBatch(
+  client: HttpClient,
+  board: string,
+  search: Profile['search'],
+): Promise<FetchedBatch> {
   const adapter = getAdapter(board)
   return {
     adapter,
     companySlug: null,
-    postings: await adapter.fetchBoard!(client, { pages: BOARD_PAGES }),
+    postings: await adapter.fetchBoard!(client, {
+      pages: BOARD_PAGES,
+      // Search-API boards (Arbeitsagentur) query by these; list boards ignore them.
+      keywords: [...search.stacksPrimary, ...search.stacksSecondary],
+      cities: search.locations.cities.map(c => c.name),
+      remote: search.locations.remote,
+    }),
     applyFreshness: true,
   }
 }
@@ -66,11 +76,12 @@ async function fetchCompanyBatch(
 async function fetchAll(
   client: HttpClient,
   sources: Sources,
+  search: Profile['search'],
   errors: CrawlSummary['errors'],
 ): Promise<FetchedBatch[]> {
   const batches: FetchedBatch[] = []
   const jobs: { source: string; run: () => Promise<FetchedBatch> }[] = [
-    ...sources.boards.map(board => ({ source: board, run: () => fetchBoardBatch(client, board) })),
+    ...sources.boards.map(board => ({ source: board, run: () => fetchBoardBatch(client, board, search) })),
     ...sources.companies.map(company => ({
       source: `${company.ats}:${company.slug}`,
       run: () => fetchCompanyBatch(client, company),
@@ -141,10 +152,14 @@ async function ingest(posting: JobPosting, batch: FetchedBatch, ctx: IngestConte
   // Some ATS (SmartRecruiters) need a second request per posting for the
   // description — fetch it once per new posting so relevance and the note
   // body work with the full text.
-  if (posting.descriptionHtml === null && batch.adapter.fetchDetail && batch.companySlug) {
+  if (posting.descriptionHtml === null && batch.adapter.fetchDetail) {
     posting = {
       ...posting,
-      descriptionHtml: await batch.adapter.fetchDetail(ctx.client, batch.companySlug, posting.nativeId),
+      descriptionHtml: await batch.adapter.fetchDetail(
+        ctx.client,
+        batch.companySlug ?? posting.company,
+        posting.nativeId,
+      ),
     }
   }
 
@@ -225,7 +240,7 @@ export async function crawl(
     summary,
   }
 
-  const batches = await fetchAll(client, sources, summary.errors)
+  const batches = await fetchAll(client, sources, profile.search, summary.errors)
   for (const batch of batches) {
     for (const posting of batch.postings) {
       summary.fetched++

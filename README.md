@@ -7,7 +7,7 @@
 
 `amt` is a personal job-search toolkit: a CLI plus an MCP server (`amt-mcp`) that puts a
 clerk — *der Sachbearbeiter* — inside your AI coding agent. It crawls job APIs
-(6 ATS platforms + the Arbeitnow board), keeps one markdown note per posting that matches your
+(6 ATS platforms, the Arbeitnow board, and the Bundesagentur für Arbeit), keeps one markdown note per posting that matches your
 stack, and files everything else in a seen-ledger so it never resurfaces. You judge,
 it stamps, and `prepare` renders CV + cover letter (PDF/txt/md) into an upload-ready folder.
 
@@ -57,8 +57,9 @@ The `_index.md` overview in your notes directory keeps itself current.
 
 ## Die Quellenlage (sources)
 
-amt itself crawls only **safe, official job APIs**: boards like Arbeitnow, and the
-career pages of companies you track — `amt sources add <company>` auto-discovers
+amt itself crawls only **safe, official job APIs**: boards like Arbeitnow, the
+Bundesagentur für Arbeit Jobsuche (Germany's largest job database — queried along
+your stack keywords and cities), and the career pages of companies you track — `amt sources add <company>` auto-discovers
 which ATS they use (Recruitee, Ashby, Greenhouse, Lever, Personio, SmartRecruiters).
 
 Everything else goes into `sources.yaml` as a **channel**: a recipe (URL template,

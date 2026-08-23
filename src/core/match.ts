@@ -48,8 +48,11 @@ export function isRelevant(
   const keywords = [...search.stacksPrimary, ...search.stacksSecondary]
   if (keywords.length === 0) return true
   // Match against visible text only — raw HTML is full of attribute noise
-  // ("data-is-last-node" must not count as "node").
-  const description = (posting.descriptionHtml ?? '').replace(/<[^>]*>/g, ' ')
+  // ("data-is-last-node" must not count as "node"), and URLs are full of
+  // technology noise ("applicationForm.php?sid=…" must not count as "php").
+  const description = (posting.descriptionHtml ?? '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/(?:https?:\/\/|www\.)\S+/gi, ' ')
   const haystack = `${posting.title}\n${posting.tags.join('\n')}\n${description}`
   // Word boundaries, not substrings — "vue" must not match "Fanvue", nor
   // "node" match inside longer words. \b fails at non-word edges ("c++",

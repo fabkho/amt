@@ -79,6 +79,15 @@ describe('isRelevant', () => {
     expect(
       isRelevant(posting({ descriptionHtml: '<p>We run <b>Node</b> services.</p>' }), nodeOnly),
     ).toBe(true)
+    const phpOnly = { stacksPrimary: ['php'], stacksSecondary: [] }
+    expect(
+      isRelevant(
+        posting({ descriptionHtml: 'Bewerbung: https://x.org/applicationForm.php?sid=1' }),
+        phpOnly,
+      ),
+    ).toBe(false)
+    expect(isRelevant(posting({ descriptionHtml: 'Wir suchen PHP-Entwickler.' }), phpOnly))
+      .toBe(true)
   })
 
   it('matches keywords with non-word edges (c++, .net, c#)', () => {

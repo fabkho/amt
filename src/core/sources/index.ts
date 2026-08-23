@@ -1,5 +1,6 @@
 import { AmtError } from '../errors.js'
 import { arbeitnow } from './arbeitnow.js'
+import { arbeitsagentur } from './arbeitsagentur.js'
 import { ashby } from './ashby.js'
 import { greenhouse } from './greenhouse.js'
 import { lever } from './lever.js'
@@ -16,6 +17,7 @@ const adapters: readonly SourceAdapter[] = [
   personio,
   smartrecruiters,
   arbeitnow,
+  arbeitsagentur,
 ]
 
 export function listAdapters(): readonly SourceAdapter[] {

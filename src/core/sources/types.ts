@@ -18,8 +18,16 @@ export interface JobPosting {
 }
 
 export interface HttpClient {
-  json: (url: string) => Promise<unknown>
-  text: (url: string) => Promise<string>
+  json: (url: string, options?: { headers?: Record<string, string> }) => Promise<unknown>
+  text: (url: string, options?: { headers?: Record<string, string> }) => Promise<string>
+}
+
+/** Boards that are search APIs (Arbeitsagentur) need the profile's search scope. */
+export interface BoardOptions {
+  pages?: number
+  keywords?: string[]
+  cities?: string[]
+  remote?: boolean
 }
 
 export interface SourceAdapter {
@@ -29,7 +37,7 @@ export interface SourceAdapter {
   /** Required for kind 'ats'. */
   fetchCompany?: (client: HttpClient, company: string) => Promise<JobPosting[]>
   /** Required for kind 'board'. */
-  fetchBoard?: (client: HttpClient, options?: { pages?: number }) => Promise<JobPosting[]>
+  fetchBoard?: (client: HttpClient, options?: BoardOptions) => Promise<JobPosting[]>
   /**
    * For ATS where the list endpoint carries no description (N+1 detail
    * requests) — the crawler calls this once per new posting.

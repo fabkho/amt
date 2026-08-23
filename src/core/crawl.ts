@@ -261,7 +261,7 @@ export async function crawl(
   }
 
   saveSeen(home, ctx.ledger)
-  renderIndex(profile.paths.notesDir)
+  renderIndex(profile.paths.notesDir, profile.search.locations.cities.map(c => c.name))
   summary.next = nextHint(summary)
   return summary
 }

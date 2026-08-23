@@ -19,6 +19,7 @@ export {
   findProbableDuplicates,
   notesForCompany,
   readNote,
+  placement,
   renderIndex,
   setStatus,
   slugify,

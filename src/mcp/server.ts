@@ -243,7 +243,7 @@ export function createServer(): McpServer {
           note.title,
           result.slug,
         )
-        renderIndex(profile.paths.notesDir)
+        renderIndex(profile.paths.notesDir, profile.search.locations.cities.map(c => c.name))
         return jsonContent({ ...result, status: note.status, tracked, companyHistory, probableDuplicates })
       } catch (error) {
         return toolErrorResponse('importing the posting', error)
@@ -336,7 +336,7 @@ export function createServer(): McpServer {
           status === 'shortlist' && profile.search.autoTrackCompanies,
           note.company,
         )
-        renderIndex(profile.paths.notesDir)
+        renderIndex(profile.paths.notesDir, profile.search.locations.cities.map(c => c.name))
         return jsonContent({ slug: note.slug, status: note.status, score: score ?? note.score, tracked })
       } catch (error) {
         return toolErrorResponse('setting the job status', error)
@@ -415,7 +415,7 @@ export function createServer(): McpServer {
       try {
         const profile = await loadProfile(resolveHome())
         const result = await prepareApplication(profile, slug, { lang: lang as Lang | undefined, pdf })
-        renderIndex(profile.paths.notesDir)
+        renderIndex(profile.paths.notesDir, profile.search.locations.cities.map(c => c.name))
         return jsonContent(result)
       } catch (error) {
         return toolErrorResponse('generating the application', error)

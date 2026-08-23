@@ -23,7 +23,7 @@ export default createCommand({
       lang: args.lang as Lang | undefined,
       pdf: args.pdf as boolean,
     })
-    renderIndex(profile.paths.notesDir)
+    renderIndex(profile.paths.notesDir, profile.search.locations.cities.map(c => c.name))
     return {
       result,
       human: [

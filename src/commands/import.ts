@@ -76,7 +76,7 @@ export default createCommand({
       profile.search.autoTrackCompanies,
       posting.company,
     )
-    renderIndex(profile.paths.notesDir)
+    renderIndex(profile.paths.notesDir, profile.search.locations.cities.map(c => c.name))
 
     return {
       result: { slug: result.slug, created: result.created, source, tracked, companyHistory, probableDuplicates },

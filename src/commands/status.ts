@@ -84,7 +84,7 @@ export default createCommand({
       note.status === 'shortlist' && profile.search.autoTrackCompanies,
       note.company,
     )
-    renderIndex(profile.paths.notesDir)
+    renderIndex(profile.paths.notesDir, profile.search.locations.cities.map(c => c.name))
 
     return {
       result: { slug: note.slug, status: note.status, score, cutReason: note.cutReason, tracked },

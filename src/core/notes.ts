@@ -338,25 +338,82 @@ export function setStatus(
 }
 
 /** Regenerates the `_index.md` overview — a view, never a source of truth. */
-export function renderIndex(notesDir: string): string {
+// German cities appear under their English names in ATS data —
+// "Cologne, Germany" must land in the Köln bucket.
+const CITY_EXONYMS: Record<string, string[]> = {
+  koln: ['cologne'],
+  munchen: ['munich', 'muenchen'],
+  nurnberg: ['nuremberg'],
+  wien: ['vienna'],
+  zurich: ['zuerich'],
+}
+
+function normalizePlace(value: string): string {
+  return value.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')
+}
+
+/**
+ * Deterministic bucket for the index: remote work first, then the profile
+ * city the posting sits in, everything else under "Other".
+ */
+export function placement(
+  note: Pick<JobNote, 'workMode' | 'location'>,
+  cities: string[],
+): string {
+  if (note.workMode === 'remote') return 'Remote'
+  const location = normalizePlace(note.location ?? '')
+  for (const city of cities) {
+    const normalized = normalizePlace(city)
+    const names = [normalized, ...(CITY_EXONYMS[normalized] ?? [])]
+    if (names.some(name => location.includes(name))) return city
+  }
+  return 'Other'
+}
+
+/** Score-ranked: judged notes first (best on top), unjudged after, then newest. */
+function byRank(a: { note: JobNote }, b: { note: JobNote }): number {
+  const score = (b.note.score ?? -1) - (a.note.score ?? -1)
+  if (score !== 0) return score
+  return (b.note.discoveredAt ?? '').localeCompare(a.note.discoveredAt ?? '')
+}
+
+function indexLine(note: JobNote): string {
+  const salary
+    = note.salaryMin || note.salaryMax
+      ? ` · ${[note.salaryMin, note.salaryMax].filter(Boolean).join('–')}`
+      : ''
+  const score = note.score !== null ? ` · ⭐ ${note.score}` : ''
+  const cut = note.cutReason ? ` · ✂️ ${note.cutReason}` : ''
+  return (
+    `- [[${note.slug}]] — **${note.company}**, ${note.title}`
+    + ` (${note.workMode ?? '?'}${score}${salary}${cut}) [↗](${note.url})`
+  )
+}
+
+// Statuses where the stack is big enough that placement buckets pay off —
+// judged sections (applied, cut, …) stay flat.
+const BUCKETED_STATUSES = new Set<JobStatus>(['new', 'shortlist'])
+
+export function renderIndex(notesDir: string, cities: string[] = []): string {
   const notes = listNotes(notesDir)
   const lines = ['# Job Search Index', '']
   for (const status of JOB_STATUSES) {
-    const group = notes.filter(s => s.note.status === status)
+    const group = notes.filter(s => s.note.status === status).sort(byRank)
     if (group.length === 0) continue
     lines.push(`## ${status} (${group.length})`, '')
-    for (const { note } of group) {
-      const salary
-        = note.salaryMin || note.salaryMax
-          ? ` · ${[note.salaryMin, note.salaryMax].filter(Boolean).join('–')}`
-          : ''
-      const cut = note.cutReason ? ` · ✂️ ${note.cutReason}` : ''
-      lines.push(
-        `- [[${note.slug}]] — **${note.company}**, ${note.title}`
-        + ` (${note.workMode ?? '?'}${salary}${cut}) [↗](${note.url})`,
-      )
+    if (BUCKETED_STATUSES.has(status) && cities.length > 0) {
+      const buckets = ['Remote', ...cities, 'Other']
+      for (const bucket of buckets) {
+        const inBucket = group.filter(s => placement(s.note, cities) === bucket)
+        if (inBucket.length === 0) continue
+        lines.push(`### ${bucket} (${inBucket.length})`, '')
+        for (const { note } of inBucket) lines.push(indexLine(note))
+        lines.push('')
+      }
+    } else {
+      for (const { note } of group) lines.push(indexLine(note))
+      lines.push('')
     }
-    lines.push('')
   }
   const content = lines.join('\n')
   mkdirSync(notesDir, { recursive: true })

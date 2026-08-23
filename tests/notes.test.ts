@@ -225,4 +225,39 @@ describe('index view', () => {
     // _index.md must not be picked up as a note
     expect(listNotes(dir)).toHaveLength(2)
   })
+
+  it('buckets new/shortlist by placement and ranks by score', () => {
+    const dir = freshDir()
+    upsertNote(dir, posting({ slug: 'remote-a', nativeId: 'r1', workMode: 'remote' }), '')
+    upsertNote(
+      dir,
+      posting({ slug: 'koeln-a', nativeId: 'k1', workMode: 'hybrid', location: 'Cologne, Germany' }),
+      '',
+    )
+    upsertNote(
+      dir,
+      posting({ slug: 'koeln-b', nativeId: 'k2', workMode: null, location: 'Köln' }),
+      '',
+    )
+    upsertNote(
+      dir,
+      posting({ slug: 'elsewhere', nativeId: 'e1', workMode: 'onsite', location: 'Hamburg' }),
+      '',
+    )
+    updateNote(dir, 'koeln-b', { score: 90 })
+    updateNote(dir, 'koeln-a', { score: 40 })
+
+    const content = renderIndex(dir, ['Köln'])
+    const remote = content.indexOf('### Remote (1)')
+    const koeln = content.indexOf('### Köln (2)')
+    const other = content.indexOf('### Other (1)')
+    expect(remote).toBeGreaterThan(-1)
+    expect(koeln).toBeGreaterThan(remote)
+    expect(other).toBeGreaterThan(koeln)
+    // score-ranked inside the bucket: 90 before 40
+    expect(content.indexOf('koeln-b')).toBeLessThan(content.indexOf('koeln-a'))
+    expect(content).toContain('⭐ 90')
+    // without cities the section stays flat
+    expect(renderIndex(dir)).not.toContain('### ')
+  })
 })

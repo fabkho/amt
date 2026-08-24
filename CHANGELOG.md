@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.4](https://github.com/fabkho/amt/compare/amt-0.2.3...amt-0.2.4) (2026-08-24)
+
+
+### Features
+
+* manage agent channels through the tools ([96d95e8](https://github.com/fabkho/amt/commit/96d95e811c0c99795ed00bb0afe327c06260f42a))
+* render the notes index as rank-sorted tables ([ec12f2e](https://github.com/fabkho/amt/commit/ec12f2e635340db4097d64c01f164fe255d088ff))
+
 ## [0.2.3](https://github.com/fabkho/amt/compare/amt-0.2.2...amt-0.2.3) (2026-08-23)
 
 

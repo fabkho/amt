@@ -13,6 +13,7 @@ export type { Profile, ProfileInput } from './core/profile.js'
 export {
   CUT_REASONS,
   dedupeKey,
+  inboxNotes,
   JOB_STATUSES,
   jobNoteSchema,
   listNotes,
@@ -24,9 +25,11 @@ export {
   renderIndex,
   setStatus,
   slugify,
+  unrankedNotes,
   updateNote,
   upsertNote,
 } from './core/notes.js'
+export { forgetSeen, loadSeen } from './core/seen.js'
 export type {
   CutReason,
   JobNote,

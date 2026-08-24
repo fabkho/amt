@@ -36,6 +36,14 @@ async function resolvePosting(args: ImportArgs): Promise<{ posting: JobPosting; 
       }),
     }
   }
+  // A single manual flag is almost always a slip — say so instead of failing
+  // later with an opaque URL_NOT_RECOGNIZED.
+  if (args.company || args.title) {
+    throw new AmtError(
+      'MANUAL_IMPORT_INCOMPLETE',
+      'Manual import needs BOTH --company and --title (the others are optional).',
+    )
+  }
   const imported = await importPostingFromUrl(defaultHttpClient, args.url)
   return { posting: imported.posting, source: imported.parsed.ats }
 }

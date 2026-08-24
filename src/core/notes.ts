@@ -14,6 +14,7 @@ export const JOB_STATUSES = [
   'shortlist',
   'applied',
   'interview',
+  'offer',
   'rejected',
   'cut',
 ] as const
@@ -331,7 +332,7 @@ export function setStatus(
   notesDir: string,
   slug: string,
   status: JobStatus,
-  options: { cutReason?: CutReason; cutNote?: string } = {},
+  options: { cutReason?: CutReason; cutNote?: string; at?: string } = {},
 ): JobNote {
   const { note, body } = readNote(notesDir, slug)
   if (options.cutReason && !CUT_REASONS.includes(options.cutReason)) {
@@ -349,14 +350,30 @@ export function setStatus(
   note.status = status
   if (options.cutReason) note.cutReason = options.cutReason
   if (options.cutNote) note.cutNote = options.cutNote
-  if (status !== 'cut' && note.status !== 'cut') {
+  if (status !== 'cut') {
     // Leaving (or never entering) cut: stale cut metadata would otherwise
     // haunt the index ("shortlisted, ✂️ ethics").
     if (!options.cutReason) note.cutReason = null
     if (!options.cutNote) note.cutNote = null
   }
+  if (status === 'applied') stampApplied(note, options.at)
   writeNote(notesDir, note, body)
   return note
+}
+
+/** Record the application date once, so follow-up timing is answerable. */
+function stampApplied(note: JobNote, at?: string): void {
+  const date = at ?? new Date().toISOString().slice(0, 10)
+  note.application = note.application
+    ? { ...note.application, appliedAt: note.application.appliedAt ?? date }
+    : { folder: '', lang: '', appliedAt: date }
+}
+
+/** New notes that still lack a score — the ranking debt, one list, one source. */
+export function unrankedNotes(notesDir: string): string[] {
+  return listNotes(notesDir, { status: ['new'] })
+    .filter(s => s.note.score === null)
+    .map(s => s.note.slug)
 }
 
 /** Regenerates the `_index.md` overview — a view, never a source of truth. */

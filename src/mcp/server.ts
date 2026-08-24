@@ -10,7 +10,10 @@ import {
   JOB_STATUSES,
   AmtError,
   findProbableDuplicates,
+  inboxNotes,
   listNotes,
+  resolveCompanyLogo,
+  unrankedNotes,
   notesForCompany,
   loadProfile,
   loadSources,
@@ -34,6 +37,7 @@ import {
   type Lang,
   type Profile,
 } from '../index.js'
+import { trackAndReindex } from '../core/tracking.js'
 
 const require = createRequire(import.meta.url)
 
@@ -100,9 +104,7 @@ export function createServer(): McpServer {
   // The ranking debt as data — attached to every response that could end a
   // session, so no agent can plausibly not know about unranked notes.
   function rankingDebt(notesDir: string): { count: number; slugs: string[]; directive: string } | null {
-    const unranked = listNotes(notesDir, { status: ['new'] })
-      .filter(s => s.note.score === null)
-      .map(s => s.note.slug)
+    const unranked = unrankedNotes(notesDir)
     if (unranked.length === 0) return null
     return {
       count: unranked.length,
@@ -129,6 +131,7 @@ export function createServer(): McpServer {
         const sources = loadSources(home)
         let profileSummary: unknown = null
         let noteCounts: Record<string, number> = {}
+        let unranked = null
         try {
           const profile = await loadProfile(home)
           profileSummary = {
@@ -143,14 +146,9 @@ export function createServer(): McpServer {
               listNotes(profile.paths.notesDir, { status: [status] }).length,
             ]),
           )
+          unranked = rankingDebt(profile.paths.notesDir)
         } catch (error) {
           profileSummary = { missing: toErrorMessage(error) }
-        }
-        let unranked = null
-        try {
-          unranked = rankingDebt((await loadProfile(home)).paths.notesDir)
-        } catch {
-          // no profile yet — nothing to rank
         }
         return jsonContent({
           name: 'amt',
@@ -261,21 +259,15 @@ export function createServer(): McpServer {
         let company: string
         let body: string
         let result
-        if (manual) {
-          const posting = manualPosting(url, manual)
-          company = posting.company
-          body = posting.descriptionHtml ? htmlToMarkdown(posting.descriptionHtml) : ''
-          result = upsertNote(profile.paths.notesDir, postingToNoteInput(posting, today()), body)
-        } else {
-          const imported = await importPostingFromUrl(defaultHttpClient, url)
-          company = imported.posting.company
-          body = imported.posting.descriptionHtml ? htmlToMarkdown(imported.posting.descriptionHtml) : ''
-          result = upsertNote(
-            profile.paths.notesDir,
-            postingToNoteInput(imported.posting, today()),
-            body,
-          )
-        }
+        const posting = manual
+          ? manualPosting(url, manual)
+          : (await importPostingFromUrl(defaultHttpClient, url)).posting
+        company = posting.company
+        body = posting.descriptionHtml ? htmlToMarkdown(posting.descriptionHtml) : ''
+        const input = postingToNoteInput(posting, today())
+        // Parity with the CLI import path — resolve the company logo.
+        input.logo = await resolveCompanyLogo(defaultHttpClient, company)
+        result = upsertNote(profile.paths.notesDir, input, body)
         const tracked = await tryAutoTrack(
           defaultHttpClient,
           home,
@@ -295,7 +287,14 @@ export function createServer(): McpServer {
           result.slug,
         )
         renderIndex(profile.paths.notesDir, profile.search.locations.cities.map(c => c.name))
-        return jsonContent({ ...result, status: note.status, tracked, companyHistory, probableDuplicates })
+        return jsonContent({
+          ...result,
+          status: note.status,
+          tracked,
+          companyHistory,
+          probableDuplicates,
+          unranked: rankingDebt(profile.paths.notesDir),
+        })
       } catch (error) {
         return toolErrorResponse('importing the posting', error)
       }
@@ -381,14 +380,15 @@ export function createServer(): McpServer {
         if (score !== undefined || flags !== undefined || assessment !== undefined) {
           updateNote(profile.paths.notesDir, slug, { score, flags, assessment })
         }
-        const tracked = await tryAutoTrack(
-          defaultHttpClient,
-          home,
-          status === 'shortlist' && profile.search.autoTrackCompanies,
-          note.company,
-        )
-        renderIndex(profile.paths.notesDir, profile.search.locations.cities.map(c => c.name))
-        return jsonContent({ slug: note.slug, status: note.status, score: score ?? note.score, tracked })
+        const tracked = await trackAndReindex(defaultHttpClient, home, profile, note)
+        // Return the remaining debt: a progress meter that terminates at null.
+        return jsonContent({
+          slug: note.slug,
+          status: note.status,
+          score: score ?? note.score,
+          tracked,
+          unranked: rankingDebt(profile.paths.notesDir),
+        })
       } catch (error) {
         return toolErrorResponse('setting the job status', error)
       }
@@ -464,19 +464,57 @@ export function createServer(): McpServer {
     {
       title: 'Untrack Company or Channel',
       description: 'Stop tracking a company (by name or slug) or remove an agent channel (by name).',
-      inputSchema: z.object({ company: z.string() }),
+      inputSchema: z.object({ name: z.string().describe('Company name/slug or channel name') }),
       annotations: { readOnlyHint: false },
     },
-    async ({ company }) => {
+    async ({ name }) => {
       try {
-        const removed
-          = removeCompany(resolveHome(), company) || removeChannel(resolveHome(), company)
+        const removed = removeCompany(resolveHome(), name) || removeChannel(resolveHome(), name)
         if (!removed) {
-          throw new AmtError('COMPANY_NOT_TRACKED', `"${company}" is not tracked`)
+          throw new AmtError('COMPANY_NOT_TRACKED', `"${name}" is not tracked`)
         }
-        return jsonContent({ removed: company })
+        return jsonContent({ removed: name })
       } catch (error) {
-        return toolErrorResponse('untracking the company', error)
+        return toolErrorResponse('untracking the source', error)
+      }
+    },
+  )
+
+  // ─── Tool: get_inbox ───────────────────────────────────────────
+
+  server.registerTool(
+    'get_inbox',
+    {
+      title: 'Get Daily Inbox',
+      description:
+        "The day's arrivals (default today): what was discovered, with scores and cut reasons, "
+        + 'plus the count still unranked. Use this to present the daily-update delta. Mirrors the '
+        + 'inbox/<date>.md file in the notes dir.',
+      inputSchema: z.object({
+        date: z.string().optional().describe('ISO date YYYY-MM-DD; defaults to today'),
+      }),
+    },
+    async ({ date }) => {
+      try {
+        const profile = await loadProfile(resolveHome())
+        const day = date ?? today()
+        const arrived = inboxNotes(profile.paths.notesDir, day).map(({ note }) => ({
+          slug: note.slug,
+          company: note.company,
+          title: note.title,
+          status: note.status,
+          score: note.score,
+          cutReason: note.cutReason,
+          workMode: note.workMode,
+          url: note.url,
+        }))
+        return jsonContent({
+          date: day,
+          arrived,
+          unranked: arrived.filter(n => n.status === 'new' && n.score === null).length,
+        })
+      } catch (error) {
+        return toolErrorResponse('reading the inbox', error)
       }
     },
   )

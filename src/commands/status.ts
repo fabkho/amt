@@ -2,7 +2,6 @@ import { createCommand } from './_shared.js'
 import {
   CUT_REASONS,
   JOB_STATUSES,
-  renderIndex,
   setStatus,
   updateNote,
   type CutReason,
@@ -11,7 +10,7 @@ import {
 } from '../core/notes.js'
 import { loadProfile, resolveHome, type Profile } from '../core/profile.js'
 import { defaultHttpClient } from '../core/sources/http.js'
-import { tryAutoTrack } from '../core/sources-store.js'
+import { trackAndReindex } from '../core/tracking.js'
 import { AmtError } from '../core/errors.js'
 
 interface StatusArgs {
@@ -77,14 +76,7 @@ export default createCommand({
     const note = changeStatus(profile, typed)
     const score = persistJudgment(profile, note.slug, typed) ?? note.score
 
-    // Shortlisting is interest — start watching the company's ATS.
-    const tracked = await tryAutoTrack(
-      defaultHttpClient,
-      home,
-      note.status === 'shortlist' && profile.search.autoTrackCompanies,
-      note.company,
-    )
-    renderIndex(profile.paths.notesDir, profile.search.locations.cities.map(c => c.name))
+    const tracked = await trackAndReindex(defaultHttpClient, home, profile, note)
 
     return {
       result: { slug: note.slug, status: note.status, score, cutReason: note.cutReason, tracked },

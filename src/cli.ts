@@ -20,6 +20,7 @@ const main = defineCommand({
     sources: () => import('./commands/sources.js').then(m => m.default),
     import: () => import('./commands/import.js').then(m => m.default),
     list: () => import('./commands/list.js').then(m => m.default),
+    inbox: () => import('./commands/inbox.js').then(m => m.default),
     status: () => import('./commands/status.js').then(m => m.default),
     show: () => import('./commands/show.js').then(m => m.default),
     prepare: () => import('./commands/prepare.js').then(m => m.default),

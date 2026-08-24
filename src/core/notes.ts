@@ -412,9 +412,51 @@ function pushTable(lines: string[], notes: { note: JobNote }[]): void {
 // judged sections (applied, cut, …) stay flat.
 const BUCKETED_STATUSES = new Set<JobStatus>(['new', 'shortlist'])
 
+/** Notes that arrived on `date`, ranked — the day's mail, whatever became of it. */
+export function inboxNotes(notesDir: string, date: string): StoredNote[] {
+  return listNotes(notesDir)
+    .filter(s => s.note.discoveredAt === date)
+    .sort(byRank)
+}
+
+function renderInbox(notesDir: string, notes: StoredNote[]): void {
+  const byDate = new Map<string, StoredNote[]>()
+  for (const stored of notes) {
+    const date = stored.note.discoveredAt
+    if (!byDate.has(date)) byDate.set(date, [])
+    byDate.get(date)!.push(stored)
+  }
+  if (byDate.size === 0) return
+  mkdirSync(join(notesDir, 'inbox'), { recursive: true })
+  for (const [date, arrived] of byDate) {
+    const unranked = arrived.filter(
+      s => s.note.status === 'new' && s.note.score === null,
+    ).length
+    const lines = [
+      `# 📥 Inbox ${date}`,
+      '',
+      unranked > 0
+        ? `${arrived.length} arrived — **${unranked} still unranked** (a scoring round files them).`
+        : `${arrived.length} arrived — all judged. Der Stapel ist abgearbeitet.`,
+      '',
+    ]
+    pushTable(lines, [...arrived].sort(byRank))
+    writeFileSync(join(notesDir, 'inbox', `${date}.md`), lines.join('\n'))
+  }
+}
+
 export function renderIndex(notesDir: string, cities: string[] = []): string {
   const notes = listNotes(notesDir)
+  renderInbox(notesDir, notes)
   const lines = ['# Job Search Index', '']
+  const unranked = notes.filter(s => s.note.status === 'new' && s.note.score === null)
+  if (unranked.length > 0) {
+    const days = [...new Set(unranked.map(s => s.note.discoveredAt))].sort().reverse()
+    lines.push(
+      `📥 **${unranked.length} unranked** → ${days.map(d => `[[inbox/${d}]]`).join(' ')}`,
+      '',
+    )
+  }
   for (const status of JOB_STATUSES) {
     const group = notes.filter(s => s.note.status === status).sort(byRank)
     if (group.length === 0) continue

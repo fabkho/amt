@@ -239,6 +239,38 @@ describe('index view', () => {
     )
   })
 
+  it('writes daily inbox files and links unranked days from the index', () => {
+    const dir = freshDir()
+    upsertNote(dir, posting({ slug: 'today-one', discoveredAt: '2026-08-24' }), '')
+    upsertNote(
+      dir,
+      posting({ nativeId: '2', slug: 'today-two', discoveredAt: '2026-08-24' }),
+      '',
+    )
+    upsertNote(
+      dir,
+      posting({ nativeId: '3', slug: 'older', discoveredAt: '2026-08-20' }),
+      '',
+    )
+    updateNote(dir, 'today-two', { score: 77 })
+
+    const content = renderIndex(dir)
+    expect(content).toContain('📥 **2 unranked** → [[inbox/2026-08-24]] [[inbox/2026-08-20]]')
+
+    const today = readFileSync(join(dir, 'inbox', '2026-08-24.md'), 'utf-8')
+    expect(today).toContain('# 📥 Inbox 2026-08-24')
+    expect(today).toContain('2 arrived — **1 still unranked**')
+    // ranked first
+    expect(today.indexOf('today-two')).toBeLessThan(today.indexOf('today-one'))
+    expect(readFileSync(join(dir, 'inbox', '2026-08-20.md'), 'utf-8')).toContain('older')
+
+    // scoring processes the inbox: header disappears once everything is ranked
+    updateNote(dir, 'today-one', { score: 40 })
+    updateNote(dir, 'older', { score: 10 })
+    expect(renderIndex(dir)).not.toContain('📥')
+    expect(readFileSync(join(dir, 'inbox', '2026-08-24.md'), 'utf-8')).toContain('all judged')
+  })
+
   it('buckets new/shortlist by placement and ranks by score', () => {
     const dir = freshDir()
     upsertNote(dir, posting({ slug: 'remote-a', nativeId: 'r1', workMode: 'remote' }), '')

@@ -40,9 +40,10 @@ for PDFs), `amt init` walks you through it interactively.
 
 ## Der Dienstweg (the loop)
 
-The full experience is one sentence to your agent: *"run my job search"* —
-it crawls every source **including the agent channels** (LinkedIn & Co.),
-scores the finds against your profile, and hands you a ranked list.
+The full experience is one word to your agent: *"update"* — it crawls every
+source **including the agent channels** (LinkedIn & Co.), ranks everything new
+against your profile, and files the day's arrivals in `inbox/<date>.md` next
+to your notes (the index links every day that still has unranked mail).
 The same loop by hand:
 
 ```bash

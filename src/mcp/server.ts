@@ -482,7 +482,7 @@ export function createServer(): McpServer {
         const sources = loadSources(home)
         channels = sources.channels.length
           ? `Configured agent channels (execute in priority order when present): ${JSON.stringify(sources.channels, null, 2)}`
-          : 'No agent channels configured. Offer to seed channel recipes into sources.yaml — personal, local data the tool stores but never executes. Field-tested ranking: 1. LinkedIn guest jobs API (very high yield), 2. StepStone search pages (high, flaky details), 3. VueJobs internal API https://vuejobs.com/api/posts (niche, on-target for Vue), 4. Bing RSS as fallback. Tracked-company ATS crawling is the verifier/closer, not a discovery channel.'
+          : 'No agent channels configured. Offer to seed channel recipes into sources.yaml — personal, local data the tool stores but never executes. Ready-made, field-tested recipes (URL templates + parse hints): https://github.com/fabkho/amt/blob/main/skills/job-search/channels.md — ranking: 1. LinkedIn guest jobs API (very high yield), 2. StepStone search pages (high, flaky details), 3. VueJobs internal API (niche, on-target for Vue), 4. Bing RSS as fallback. Tracked-company ATS crawling is the verifier/closer, not a discovery channel.'
       } catch {
         // still provide the workflow without context
       }

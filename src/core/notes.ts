@@ -356,15 +356,17 @@ export function setStatus(
     if (!options.cutReason) note.cutReason = null
     if (!options.cutNote) note.cutNote = null
   }
-  // Stamp the application date so "applied 3 weeks ago, no reply" is answerable.
-  if (status === 'applied') {
-    const at = options.at ?? new Date().toISOString().slice(0, 10)
-    note.application = note.application
-      ? { ...note.application, appliedAt: note.application.appliedAt ?? at }
-      : { folder: '', lang: '', appliedAt: at }
-  }
+  if (status === 'applied') stampApplied(note, options.at)
   writeNote(notesDir, note, body)
   return note
+}
+
+/** Record the application date once, so follow-up timing is answerable. */
+function stampApplied(note: JobNote, at?: string): void {
+  const date = at ?? new Date().toISOString().slice(0, 10)
+  note.application = note.application
+    ? { ...note.application, appliedAt: note.application.appliedAt ?? date }
+    : { folder: '', lang: '', appliedAt: date }
 }
 
 /** New notes that still lack a score — the ranking debt, one list, one source. */

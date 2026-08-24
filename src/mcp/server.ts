@@ -37,6 +37,7 @@ import {
   type Lang,
   type Profile,
 } from '../index.js'
+import { trackAndReindex } from '../core/tracking.js'
 
 const require = createRequire(import.meta.url)
 
@@ -379,13 +380,7 @@ export function createServer(): McpServer {
         if (score !== undefined || flags !== undefined || assessment !== undefined) {
           updateNote(profile.paths.notesDir, slug, { score, flags, assessment })
         }
-        const tracked = await tryAutoTrack(
-          defaultHttpClient,
-          home,
-          status === 'shortlist' && profile.search.autoTrackCompanies,
-          note.company,
-        )
-        renderIndex(profile.paths.notesDir, profile.search.locations.cities.map(c => c.name))
+        const tracked = await trackAndReindex(defaultHttpClient, home, profile, note)
         // Return the remaining debt: a progress meter that terminates at null.
         return jsonContent({
           slug: note.slug,

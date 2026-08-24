@@ -6,6 +6,7 @@ import {
   crawl,
   listNotes,
   loadProfile,
+  loadSeen,
   parsePostingUrl,
   importPostingFromUrl,
   profileSchema,
@@ -150,6 +151,35 @@ describe('crawl', () => {
     expect(summary.errors).toHaveLength(0)
     expect(summary.created).toBe(1) // same identity — merged, not duplicated
     expect(listNotes(notesDir)).toHaveLength(1)
+  })
+
+  it('keys the seen-ledger per posting, not by identity (no silent suppression)', async () => {
+    const { home, profile } = await testEnv(['vue'])
+    // Two OFF-STACK postings that share company+title but are different roles
+    // (distinct ids). Neither becomes a note; both must be ledgered separately.
+    const off = (id: string) => ({
+      slug: `role-${id}`,
+      title: 'Marketing Manager',
+      company_name: 'Acme GmbH',
+      url: `https://example.com/${id}`,
+      description: 'sales and outreach',
+      location: 'Berlin',
+      remote: true,
+      created_at: 1787238038,
+      tags: [],
+      job_types: [],
+    })
+    const client: HttpClient = {
+      json: async () => ({ data: [off('a'), off('b')], links: null }),
+      text: async () => '',
+    }
+    const sources = sourcesSchema.parse({ boards: ['arbeitnow'] })
+    const summary = await crawl(client, home, profile, sources, { today: '2026-08-20' })
+    expect(summary.offStack).toBe(2) // both ledgered, not one suppressing the other
+    // ledger keys are source:nativeId, not company::title
+    const ledger = loadSeen(home)
+    expect(Object.keys(ledger)).toHaveLength(2)
+    expect(Object.keys(ledger).every(k => k.startsWith('arbeitnow:'))).toBe(true)
   })
 
   it('isolates per-source failures', async () => {

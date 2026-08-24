@@ -40,7 +40,8 @@ export const jobNoteSchema = z.object({
   title: z.string(),
   url: z.string(),
   source: z.string(),
-  /** Source-native posting id — `${source}:${nativeId}` is the dedupe key. */
+  /** Source-native posting id — `${source}:${nativeId}` keys the seen-ledger
+   *  (note dedupe uses dedupeKey = normalized company+title instead). */
   nativeId: z.string(),
   stack: z.array(z.string()).default([]),
   location: z.string().nullable().default(null),
@@ -262,8 +263,9 @@ function refreshDescription(existingBody: string, description: string): string {
 }
 
 /**
- * Insert or refresh a crawled posting. Dedupe runs on `source:nativeId`;
- * on refresh, posting facts and the marked description region are updated
+ * Insert or refresh a crawled posting. Note dedupe runs on dedupeKey
+ * (normalized company+title, source-independent); on refresh, posting facts
+ * and the marked description region are updated
  * while human state (status, score, cut info, application) and any body
  * text outside the description markers are preserved.
  */

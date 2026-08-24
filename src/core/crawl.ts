@@ -163,13 +163,17 @@ async function upsertWithDecollide(ctx: IngestContext, posting: JobPosting): Pro
  * surfaces again — without leaving a file behind.
  */
 async function ingest(posting: JobPosting, batch: FetchedBatch, ctx: IngestContext): Promise<void> {
-  // Source-independent identity: the same job via a channel, an ATS, or a
-  // manual import shares one ledger/note key (see dedupeKey).
-  const key = dedupeKey(posting)
+  // NOTES collapse across sources by identity (company+title) — the same job
+  // via a channel, an ATS, or a manual import is one note.
+  const identityKey = dedupeKey(posting)
+  // The LEDGER is per-posting (source:nativeId). Keying it by identity would
+  // let a genuinely different role that shares a title at the same company be
+  // silently suppressed, and would orphan every pre-identity ledger entry.
+  const ledgerKey = `${posting.source}:${posting.nativeId}`
 
   // An existing note always wins over the ledger — the user may have
   // imported something the crawler once dismissed.
-  if (ctx.noted.has(key)) {
+  if (ctx.noted.has(identityKey)) {
     const input = postingToNoteInput(posting, ctx.today)
     // Backfill for notes created before logos existed — cached per company.
     input.logo = await resolveCompanyLogo(ctx.client, posting.company)
@@ -177,7 +181,7 @@ async function ingest(posting: JobPosting, batch: FetchedBatch, ctx: IngestConte
     ctx.summary.refreshed++
     return
   }
-  if (ctx.ledger[key]) {
+  if (ctx.ledger[ledgerKey]) {
     ctx.summary.known++
     return
   }
@@ -197,19 +201,19 @@ async function ingest(posting: JobPosting, batch: FetchedBatch, ctx: IngestConte
   }
 
   if (!isRelevant(posting, ctx.profile.search)) {
-    markSeen(ctx.ledger, key, 'off-stack', null, ctx.today)
+    markSeen(ctx.ledger, ledgerKey, 'off-stack', null, ctx.today)
     ctx.summary.offStack++
     return
   }
   const verdict = applyHardFilters(posting, ctx.profile)
   if (!verdict.passed) {
-    markSeen(ctx.ledger, key, 'filtered', verdict.cutReason, ctx.today)
+    markSeen(ctx.ledger, ledgerKey, 'filtered', verdict.cutReason, ctx.today)
     ctx.summary.filtered++
     return
   }
 
   const result = await upsertWithDecollide(ctx, posting)
-  ctx.noted.set(key, result.slug)
+  ctx.noted.set(identityKey, result.slug)
   ctx.summary.created++
   ctx.summary.createdSlugs.push(result.slug)
   for (const dupe of findProbableDuplicates(

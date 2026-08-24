@@ -15,6 +15,8 @@ import {
   loadProfile,
   loadSources,
   addCompany,
+  upsertChannel,
+  removeChannel,
   removeCompany,
   postingToNoteInput,
   readNote,
@@ -374,16 +376,52 @@ export function createServer(): McpServer {
   )
 
   server.registerTool(
+    'add_channel',
+    {
+      title: 'Add Agent Channel',
+      description:
+        'Add or update an agent channel in sources.yaml: a recipe (URL template, parse hints, '
+        + 'priority) that YOU execute during search rounds — the tool stores it but never runs it. '
+        + 'Same-name channels are replaced, so this is also the update path. Field-tested seeds: '
+        + 'https://github.com/fabkho/amt/blob/main/skills/job-search/channels.md',
+      inputSchema: z.object({
+        name: z.string(),
+        description: z.string().optional(),
+        recipe: z.record(z.string(), z.unknown()).optional()
+          .describe('Free-form recipe: urlTemplate, params, parse hints, …'),
+        priority: z.number().int().optional().describe('Execution order, 1 = first'),
+        yield: z.string().optional().describe('Observed yield note'),
+      }),
+      annotations: { readOnlyHint: false },
+    },
+    async ({ name, description, recipe, priority, yield: yieldNote }) => {
+      try {
+        const { updated } = upsertChannel(resolveHome(), {
+          name,
+          ...(description !== undefined && { description }),
+          ...(recipe !== undefined && { recipe }),
+          ...(priority !== undefined && { priority }),
+          ...(yieldNote !== undefined && { yield: yieldNote }),
+        })
+        return jsonContent({ name, updated })
+      } catch (error) {
+        return toolErrorResponse('adding the channel', error)
+      }
+    },
+  )
+
+  server.registerTool(
     'remove_source',
     {
-      title: 'Untrack Company',
-      description: 'Stop tracking a company (by name or slug).',
+      title: 'Untrack Company or Channel',
+      description: 'Stop tracking a company (by name or slug) or remove an agent channel (by name).',
       inputSchema: z.object({ company: z.string() }),
       annotations: { readOnlyHint: false },
     },
     async ({ company }) => {
       try {
-        const removed = removeCompany(resolveHome(), company)
+        const removed
+          = removeCompany(resolveHome(), company) || removeChannel(resolveHome(), company)
         if (!removed) {
           throw new AmtError('COMPANY_NOT_TRACKED', `"${company}" is not tracked`)
         }

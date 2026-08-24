@@ -82,6 +82,7 @@ describe('amt mcp server', () => {
     const { tools } = await client.listTools()
     const names = tools.map(t => t.name).sort()
     expect(names).toEqual([
+      'add_channel',
       'add_source',
       'crawl_jobs',
       'discover',

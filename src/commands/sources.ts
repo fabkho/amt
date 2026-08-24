@@ -2,7 +2,7 @@ import { defineCommand } from 'citty'
 import { createCommand } from './_shared.js'
 import { resolveHome } from '../core/profile.js'
 import { defaultHttpClient } from '../core/sources/http.js'
-import { addCompany, loadSources, removeCompany } from '../core/sources-store.js'
+import { addCompany, loadSources, removeChannel, removeCompany, upsertChannel } from '../core/sources-store.js'
 import { AmtError } from '../core/errors.js'
 
 const list = createCommand({
@@ -51,22 +51,62 @@ const add = createCommand({
   },
 })
 
-const remove = createCommand({
-  name: 'remove',
-  description: 'Stop tracking a company (by name or slug)',
+const addChannel = createCommand({
+  name: 'add-channel',
+  description: 'Add or update an agent channel (stored, never executed by the tool)',
   args: {
-    company: { type: 'positional', description: 'Company name or slug', required: true },
+    name: { type: 'positional', description: 'Channel name', required: true },
+    recipe: { type: 'string', description: 'Recipe as JSON (URL template, parse hints, …)' },
+    description: { type: 'string', description: 'One-line description' },
+    priority: { type: 'string', description: 'Execution order, 1 = first' },
+    yield: { type: 'string', description: 'Observed yield note' },
   },
   run(args) {
-    const removed = removeCompany(resolveHome(), args.company as string)
-    if (!removed) {
-      throw new AmtError('COMPANY_NOT_TRACKED', `"${args.company}" is not in sources.yaml`)
+    let recipe: unknown
+    if (args.recipe !== undefined) {
+      try {
+        recipe = JSON.parse(args.recipe as string)
+      } catch {
+        throw new AmtError('CHANNEL_RECIPE_INVALID', '--recipe must be valid JSON')
+      }
     }
-    return { result: { removed: args.company }, human: [`Removed ${args.company}.`] }
+    const entry = {
+      name: args.name as string,
+      ...(args.description !== undefined && { description: args.description as string }),
+      ...(recipe !== undefined && { recipe }),
+      ...(args.priority !== undefined && { priority: Number(args.priority) }),
+      ...(args.yield !== undefined && { yield: args.yield as string }),
+    }
+    const { updated } = upsertChannel(resolveHome(), entry)
+    return {
+      result: { name: entry.name, updated },
+      human: [`${updated ? 'Updated' : 'Added'} channel ${entry.name}.`],
+    }
+  },
+})
+
+const remove = createCommand({
+  name: 'remove',
+  description: 'Remove a tracked company or an agent channel (by name)',
+  args: {
+    company: { type: 'positional', description: 'Company name/slug or channel name', required: true },
+  },
+  run(args) {
+    const name = args.company as string
+    const removed = removeCompany(resolveHome(), name) || removeChannel(resolveHome(), name)
+    if (!removed) {
+      throw new AmtError('COMPANY_NOT_TRACKED', `"${name}" is not in sources.yaml`)
+    }
+    return { result: { removed: name }, human: [`Removed ${name}.`] }
   },
 })
 
 export default defineCommand({
   meta: { name: 'sources', description: 'Manage the crawl sources' },
-  subCommands: { list: () => list, add: () => add, remove: () => remove },
+  subCommands: {
+    'list': () => list,
+    'add': () => add,
+    'add-channel': () => addChannel,
+    'remove': () => remove,
+  },
 })

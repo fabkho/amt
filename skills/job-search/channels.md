@@ -1,7 +1,7 @@
 # Channel recipes — field-tested seeds
 
-Copy these into the user's `sources.yaml` under `channels:` when they have none
-(via `add_source` / after asking). Replace the placeholder keywords, slugs, and
+Seed these via `add_channel` (MCP) or `amt sources add-channel` when the user has
+none — after asking. Replace the placeholder keywords, slugs, and
 cities with the user's profile. These are **agent-executed, personal-use
 recipes** — the tool stores them but never runs them; execute them at a
 person's pace during a search round, not as bulk crawling.

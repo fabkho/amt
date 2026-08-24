@@ -6,8 +6,10 @@ import {
   addCompany,
   discoverCompany,
   loadSources,
+  removeChannel,
   removeCompany,
   slugCandidates,
+  upsertChannel,
   type HttpClient,
 } from '../src/index.js'
 
@@ -71,5 +73,25 @@ describe('sources.yaml lifecycle', () => {
     await expect(addCompany(probingClient, home, 'nope-inc')).rejects.toMatchObject({
       code: 'COMPANY_NOT_DISCOVERED',
     })
+  })
+})
+
+describe('channels', () => {
+  it('upserts by name and removes', () => {
+    const home = mkdtempSync(join(tmpdir(), 'amt-src-'))
+    const { updated } = upsertChannel(home, { name: 'linkedin-guest', priority: 1 })
+    expect(updated).toBe(false)
+    const again = upsertChannel(home, {
+      name: 'LinkedIn-Guest',
+      priority: 2,
+      recipe: { urlTemplate: 'https://example.com/{kw}' },
+    })
+    expect(again.updated).toBe(true)
+    const sources = loadSources(home)
+    expect(sources.channels).toHaveLength(1)
+    expect(sources.channels[0]!.priority).toBe(2)
+    expect(removeChannel(home, 'linkedin-guest')).toBe(true)
+    expect(removeChannel(home, 'linkedin-guest')).toBe(false)
+    expect(loadSources(home).channels).toHaveLength(0)
   })
 })

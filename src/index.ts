@@ -52,11 +52,13 @@ export {
   addCompany,
   discoverCompany,
   loadSources,
+  removeChannel,
   removeCompany,
   saveSources,
   slugCandidates,
   sourcesSchema,
   tryAutoTrack,
+  upsertChannel,
 } from './core/sources-store.js'
 export type { AddCompanyResult, CompanySource, DiscoveryResult, Sources } from './core/sources-store.js'
 export { getAdapter, listAdapters } from './core/sources/index.js'

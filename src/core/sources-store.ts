@@ -31,6 +31,8 @@ const channel = z.looseObject({
   recipe: z.unknown().optional(),
 })
 
+export type ChannelSource = z.output<typeof channel>
+
 export const sourcesSchema = z.object({
   boards: z.array(z.string()).default([]),
   companies: z.array(company).default([]),
@@ -149,6 +151,30 @@ export async function tryAutoTrack(
   } catch {
     return null
   }
+}
+
+/** Same-name channels are replaced — updating a recipe is the common case. */
+export function upsertChannel(
+  home: string,
+  entry: ChannelSource,
+): { updated: boolean } {
+  const sources = loadSources(home)
+  const needle = entry.name.toLowerCase()
+  const index = sources.channels.findIndex(c => c.name.toLowerCase() === needle)
+  if (index >= 0) sources.channels[index] = entry
+  else sources.channels.push(entry)
+  saveSources(home, sources)
+  return { updated: index >= 0 }
+}
+
+export function removeChannel(home: string, name: string): boolean {
+  const sources = loadSources(home)
+  const needle = name.toLowerCase()
+  const before = sources.channels.length
+  sources.channels = sources.channels.filter(c => c.name.toLowerCase() !== needle)
+  if (sources.channels.length === before) return false
+  saveSources(home, sources)
+  return true
 }
 
 export function removeCompany(home: string, nameOrSlug: string): boolean {

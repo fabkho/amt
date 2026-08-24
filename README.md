@@ -40,9 +40,14 @@ for PDFs), `amt init` walks you through it interactively.
 
 ## Der Dienstweg (the loop)
 
+The full experience is one sentence to your agent: *"run my job search"* —
+it crawls every source **including the agent channels** (LinkedIn & Co.),
+scores the finds against your profile, and hands you a ranked list.
+The same loop by hand:
+
 ```bash
 amt sources add shopware   # track a company — its ATS is discovered automatically
-amt crawl                  # fetch everything; a note only for relevant postings
+amt crawl                  # fetch all APIs (warns about channels only an agent can run)
 amt list --status new      # today's stack of files
 amt show <slug>            # one posting, full description
 amt status <slug> shortlist --score 85   # der Stempel
@@ -63,16 +68,23 @@ your stack keywords and cities), and the career pages of companies you track —
 which ATS they use (Recruitee, Ashby, Greenhouse, Lever, Personio, SmartRecruiters).
 
 Everything else goes into `sources.yaml` as a **channel**: a recipe (URL template,
-parse hints, priority) that your *agent* executes during a search round — the tool
-stores channels but never runs them. Ship-safe by design, and fully yours to extend:
-add any source you like that doesn't block AI crawlers, tweak a keyword or parse
-hint, and the very next round uses it.
+parse hints, priority) that your *agent* executes — the tool stores channels but
+never runs them. Ship-safe by design, and fully yours to extend: add any source
+you like that doesn't block AI crawlers, tweak a keyword or parse hint, and the
+very next crawl uses it.
+
+You shouldn't have to think about this split — and via MCP you don't: a crawl
+returns the channels as `pendingChannels` and the agent completes them in the
+same breath. One "crawl", full coverage. Only the bare CLI stops at the API
+layer (and says so).
 
 ## Der Sachbearbeiter (agent integration)
 
-`amt-mcp` exposes nine tools, `job://` resources, and two workflow prompts
-(`find-new-jobs`, `write-application`) carrying your profile and tone rules.
-The agent drafts with you in chat; the logic stays in code.
+**The MCP server is the recommended way to use amt** — the CLI is the paper
+form, the agent is the clerk who fills it in. `amt-mcp` exposes the tools
+(crawl, import, status, prepare, channels), `job://` resources, and two
+workflow prompts (`find-new-jobs`, `write-application`) carrying your profile
+and tone rules. The agent drafts with you in chat; the logic stays in code.
 
 - **Claude Code:** `/plugin marketplace add fabkho/amt` → `/plugin install amt@amt`
   (bundles the MCP server + workflow skills, with auto-updates)

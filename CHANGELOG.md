@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.8](https://github.com/fabkho/amt/compare/amt-0.2.7...amt-0.2.8) (2026-08-24)
+
+
+### Features
+
+* review fixes — [#16](https://github.com/fabkho/amt/issues/16) [#17](https://github.com/fabkho/amt/issues/17) [#18](https://github.com/fabkho/amt/issues/18) [#19](https://github.com/fabkho/amt/issues/19) [#20](https://github.com/fabkho/amt/issues/20) [#24](https://github.com/fabkho/amt/issues/24) [#25](https://github.com/fabkho/amt/issues/25) ([#32](https://github.com/fabkho/amt/issues/32)) ([c5151ca](https://github.com/fabkho/amt/commit/c5151ca0ae5a3e14f0e8d0e40728470c3ae1e552))
+
+
+### Bug Fixes
+
+* location hard-filter recognizes city exonyms ([#15](https://github.com/fabkho/amt/issues/15)) ([#30](https://github.com/fabkho/amt/issues/30)) ([a0f20ac](https://github.com/fabkho/amt/commit/a0f20aceb58932c546607d9ca492306985e6c139))
+
 ## [0.2.7](https://github.com/fabkho/amt/compare/amt-0.2.6...amt-0.2.7) (2026-08-24)
 
 

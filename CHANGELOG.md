@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.5](https://github.com/fabkho/amt/compare/amt-0.2.4...amt-0.2.5) (2026-08-24)
+
+
+### Features
+
+* init asks for stack keywords and seeds hydrated channel recipes ([18c93cc](https://github.com/fabkho/amt/commit/18c93cc378633de035eebf3378acb1e91353747a))
+
 ## [0.2.4](https://github.com/fabkho/amt/compare/amt-0.2.3...amt-0.2.4) (2026-08-24)
 
 

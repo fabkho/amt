@@ -60,6 +60,17 @@ Statuses: `new → shortlist → applied → interview` (or `rejected` / `cut` �
 `amt import <url>` for pasted ATS links (`--company/--title` for LinkedIn & co.).
 The `_index.md` overview in your notes directory keeps itself current.
 
+## Die Ausfertigung (CV & cover letters)
+
+amt doesn't just find jobs — it produces the application. `amt prepare <slug>`
+builds an upload-ready folder: your **CV rendered from `cv-data.<lang>.yaml`**
+(one file per language, de/en) and a **cover letter** drafted the civilized way:
+the first run scaffolds `cover-letter.<lang>.md`, you write it with your agent
+in chat — carrying your tone rules from `profile.yaml` (the `write-application`
+prompt does exactly this) — and the second run renders everything to PDF, html,
+and txt. Templates are plain Nunjucks + CSS (`templates/`), PDFs come out of
+real Chromium, so what you preview is what HR gets.
+
 ## Die Quellenlage (sources)
 
 amt itself crawls only **safe, official job APIs**: boards like Arbeitnow, the

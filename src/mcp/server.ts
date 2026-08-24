@@ -97,6 +97,22 @@ export function createServer(): McpServer {
 
   // ─── Tool: discover ────────────────────────────────────────────
 
+  // The ranking debt as data — attached to every response that could end a
+  // session, so no agent can plausibly not know about unranked notes.
+  function rankingDebt(notesDir: string): { count: number; slugs: string[]; directive: string } | null {
+    const unranked = listNotes(notesDir, { status: ['new'] })
+      .filter(s => s.note.score === null)
+      .map(s => s.note.slug)
+    if (unranked.length === 0) return null
+    return {
+      count: unranked.length,
+      slugs: unranked,
+      directive:
+        'Rank these now via set_job_status (score + assessment, or cut with a reason). '
+        + 'A crawl/update is not finished while this list is non-empty.',
+    }
+  }
+
   server.registerTool(
     'discover',
     {
@@ -130,9 +146,16 @@ export function createServer(): McpServer {
         } catch (error) {
           profileSummary = { missing: toErrorMessage(error) }
         }
+        let unranked = null
+        try {
+          unranked = rankingDebt((await loadProfile(home)).paths.notesDir)
+        } catch {
+          // no profile yet — nothing to rank
+        }
         return jsonContent({
           name: 'amt',
           version,
+          unranked,
           home,
           profile: profileSummary,
           sources,
@@ -168,9 +191,17 @@ export function createServer(): McpServer {
         const profile = await loadProfile(home)
         const sources = loadSources(home)
         const summary = await crawl(defaultHttpClient, home, profile, sources)
-        if (sources.channels.length === 0) return jsonContent(summary)
+        const unranked = rankingDebt(profile.paths.notesDir)
+        if (sources.channels.length === 0) {
+          return jsonContent(
+            unranked
+              ? { ...summary, unranked, next: `${summary.next} THEN: ${unranked.directive}` }
+              : summary,
+          )
+        }
         return jsonContent({
           ...summary,
+          unranked,
           pendingChannels: [...sources.channels].sort(
             (a, b) => (Number(a.priority) || 99) - (Number(b.priority) || 99),
           ),

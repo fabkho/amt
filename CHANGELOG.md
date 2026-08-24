@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.10](https://github.com/fabkho/amt/compare/amt-0.2.9...amt-0.2.10) (2026-08-24)
+
+
+### Bug Fixes
+
+* key the seen-ledger per posting, not by identity (regression) ([#35](https://github.com/fabkho/amt/issues/35)) ([bbdb13c](https://github.com/fabkho/amt/commit/bbdb13c9f2ff8336bb44b632b75611e5626c0694))
+
 ## [0.2.9](https://github.com/fabkho/amt/compare/amt-0.2.8...amt-0.2.9) (2026-08-24)
 
 

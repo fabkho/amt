@@ -151,12 +151,14 @@ export function createServer(): McpServer {
     {
       title: 'Crawl Job Sources',
       description:
-        'Fetch every configured board and tracked company. Notes are created only for stack-relevant '
-        + 'postings that pass the hard filters; everything else lands in the seen-ledger and never '
-        + 'surfaces again. Summary counters: filtered = failed a hard rule, offStack = no stack '
-        + 'keyword matched, known = already judged in an earlier crawl, stale = board find older than '
-        + 'maxAgeDays. Agent channels are not executed here — run those '
-        + 'yourself and feed findings via import_job.',
+        'One crawl, full coverage: fetches every configured board and tracked company directly, and '
+        + 'returns the agent-executed channel recipes (LinkedIn, StepStone, …) as pendingChannels — '
+        + 'the crawl is NOT complete until you execute those too and feed relevant finds via '
+        + 'import_job. The user thinks of this as a single operation; never make them ask twice. '
+        + 'Notes are created only for stack-relevant postings that pass the hard filters; everything '
+        + 'else lands in the seen-ledger and never surfaces again. Summary counters: filtered = '
+        + 'failed a hard rule, offStack = no stack keyword matched, known = already judged, stale = '
+        + 'board find older than maxAgeDays.',
       inputSchema: z.object({}),
       annotations: { readOnlyHint: false },
     },
@@ -166,7 +168,18 @@ export function createServer(): McpServer {
         const profile = await loadProfile(home)
         const sources = loadSources(home)
         const summary = await crawl(defaultHttpClient, home, profile, sources)
-        return jsonContent(summary)
+        if (sources.channels.length === 0) return jsonContent(summary)
+        return jsonContent({
+          ...summary,
+          pendingChannels: [...sources.channels].sort(
+            (a, b) => (Number(a.priority) || 99) - (Number(b.priority) || 99),
+          ),
+          next:
+            `${summary.next} THEN, to complete the crawl: execute the pendingChannels recipes `
+            + 'yourself in priority order (build the URLs from the recipe, fetch, parse per the '
+            + 'hints) and import relevant finds via import_job — the API crawl covers only part '
+            + 'of the market.',
+        })
       } catch (error) {
         return toolErrorResponse('crawling job sources', error)
       }

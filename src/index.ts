@@ -13,6 +13,7 @@ export type { Profile, ProfileInput } from './core/profile.js'
 export {
   CUT_REASONS,
   dedupeKey,
+  descriptionText,
   inboxNotes,
   JOB_STATUSES,
   jobNoteSchema,
@@ -25,6 +26,7 @@ export {
   renderIndex,
   setStatus,
   slugify,
+  undescribedNotes,
   unrankedNotes,
   updateNote,
   upsertNote,

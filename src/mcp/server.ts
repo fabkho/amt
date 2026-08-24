@@ -9,10 +9,12 @@ import {
   manualPosting,
   JOB_STATUSES,
   AmtError,
+  applyHardFilters,
   findProbableDuplicates,
   inboxNotes,
   listNotes,
   resolveCompanyLogo,
+  undescribedNotes,
   unrankedNotes,
   notesForCompany,
   loadProfile,
@@ -102,16 +104,27 @@ export function createServer(): McpServer {
   // ─── Tool: discover ────────────────────────────────────────────
 
   // The ranking debt as data — attached to every response that could end a
-  // session, so no agent can plausibly not know about unranked notes.
-  function rankingDebt(notesDir: string): { count: number; slugs: string[]; directive: string } | null {
+  // session, so no agent can plausibly not know about unranked (or blindly
+  // scored) notes.
+  function rankingDebt(notesDir: string): {
+    count: number
+    slugs: string[]
+    undescribed?: string[]
+    directive: string
+  } | null {
     const unranked = unrankedNotes(notesDir)
-    if (unranked.length === 0) return null
+    const undescribed = undescribedNotes(notesDir)
+    if (unranked.length === 0 && undescribed.length === 0) return null
     return {
       count: unranked.length,
       slugs: unranked,
+      ...(undescribed.length > 0 && { undescribed }),
       directive:
-        'Rank these now via set_job_status (score + assessment, or cut with a reason). '
-        + 'A crawl/update is not finished while this list is non-empty.',
+        'Rank the unranked now via set_job_status (score + assessment, or cut). '
+        + (undescribed.length > 0
+          ? 'The undescribed notes were scored from title/company only — fetch each posting description (for LinkedIn use the guest endpoint) and re-import via import_job to re-open them for ranking. '
+          : '')
+        + 'A crawl/update is not finished while this is non-empty.',
     }
   }
 
@@ -268,6 +281,13 @@ export function createServer(): McpServer {
         // Parity with the CLI import path — resolve the company logo.
         input.logo = await resolveCompanyLogo(defaultHttpClient, company)
         result = upsertNote(profile.paths.notesDir, input, body)
+        // The binary never fetches LinkedIn — an empty body means the agent
+        // must fetch the description itself and re-import to rank meaningfully.
+        const missingDescription = body.trim().length === 0
+        // Explicit imports skip the hard filters by design; surface what they
+        // WOULD have flagged so the user decides with open eyes (never auto-cut).
+        const verdict = applyHardFilters(posting, profile)
+        const filterWarnings = verdict.passed ? [] : [`${verdict.cutReason}: ${verdict.cutNote}`]
         const tracked = await tryAutoTrack(
           defaultHttpClient,
           home,
@@ -293,6 +313,14 @@ export function createServer(): McpServer {
           tracked,
           companyHistory,
           probableDuplicates,
+          missingDescription,
+          ...(missingDescription && {
+            descriptionDirective:
+              'No description was captured — fetch the posting text yourself (for LinkedIn use '
+              + 'the guest endpoint /jobs-guest/jobs/api/jobPosting/{id}) and re-call import_job '
+              + 'with manual.descriptionHtml so this can be ranked on real content.',
+          }),
+          ...(filterWarnings.length > 0 && { filterWarnings }),
           unranked: rankingDebt(profile.paths.notesDir),
         })
       } catch (error) {
@@ -590,8 +618,7 @@ export function createServer(): McpServer {
 
   // ─── Prompts ───────────────────────────────────────────────────
 
-  // One workflow, two names: "daily-update" is the explicit daily verb,
-  // "find-new-jobs" stays for compatibility and discoverability.
+  // "daily-update" is the one daily verb — the whole loop behind the word "update".
   const dailyUpdateHandler =
     async () => {
       let context = ''
@@ -629,21 +656,16 @@ export function createServer(): McpServer {
       }
     }
 
-  for (const [name, title] of [
-    ['daily-update', 'Daily Update'],
-    ['find-new-jobs', 'Find New Jobs'],
-  ] as const) {
-    server.registerPrompt(
-      name,
-      {
-        title,
-        description:
-          'Daily update: crawl sources, run agent channels, rank everything new, present the inbox delta.',
-        argsSchema: z.object({}).default({}),
-      },
-      dailyUpdateHandler,
-    )
-  }
+  server.registerPrompt(
+    'daily-update',
+    {
+      title: 'Daily Update',
+      description:
+        'Daily update: crawl sources, run agent channels, rank everything new, present the inbox delta.',
+      argsSchema: z.object({}).default({}),
+    },
+    dailyUpdateHandler,
+  )
 
   server.registerPrompt(
     'write-application',

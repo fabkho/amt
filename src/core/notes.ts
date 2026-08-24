@@ -233,6 +233,20 @@ function wrapDescription(description: string): string {
   return `${DESC_START}\n${description.trim()}\n${DESC_END}`
 }
 
+/** The text inside the machine-owned description markers, or null if absent. */
+export function descriptionText(body: string): string | null {
+  const start = body.indexOf(DESC_START)
+  const end = body.indexOf(DESC_END)
+  if (start === -1 || end === -1 || end < start) return null
+  return body.slice(start + DESC_START.length, end).trim()
+}
+
+/** A migration marker ("Migriert aus …") is not a real description. */
+function hasRealDescription(body: string): boolean {
+  const text = descriptionText(body)
+  return text !== null && text.length > 0 && !text.startsWith('Migriert aus')
+}
+
 function refreshDescription(existingBody: string, description: string): string {
   const start = existingBody.indexOf(DESC_START)
   const end = existingBody.indexOf(DESC_END)
@@ -283,6 +297,16 @@ export function upsertNote(
   const body = description
     ? refreshDescription(existing.body, description)
     : existing.body
+  // A score assigned while the description was empty was a guess from
+  // title/company priors. Now that real text arrived, re-open it for ranking.
+  if (
+    merged.status === 'new'
+    && merged.score !== null
+    && !hasRealDescription(existing.body)
+    && hasRealDescription(body)
+  ) {
+    merged.score = null
+  }
   writeNote(notesDir, merged, body)
   return { slug: existing.note.slug, created: false }
 }
@@ -373,6 +397,13 @@ function stampApplied(note: JobNote, at?: string): void {
 export function unrankedNotes(notesDir: string): string[] {
   return listNotes(notesDir, { status: ['new'] })
     .filter(s => s.note.score === null)
+    .map(s => s.note.slug)
+}
+
+/** Scored `new` notes whose description never arrived — the score is a guess. */
+export function undescribedNotes(notesDir: string): string[] {
+  return listNotes(notesDir, { status: ['new'] })
+    .filter(s => s.note.score !== null && !hasRealDescription(s.body))
     .map(s => s.note.slug)
 }
 

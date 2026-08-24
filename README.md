@@ -98,8 +98,20 @@ selector or keyword and the very next crawl uses it, no release required.
 **The MCP server is the recommended way to use amt** — the CLI is the paper
 form, the agent is the clerk who fills it in. `amt-mcp` exposes the tools
 (crawl, import, status, prepare, channels), `job://` resources, and two
-workflow prompts (`find-new-jobs`, `write-application`) carrying your profile
+workflow prompts (`daily-update`, `write-application`) carrying your profile
 and tone rules. The agent drafts with you in chat; the logic stays in code.
+
+**One verb, four levels of formality** — they all reach the same loop:
+
+| You say | Surface | What runs |
+| --- | --- | --- |
+| "update" | skill trigger phrase | the daily-update workflow |
+| `/amt:daily-update` | MCP prompt | crawl_jobs → channels → rank → inbox delta |
+| — | `crawl_jobs` tool | fetches APIs + tool-crawled channels, returns the rest to do |
+| `amt crawl` | CLI | the deterministic sub-step only (ranking still needs the agent) |
+
+`amt crawl` deliberately isn't called `update`: the bare binary can't run
+channels or judge fit, so it fetches what it can and says what's left.
 
 - **Claude Code:** `/plugin marketplace add fabkho/amt` → `/plugin install amt@amt`
   (bundles the MCP server + workflow skills, with auto-updates)

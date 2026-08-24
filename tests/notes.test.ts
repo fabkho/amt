@@ -11,6 +11,8 @@ import {
   renderIndex,
   setStatus,
   slugify,
+  undescribedNotes,
+  unrankedNotes,
   updateNote,
   upsertNote,
   type JobNoteInput,
@@ -137,6 +139,20 @@ describe('notes CRUD', () => {
       cutNote: 'agency',
     })
     expect(note.cutReason).toBe('company_type')
+  })
+
+  it('re-opens a note for ranking when a real description arrives after scoring', () => {
+    const dir = freshDir()
+    // imported with no description, then scored on title/company priors
+    upsertNote(dir, posting(), '')
+    updateNote(dir, 'acme-gmbh-senior-frontend', { score: 70 })
+    expect(undescribedNotes(dir)).toContain('acme-gmbh-senior-frontend')
+
+    // the description arrives on a refresh → score is cleared
+    upsertNote(dir, posting(), 'We use Vue 3 and TypeScript daily.')
+    expect(readNote(dir, 'acme-gmbh-senior-frontend').note.score).toBeNull()
+    expect(undescribedNotes(dir)).toHaveLength(0)
+    expect(unrankedNotes(dir)).toContain('acme-gmbh-senior-frontend')
   })
 
   it('stamps appliedAt when a note becomes applied, and offer is a valid status', () => {

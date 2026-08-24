@@ -68,16 +68,23 @@ function dotPath(obj: unknown, path: string): unknown {
 
 type HtmlNode = ReturnType<typeof parseHtml>
 
+/** Scalars only — a JSON path landing on an object/array is a misconfigured field. */
+function scalarString(value: unknown): string | null {
+  if (typeof value === 'string') return value
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  return null
+}
+
 /** Extract one field from an item (an HTML node, a JSON value, or a text blob). */
 function extractField(item: unknown, spec: FieldSpec, mode: string): string | null {
   if (mode === 'json') {
-    const value = spec.path ? dotPath(item, spec.path) : item
-    if (value === null || value === undefined) return null
-    const str = String(value)
+    const str = scalarString(spec.path ? dotPath(item, spec.path) : item)
+    if (str === null) return null
     return spec.regex ? applyRegex(str, spec.regex) : str
   }
   if (mode === 'regex') {
-    return spec.regex ? applyRegex(String(item), spec.regex) : String(item)
+    const str = scalarString(item) ?? ''
+    return spec.regex ? applyRegex(str, spec.regex) : str
   }
   // selectors
   const node = item as HtmlNode
@@ -197,8 +204,7 @@ export function channelDetailFetcher(
       ? await renderHtml(url, channel.crawl.headers)
       : await client.text(url, { headers: channel.crawl?.headers })
     if (detail.path) {
-      const value = dotPath(JSON.parse(body), detail.path)
-      return value === null || value === undefined ? null : String(value)
+      return scalarString(dotPath(JSON.parse(body), detail.path))
     }
     if (detail.selector) {
       const node = parseHtml(body).querySelector(detail.selector)

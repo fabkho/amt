@@ -12,9 +12,10 @@ export default createCommand({
     const profile = await loadProfile(home)
     const sources = loadSources(home)
     const summary = await crawl(defaultHttpClient, home, profile, sources)
-    const channelNames = sources.channels.map(c => c.name)
+    // Channels with a crawl spec were fetched above; only agent-only recipes stay pending.
+    const pending = sources.channels.filter(c => c.crawl === undefined).map(c => c.name)
     return {
-      result: channelNames.length ? { ...summary, pendingChannels: channelNames } : summary,
+      result: pending.length ? { ...summary, pendingChannels: pending } : summary,
       human: [
         `Fetched ${summary.fetched} postings — ${summary.created} new notes, ${summary.refreshed} refreshed; `
         + `ledger-only: ${summary.filtered} filtered, ${summary.offStack} off-stack, ${summary.known} known, ${summary.stale} stale.`,
@@ -24,10 +25,10 @@ export default createCommand({
         ...(summary.errors.length
           ? summary.errors.map(e => `⚠ ${e.source}: ${e.message}`)
           : []),
-        ...(channelNames.length
+        ...(pending.length
           ? [
-              `⚠ Coverage incomplete: ${channelNames.length} agent channel(s) not crawled (${channelNames.join(', ')}) `
-              + '— LinkedIn & Co. only run inside an agent. Ask yours to "run my job search".',
+              `⚠ ${pending.length} agent-only channel(s) not crawled (${pending.join(', ')}) `
+              + '— these have no machine-crawl spec; run them via your agent.',
             ]
           : []),
         `→ ${summary.next}`,

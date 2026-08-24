@@ -4,6 +4,7 @@ import { dedupeKey, findProbableDuplicates, listNotes, renderIndex, slugify, ups
 import { loadSeen, markSeen, saveSeen, type SeenLedger } from './seen.js'
 import { htmlToMarkdown, postingToNoteInput } from './sources/normalize.js'
 import { resolveCompanyLogo } from './sources/logo.js'
+import { channelDetailFetcher, fetchChannel, isCrawlableChannel } from './sources/channel.js'
 import { getAdapter } from './sources/index.js'
 import type { Profile } from './profile.js'
 import type { Sources } from './sources-store.js'
@@ -62,6 +63,25 @@ async function fetchBoardBatch(
   }
 }
 
+async function fetchChannelBatch(
+  client: HttpClient,
+  channel: Sources['channels'][number],
+  search: Profile['search'],
+): Promise<FetchedBatch> {
+  const postings = await fetchChannel(client, channel, {
+    stacks: [...search.stacksPrimary, ...search.stacksSecondary],
+    cities: search.locations.cities.map(c => c.name),
+  })
+  // A synthetic board adapter: the detail fetcher pulls each posting's
+  // description on demand, exactly like the SmartRecruiters N+1 path.
+  const adapter: SourceAdapter = {
+    name: channel.name,
+    kind: 'board',
+    fetchDetail: channelDetailFetcher(channel),
+  }
+  return { adapter, companySlug: null, postings, applyFreshness: true }
+}
+
 async function fetchCompanyBatch(
   client: HttpClient,
   company: Sources['companies'][number],
@@ -86,6 +106,10 @@ async function fetchAll(
     ...sources.companies.map(company => ({
       source: `${company.ats}:${company.slug}`,
       run: () => fetchCompanyBatch(client, company),
+    })),
+    ...sources.channels.filter(isCrawlableChannel).map(channel => ({
+      source: `channel:${channel.name}`,
+      run: () => fetchChannelBatch(client, channel, search),
     })),
   ]
   for (const job of jobs) {
@@ -197,11 +221,12 @@ async function ingest(posting: JobPosting, batch: FetchedBatch, ctx: IngestConte
 }
 
 function assertCrawlableSources(sources: Sources): void {
-  if (sources.boards.length > 0 || sources.companies.length > 0) return
+  const crawlableChannels = sources.channels.filter(isCrawlableChannel).length
+  if (sources.boards.length > 0 || sources.companies.length > 0 || crawlableChannels > 0) return
   throw new AmtError(
     'NO_SOURCES',
     sources.channels.length > 0
-      ? 'Only agent channels are configured — run those via your agent and feed findings through import. For tool crawling, add boards or companies (`amt init`, `amt sources add <company>`).'
+      ? 'Only agent-only channels are configured (no machine-crawl spec) — run those via your agent and feed findings through import. For tool crawling, add boards, companies, or channels with a `crawl` spec.'
       : 'No sources configured. Run `amt init` or add some with `amt sources add <company>`.',
   )
 }

@@ -221,26 +221,59 @@ projects:
  * skills/job-search/channels.md, filled with the user's answers. Consent is
  * asked in onboarding because the AGENT will execute these; the tool never does.
  */
+const LINKEDIN_UA =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128 Safari/537.36'
+
 function defaultChannels(stacks: string[], cities: string[]) {
   const keywords = stacks.length > 0 ? stacks : ['typescript']
   const channels: ChannelSource[] = [
     {
       name: 'linkedin-guest',
-      description: 'LinkedIn guest search API — personal use, agent-executed',
-      recipe: {
+      description: 'LinkedIn guest search — tool-crawled (browser UA, per-posting detail)',
+      crawl: {
         urlTemplate:
-          'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords={kw}&location=Germany&f_WT={wt}&f_TPR=r604800&start={0|25|50}',
-        keywords,
-        params: 'f_WT=2 remote, f_WT=3 hybrid; last 7 days; paginate start=0/25/50; send a browser User-Agent',
-        parse:
-          '<h3 class="base-search-card__title"> = title; company = the <a> inside <h4 class="base-search-card__subtitle">; href = …/jobs/view/…',
+          'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords={keyword}&location=Germany&f_WT={wt}&f_TPR=r604800',
+        keywords: 'stacks',
+        variants: { wt: ['2', '3'] }, // 2 remote, 3 hybrid
+        headers: { 'User-Agent': LINKEDIN_UA },
+        mode: 'selectors',
+        item: 'li',
+        fields: {
+          title: 'h3.base-search-card__title',
+          company: 'h4.base-search-card__subtitle a',
+          location: '.job-search-card__location',
+          url: { selector: 'a.base-card__full-link', attr: 'href' },
+        },
+        nativeId: { field: 'url', regex: '-(\\d{8,})' },
+        detail: {
+          urlTemplate: 'https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{id}',
+          selector: '.description__text',
+        },
       },
       priority: 1,
       yield: 'very high — the main discovery channel in practice',
     },
     {
+      name: 'vuejobs',
+      description: 'VueJobs internal API — tool-crawled (JSON)',
+      crawl: {
+        urlTemplate: 'https://vuejobs.com/api/posts',
+        mode: 'json',
+        item: 'data',
+        fields: {
+          title: 'title',
+          company: 'organization.name',
+          url: 'apply_url',
+          location: 'work_place',
+        },
+        nativeId: { field: 'id' },
+      },
+      priority: 3,
+      yield: 'medium — small volume, high stack precision',
+    },
+    {
       name: 'stepstone',
-      description: 'StepStone search pages — personal use, agent-executed',
+      description: 'StepStone search pages — agent-executed (detail pages bot-walled)',
       recipe: {
         urlTemplate: `https://www.stepstone.de/jobs/{slug}/in-{${cities.map(slugify).join('|') || 'deutschland'}}?radius=100`,
         slugs: keywords.map(slugify),
@@ -251,26 +284,6 @@ function defaultChannels(stacks: string[], cities: string[]) {
       priority: 2,
       yield: 'high — good discovery via slugs, flaky detail pages',
     },
-    {
-      name: 'bing-rss',
-      description: 'Bing RSS fallback for company/role searches',
-      recipe: { urlTemplate: 'https://www.bing.com/search?format=rss&q={urlencoded}' },
-      priority: 4,
-      yield: 'fallback only',
-    },
   ]
-  if (keywords.some(k => k.includes('vue'))) {
-    channels.push({
-      name: 'vuejobs',
-      description: 'VueJobs internal API — niche, on-target for Vue roles',
-      recipe: {
-        urlTemplate: 'https://vuejobs.com/api/posts',
-        params: 'plain GET, JSON array of ~25 postings; undocumented endpoint — agent-executed only',
-        parse: 'filter by the profile (remote countries / work_place / seniority); feed via import with manual fields (apply_url as the URL)',
-      },
-      priority: 3,
-      yield: 'medium — small volume, high stack precision',
-    })
-  }
   return channels
 }

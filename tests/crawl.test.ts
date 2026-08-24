@@ -71,6 +71,49 @@ describe('crawl', () => {
     expect(listNotes(notesDir)).toHaveLength(summary.created)
   })
 
+  it('crawls a channel with a machine-usable spec into notes (with detail description)', async () => {
+    const { home, notesDir, profile } = await testEnv(['vue'])
+    const listHtml = `<li class="card">
+      <h3 class="t">Senior Vue Engineer</h3>
+      <a class="c" href="z">Channel Co</a>
+      <a class="l" href="https://ex/jobs/view/vue-eng-4457345623">view</a>
+    </li>`
+    const channelClient: HttpClient = {
+      json: async () => ({}),
+      text: async (url) => {
+        if (url.includes('/search')) return listHtml
+        if (url.includes('/detail/')) return '<div class="d"><p>We use <b>Vue</b> 3.</p></div>'
+        throw new Error(`404: ${url}`)
+      },
+    }
+    const channelSources = sourcesSchema.parse({
+      channels: [{
+        name: 'demo-channel',
+        crawl: {
+          urlTemplate: 'https://ex/search?keywords={keyword}',
+          keywords: 'stacks',
+          mode: 'selectors',
+          item: 'li.card',
+          fields: {
+            title: 'h3.t',
+            company: 'a.c',
+            url: { selector: 'a.l', attr: 'href' },
+          },
+          nativeId: { field: 'url', regex: '-(\\d{8,})' },
+          detail: { urlTemplate: 'https://ex/detail/{id}', selector: '.d' },
+        },
+      }],
+    })
+    const summary = await crawl(channelClient, home, profile, channelSources, { today: '2026-08-20' })
+    expect(summary.errors).toHaveLength(0)
+    expect(summary.created).toBe(1)
+    const notes = listNotes(notesDir)
+    expect(notes).toHaveLength(1)
+    expect(notes[0]!.note.source).toBe('demo-channel')
+    expect(notes[0]!.note.nativeId).toBe('4457345623')
+    expect(notes[0]!.body).toContain('Vue') // detail description made it into the note body
+  })
+
   it('never surfaces judged postings again, but refreshes existing notes', async () => {
     const { home, notesDir, profile } = await testEnv(['databricks'])
     const first = await crawl(routedClient, home, profile, sources, { today: '2026-08-20' })

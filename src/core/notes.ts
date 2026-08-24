@@ -375,6 +375,19 @@ function normalizePlace(value: string): string {
 }
 
 /**
+ * Does a posting `location` sit in a profile `city`? Diacritic- and
+ * exonym-aware, so "Cologne, Germany" matches "Köln". Shared by the index
+ * buckets and the location hard-filter so both agree on what a city is.
+ */
+export function placeMatches(location: string | null, city: string): boolean {
+  if (!location) return false
+  const haystack = normalizePlace(location)
+  const normalized = normalizePlace(city)
+  const names = [normalized, ...(CITY_EXONYMS[normalized] ?? [])]
+  return names.some(name => haystack.includes(name))
+}
+
+/**
  * Deterministic bucket for the index: remote work first, then the profile
  * city the posting sits in, everything else under "Other".
  */
@@ -383,11 +396,8 @@ export function placement(
   cities: string[],
 ): string {
   if (note.workMode === 'remote') return 'Remote'
-  const location = normalizePlace(note.location ?? '')
   for (const city of cities) {
-    const normalized = normalizePlace(city)
-    const names = [normalized, ...(CITY_EXONYMS[normalized] ?? [])]
-    if (names.some(name => location.includes(name))) return city
+    if (placeMatches(note.location, city)) return city
   }
   return 'Other'
 }

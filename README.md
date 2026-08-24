@@ -48,7 +48,7 @@ The same loop by hand:
 
 ```bash
 amt sources add shopware   # track a company — its ATS is discovered automatically
-amt crawl                  # fetch all APIs (warns about channels only an agent can run)
+amt crawl                  # fetch APIs + tool-crawled channels (LinkedIn, VueJobs)
 amt list --status new      # today's stack of files
 amt show <slug>            # one posting, full description
 amt status <slug> shortlist --score 85   # der Stempel
@@ -74,21 +74,24 @@ real Chromium, so what you preview is what HR gets.
 
 ## Die Quellenlage (sources)
 
-amt itself crawls only **safe, official job APIs**: boards like Arbeitnow, the
+amt crawls **official job APIs** directly: boards like Arbeitnow, the
 Bundesagentur für Arbeit Jobsuche (Germany's largest job database — queried along
 your stack keywords and cities), and the career pages of companies you track — `amt sources add <company>` auto-discovers
 which ATS they use (Recruitee, Ashby, Greenhouse, Lever, Personio, SmartRecruiters).
 
-Everything else goes into `sources.yaml` as a **channel**: a recipe (URL template,
-parse hints, priority) that your *agent* executes — the tool stores channels but
-never runs them. Ship-safe by design, and fully yours to extend: add any source
-you like that doesn't block AI crawlers, tweak a keyword or parse hint, and the
-very next crawl uses it.
+Sites without an API go into `sources.yaml` as a **channel**: a recipe in the
+same file. A channel with a `crawl:` block (URL template + a parse spec — CSS
+selectors, regex, or JSON paths) is fetched by the tool itself, right alongside
+the boards; `amt init` seeds tool-crawled recipes for LinkedIn and VueJobs. A
+channel with only a free-form `recipe:` and no `crawl:` block stays
+agent-executed — the tool stores it and your agent runs it during a round (good
+for detail pages behind a bot wall, like StepStone). Add `render: true` to a
+`crawl:` block and amt fetches the page through the bundled Chromium for
+JS-rendered sites.
 
-You shouldn't have to think about this split — and via MCP you don't: a crawl
-returns the channels as `pendingChannels` and the agent completes them in the
-same breath. One "crawl", full coverage. Only the bare CLI stops at the API
-layer (and says so).
+So `amt crawl` genuinely fetches everything with a machine spec — the only step
+that still needs the agent is judgment (ranking). Recipes are just data: tweak a
+selector or keyword and the very next crawl uses it, no release required.
 
 ## Der Sachbearbeiter (agent integration)
 

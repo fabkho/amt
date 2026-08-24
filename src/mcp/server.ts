@@ -192,7 +192,12 @@ export function createServer(): McpServer {
         const sources = loadSources(home)
         const summary = await crawl(defaultHttpClient, home, profile, sources)
         const unranked = rankingDebt(profile.paths.notesDir)
-        if (sources.channels.length === 0) {
+        // Channels WITH a crawl spec were fetched by the tool above; only
+        // agent-only recipes remain pending.
+        const pending = sources.channels
+          .filter(c => c.crawl === undefined)
+          .sort((a, b) => (Number(a.priority) || 99) - (Number(b.priority) || 99))
+        if (pending.length === 0) {
           return jsonContent(
             unranked
               ? { ...summary, unranked, next: `${summary.next} THEN: ${unranked.directive}` }
@@ -202,14 +207,12 @@ export function createServer(): McpServer {
         return jsonContent({
           ...summary,
           unranked,
-          pendingChannels: [...sources.channels].sort(
-            (a, b) => (Number(a.priority) || 99) - (Number(b.priority) || 99),
-          ),
+          pendingChannels: pending,
           next:
             `${summary.next} THEN, to complete the crawl: execute the pendingChannels recipes `
             + 'yourself in priority order (build the URLs from the recipe, fetch, parse per the '
-            + 'hints) and import relevant finds via import_job — the API crawl covers only part '
-            + 'of the market. FINALLY rank every unranked note (status new, score null) via '
+            + 'hints) and import relevant finds via import_job — these have no machine-crawl spec. '
+            + 'FINALLY rank every unranked note (status new, score null) via '
             + 'set_job_status with score + assessment; cut clear mismatches. A crawl is finished '
             + 'only when the inbox is ranked — see inbox/<date>.md in the notes dir.',
         })
@@ -574,7 +577,7 @@ export function createServer(): McpServer {
               text: [
                 'Run the daily update (the user may just say "update"):',
                 '1. Call crawl_jobs and report the summary.',
-                '2. Execute the agent channels yourself (fetch their URLs, parse postings) and feed relevant finds through import_job — use the manual fields for non-ATS sources.',
+                '2. crawl_jobs already fetched tool-crawled channels (LinkedIn, VueJobs). Only the pendingChannels it returns (agent-only, no crawl spec) need you: fetch their URLs, parse postings, and feed relevant finds through import_job — use the manual fields for non-ATS sources.',
                 '3. Rank EVERY unranked note (status "new", no score): judge stack fit and flags against the profile below, then persist score (0-100), flags, and your reasoning via set_job_status — never hand-edit note files. Cut clear mismatches with a cutReason. The round is not done while anything is unranked.',
                 "4. Present today's inbox delta: what arrived, how you ranked it, and where each candidate slots among the user's existing scores (the day's file is inbox/<date>.md in the notes dir). Never re-surface notes whose status is cut, rejected, or applied.",
                 '',

@@ -24,14 +24,53 @@ const company = z.object({
   addedBy: z.enum(['init', 'manual', 'auto']).default('manual'),
 })
 
+/** How a field is pulled from a crawled item — a bare selector/path, or a spec. */
+const channelField = z.union([
+  z.string(),
+  z.looseObject({
+    selector: z.string().optional(),
+    attr: z.string().optional(),
+    path: z.string().optional(),
+    regex: z.string().optional(),
+  }),
+])
+
+/**
+ * The machine-usable crawl spec. A channel WITH this is fetched by the tool
+ * like any board; a channel WITHOUT it stays an agent-only recipe.
+ */
+const channelCrawl = z.looseObject({
+  urlTemplate: z.string(),
+  /** 'stacks' = the profile's stacks; or an explicit keyword list; substitutes {keyword}. */
+  keywords: z.union([z.literal('stacks'), z.array(z.string())]).optional(),
+  /** Extra {name} → values expanded as a cartesian product (e.g. wt: ['2','3']). */
+  variants: z.record(z.string(), z.array(z.string())).optional(),
+  headers: z.record(z.string(), z.string()).optional(),
+  mode: z.enum(['selectors', 'regex', 'json']).optional(),
+  /** selectors: item selector · json: dot-path to the array · regex: per-item pattern. */
+  item: z.string().optional(),
+  fields: z.record(z.string(), channelField).optional(),
+  nativeId: z.looseObject({ regex: z.string().optional(), field: z.string().optional() }).optional(),
+  detail: z.looseObject({
+    urlTemplate: z.string(),
+    selector: z.string().optional(),
+    path: z.string().optional(),
+  }).optional(),
+  /** Fetch via the bundled Chromium (JS-rendered / bot-walled pages). */
+  render: z.boolean().optional(),
+})
+
 const channel = z.looseObject({
   name: z.string(),
   description: z.string().optional(),
-  /** Free-form recipe data for the agent: URL templates, parse hints, … */
+  /** Free-form recipe data (agent-executed channels): URL templates, parse hints, … */
   recipe: z.unknown().optional(),
+  /** Machine-usable spec — present ⇒ the tool crawls this channel itself. */
+  crawl: channelCrawl.optional(),
 })
 
 export type ChannelSource = z.output<typeof channel>
+export type ChannelCrawl = z.output<typeof channelCrawl>
 
 export const sourcesSchema = z.object({
   boards: z.array(z.string()).default([]),

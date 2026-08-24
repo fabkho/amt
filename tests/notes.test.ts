@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vite-plus/test'
 import {
+  dedupeKey,
   findProbableDuplicates,
   listNotes,
   notesForCompany,
@@ -32,6 +33,21 @@ function posting(overrides: Partial<JobNoteInput> = {}): JobNoteInput {
     ...overrides,
   }
 }
+
+describe('dedupeKey', () => {
+  it('is source-independent — same company+title collapses across sources', () => {
+    const li = { company: 'koppla GmbH', title: 'Product Engineer - Frontend (all genders)' }
+    const manual = { company: 'koppla', title: 'Product Engineer – Frontend' }
+    expect(dedupeKey(li)).toBe(dedupeKey(manual))
+  })
+
+  it('keeps genuinely different roles apart', () => {
+    expect(dedupeKey({ company: 'Acme', title: 'Frontend Engineer' }))
+      .not.toBe(dedupeKey({ company: 'Acme', title: 'Backend Engineer' }))
+    expect(dedupeKey({ company: 'Acme', title: 'Frontend Engineer' }))
+      .not.toBe(dedupeKey({ company: 'Other', title: 'Frontend Engineer' }))
+  })
+})
 
 describe('slugify', () => {
   it('handles umlauts and noise', () => {
@@ -126,7 +142,7 @@ describe('notes CRUD', () => {
   it('filters by status', () => {
     const dir = freshDir()
     upsertNote(dir, posting(), 'a')
-    upsertNote(dir, posting({ nativeId: '2', slug: 'other' }), 'b')
+    upsertNote(dir, posting({ nativeId: '2', slug: 'other', title: 'Backend Engineer' }), 'b')
     setStatus(dir, 'other', 'applied')
     expect(listNotes(dir, { status: ['applied'] })).toHaveLength(1)
   })
@@ -213,7 +229,7 @@ describe('index view', () => {
   it('groups by status and skips the index file on re-listing', () => {
     const dir = freshDir()
     upsertNote(dir, posting({ salaryMin: 68_000, salaryMax: 75_000 }), 'a')
-    upsertNote(dir, posting({ nativeId: '2', slug: 'cut-one' }), 'b')
+    upsertNote(dir, posting({ nativeId: '2', slug: 'cut-one', title: 'Platform Engineer' }), 'b')
     setStatus(dir, 'cut-one', 'cut', { cutReason: 'ethics' })
 
     const content = renderIndex(dir)
@@ -241,15 +257,15 @@ describe('index view', () => {
 
   it('writes daily inbox files and links unranked days from the index', () => {
     const dir = freshDir()
-    upsertNote(dir, posting({ slug: 'today-one', discoveredAt: '2026-08-24' }), '')
+    upsertNote(dir, posting({ slug: 'today-one', title: 'Role One', discoveredAt: '2026-08-24' }), '')
     upsertNote(
       dir,
-      posting({ nativeId: '2', slug: 'today-two', discoveredAt: '2026-08-24' }),
+      posting({ nativeId: '2', slug: 'today-two', title: 'Role Two', discoveredAt: '2026-08-24' }),
       '',
     )
     upsertNote(
       dir,
-      posting({ nativeId: '3', slug: 'older', discoveredAt: '2026-08-20' }),
+      posting({ nativeId: '3', slug: 'older', title: 'Role Three', discoveredAt: '2026-08-20' }),
       '',
     )
     updateNote(dir, 'today-two', { score: 77 })
@@ -273,20 +289,20 @@ describe('index view', () => {
 
   it('buckets new/shortlist by placement and ranks by score', () => {
     const dir = freshDir()
-    upsertNote(dir, posting({ slug: 'remote-a', nativeId: 'r1', workMode: 'remote' }), '')
+    upsertNote(dir, posting({ slug: 'remote-a', nativeId: 'r1', title: 'Remote Role', workMode: 'remote' }), '')
     upsertNote(
       dir,
-      posting({ slug: 'koeln-a', nativeId: 'k1', workMode: 'hybrid', location: 'Cologne, Germany' }),
+      posting({ slug: 'koeln-a', nativeId: 'k1', title: 'Koeln Role A', workMode: 'hybrid', location: 'Cologne, Germany' }),
       '',
     )
     upsertNote(
       dir,
-      posting({ slug: 'koeln-b', nativeId: 'k2', workMode: null, location: 'Köln' }),
+      posting({ slug: 'koeln-b', nativeId: 'k2', title: 'Koeln Role B', workMode: null, location: 'Köln' }),
       '',
     )
     upsertNote(
       dir,
-      posting({ slug: 'elsewhere', nativeId: 'e1', workMode: 'onsite', location: 'Hamburg' }),
+      posting({ slug: 'elsewhere', nativeId: 'e1', title: 'Hamburg Role', workMode: 'onsite', location: 'Hamburg' }),
       '',
     )
     updateNote(dir, 'koeln-b', { score: 90 })

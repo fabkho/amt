@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/fabkho/amt/compare/amt-0.2.2...amt-0.2.3) (2026-08-23)
+
+
+### Features
+
+* placement buckets and score ranking in the notes index ([aed5408](https://github.com/fabkho/amt/commit/aed540899ad478233a145f619edc0d1bcd6165ad))
+
 ## [0.2.2](https://github.com/fabkho/amt/compare/amt-0.2.1...amt-0.2.2) (2026-08-23)
 
 

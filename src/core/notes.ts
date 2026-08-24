@@ -84,8 +84,26 @@ const HUMAN_FIELDS = [
   'discoveredAt',
 ] as const
 
-export function dedupeKey(note: Pick<JobNote, 'source' | 'nativeId'>): string {
-  return `${note.source}:${note.nativeId}`
+/**
+ * Source-independent identity: the same opening seen via any source (a channel
+ * crawl, a manual import, an ATS) collapses to one key. Company legal suffixes
+ * and title decoration are stripped so "koppla" == "koppla GmbH" and
+ * "Frontend Engineer (m/w/d)" == "Frontend Engineer".
+ *
+ * The trade-off (accepted): two genuinely different openings with the same
+ * title at the same company — e.g. the same role in two cities — merge into one
+ * note. findProbableDuplicates stays as a secondary net for near-title cases.
+ */
+export function dedupeKey(note: Pick<JobNote, 'company' | 'title'>): string {
+  return `${normalizeCompany(note.company)}::${normalizeTitle(note.title)}`
+}
+
+function normalizeCompany(company: string): string {
+  return company
+    .toLowerCase()
+    .replace(/\b(gmbh|ag|se|inc|co|kg|kgaa|ltd|llc|e\.?\s?v)\b\.?/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
 }
 
 export function slugify(text: string): string {

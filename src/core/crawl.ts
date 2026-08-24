@@ -163,7 +163,9 @@ async function upsertWithDecollide(ctx: IngestContext, posting: JobPosting): Pro
  * surfaces again — without leaving a file behind.
  */
 async function ingest(posting: JobPosting, batch: FetchedBatch, ctx: IngestContext): Promise<void> {
-  const key = `${posting.source}:${posting.nativeId}`
+  // Source-independent identity: the same job via a channel, an ATS, or a
+  // manual import shares one ledger/note key (see dedupeKey).
+  const key = dedupeKey(posting)
 
   // An existing note always wins over the ledger — the user may have
   // imported something the crawler once dismissed.

@@ -126,12 +126,14 @@ describe('crawl', () => {
     expect(listNotes(notesDir)).toHaveLength(noteCount)
   })
 
-  it('de-collides slugs when two postings share company and title', async () => {
+  it('collapses postings that share company and title to one identity', async () => {
     const { home, notesDir, profile } = await testEnv(['vue'])
-    const twin = (id: string) => ({
+    // Same role, two source ids and even a legal-suffix variant on the company
+    // name — one opening, so one note.
+    const twin = (id: string, company: string) => ({
       slug: `same-role-${id}`,
-      title: 'Vue Developer',
-      company_name: 'Twin GmbH',
+      title: 'Vue Developer (m/w/d)',
+      company_name: company,
       url: `https://example.com/${id}`,
       description: 'Vue work',
       location: 'Berlin',
@@ -141,13 +143,13 @@ describe('crawl', () => {
       job_types: [],
     })
     const twinClient: HttpClient = {
-      json: async () => ({ data: [twin('a'), twin('b')], links: null }),
+      json: async () => ({ data: [twin('a', 'Twin GmbH'), twin('b', 'Twin')], links: null }),
       text: async () => '',
     }
     const summary = await crawl(twinClient, home, profile, sourcesSchema.parse({ boards: ['arbeitnow'] }), { today: '2026-08-20' })
     expect(summary.errors).toHaveLength(0)
-    expect(summary.created).toBe(2) // second one got a de-collided slug
-    expect(listNotes(notesDir)).toHaveLength(2)
+    expect(summary.created).toBe(1) // same identity — merged, not duplicated
+    expect(listNotes(notesDir)).toHaveLength(1)
   })
 
   it('isolates per-source failures', async () => {

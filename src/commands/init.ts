@@ -80,26 +80,7 @@ export default defineCommand({
         `${JSON.stringify(z.toJSONSchema(profileSchema, { io: 'input' }), null, 2)}\n`,
       )
 
-      const sources = loadSources(home)
-      for (const board of ['arbeitnow', 'arbeitsagentur']) {
-        if (boardsAnswer && !sources.boards.includes(board)) {
-          sources.boards.push(board)
-        }
-      }
-      saveSources(home, sources)
-      if (channelsAnswer) {
-        for (const entry of defaultChannels(answers.stacks, answers.cities)) {
-          upsertChannel(home, entry)
-        }
-        log.info('Channel recipes seeded — your agent executes them in search rounds.')
-      }
-
-      // A colleague's first prepare needs CV data — scaffold a commented
-      // template so the requirement is visible from day one.
-      for (const lang of ['en', 'de']) {
-        const cvDataPath = join(home, `cv-data.${lang}.yaml`)
-        if (!existsSync(cvDataPath)) writeFileSync(cvDataPath, CV_DATA_TEMPLATE)
-      }
+      seedWorkspace(home, answers, boardsAnswer, channelsAnswer)
 
       log.success(`Profile written to ${profilePath} — refine role, stacks, and tone rules there.`)
       log.info(`CV data templates (cv-data.en.yaml, cv-data.de.yaml) in ${home} — fill one before your first \`prepare\`.`)
@@ -224,66 +205,90 @@ projects:
 const LINKEDIN_UA =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128 Safari/537.36'
 
-function defaultChannels(stacks: string[], cities: string[]) {
+const LINKEDIN_CHANNEL: ChannelSource = {
+  name: 'linkedin-guest',
+  description: 'LinkedIn guest search — tool-crawled (browser UA, per-posting detail)',
+  crawl: {
+    urlTemplate:
+      'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords={keyword}&location=Germany&f_WT={wt}&f_TPR=r604800',
+    keywords: 'stacks',
+    variants: { wt: ['2', '3'] }, // 2 remote, 3 hybrid
+    headers: { 'User-Agent': LINKEDIN_UA },
+    mode: 'selectors',
+    item: 'li',
+    fields: {
+      title: 'h3.base-search-card__title',
+      company: 'h4.base-search-card__subtitle a',
+      location: '.job-search-card__location',
+      url: { selector: 'a.base-card__full-link', attr: 'href' },
+    },
+    nativeId: { field: 'url', regex: '-(\\d{8,})' },
+    detail: {
+      urlTemplate: 'https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{id}',
+      selector: '.description__text',
+    },
+  },
+  priority: 1,
+  yield: 'very high — the main discovery channel in practice',
+}
+
+const VUEJOBS_CHANNEL: ChannelSource = {
+  name: 'vuejobs',
+  description: 'VueJobs internal API — tool-crawled (JSON)',
+  crawl: {
+    urlTemplate: 'https://vuejobs.com/api/posts',
+    mode: 'json',
+    item: 'data',
+    fields: { title: 'title', company: 'organization.name', url: 'apply_url', location: 'work_place' },
+    nativeId: { field: 'id' },
+  },
+  priority: 3,
+  yield: 'medium — small volume, high stack precision',
+}
+
+function stepstoneChannel(stacks: string[], cities: string[]): ChannelSource {
   const keywords = stacks.length > 0 ? stacks : ['typescript']
-  const channels: ChannelSource[] = [
-    {
-      name: 'linkedin-guest',
-      description: 'LinkedIn guest search — tool-crawled (browser UA, per-posting detail)',
-      crawl: {
-        urlTemplate:
-          'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords={keyword}&location=Germany&f_WT={wt}&f_TPR=r604800',
-        keywords: 'stacks',
-        variants: { wt: ['2', '3'] }, // 2 remote, 3 hybrid
-        headers: { 'User-Agent': LINKEDIN_UA },
-        mode: 'selectors',
-        item: 'li',
-        fields: {
-          title: 'h3.base-search-card__title',
-          company: 'h4.base-search-card__subtitle a',
-          location: '.job-search-card__location',
-          url: { selector: 'a.base-card__full-link', attr: 'href' },
-        },
-        nativeId: { field: 'url', regex: '-(\\d{8,})' },
-        detail: {
-          urlTemplate: 'https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{id}',
-          selector: '.description__text',
-        },
-      },
-      priority: 1,
-      yield: 'very high — the main discovery channel in practice',
+  return {
+    name: 'stepstone',
+    description: 'StepStone search pages — agent-executed (detail pages bot-walled)',
+    recipe: {
+      urlTemplate: `https://www.stepstone.de/jobs/{slug}/in-{${cities.map(slugify).join('|') || 'deutschland'}}?radius=100`,
+      slugs: keywords.map(slugify),
+      params: 'append &rw=1 for remote; detail pages are flaky — retry with --http1.1',
+      parse:
+        'search results: "title":"…", "url":"/stellenangebote--…"; details: prefer the application/ld+json JobPosting block; skip dead postings ("Oh nein, der Job ist nicht mehr verfügbar")',
     },
-    {
-      name: 'vuejobs',
-      description: 'VueJobs internal API — tool-crawled (JSON)',
-      crawl: {
-        urlTemplate: 'https://vuejobs.com/api/posts',
-        mode: 'json',
-        item: 'data',
-        fields: {
-          title: 'title',
-          company: 'organization.name',
-          url: 'apply_url',
-          location: 'work_place',
-        },
-        nativeId: { field: 'id' },
-      },
-      priority: 3,
-      yield: 'medium — small volume, high stack precision',
-    },
-    {
-      name: 'stepstone',
-      description: 'StepStone search pages — agent-executed (detail pages bot-walled)',
-      recipe: {
-        urlTemplate: `https://www.stepstone.de/jobs/{slug}/in-{${cities.map(slugify).join('|') || 'deutschland'}}?radius=100`,
-        slugs: keywords.map(slugify),
-        params: 'append &rw=1 for remote; detail pages are flaky — retry with --http1.1',
-        parse:
-          'search results: "title":"…", "url":"/stellenangebote--…"; details: prefer the application/ld+json JobPosting block; skip dead postings ("Oh nein, der Job ist nicht mehr verfügbar")',
-      },
-      priority: 2,
-      yield: 'high — good discovery via slugs, flaky detail pages',
-    },
-  ]
-  return channels
+    priority: 2,
+    yield: 'high — good discovery via slugs, flaky detail pages',
+  }
+}
+
+function defaultChannels(stacks: string[], cities: string[]): ChannelSource[] {
+  return [LINKEDIN_CHANNEL, VUEJOBS_CHANNEL, stepstoneChannel(stacks, cities)]
+}
+
+/** Seed boards, agent channels (opt-in), and the CV-data templates. */
+function seedWorkspace(
+  home: string,
+  answers: { stacks: string[]; cities: string[] },
+  boardsAnswer: boolean,
+  channelsAnswer: boolean,
+): void {
+  const sources = loadSources(home)
+  if (boardsAnswer) {
+    for (const board of ['arbeitnow', 'arbeitsagentur']) {
+      if (!sources.boards.includes(board)) sources.boards.push(board)
+    }
+  }
+  saveSources(home, sources)
+  if (channelsAnswer) {
+    for (const entry of defaultChannels(answers.stacks, answers.cities)) upsertChannel(home, entry)
+    log.info('Channel recipes seeded — your agent executes them in search rounds.')
+  }
+  // A colleague's first prepare needs CV data — scaffold a commented template
+  // per language so the requirement is visible from day one.
+  for (const lang of ['en', 'de']) {
+    const cvDataPath = join(home, `cv-data.${lang}.yaml`)
+    if (!existsSync(cvDataPath)) writeFileSync(cvDataPath, CV_DATA_TEMPLATE)
+  }
 }

@@ -48,6 +48,7 @@ export { importPostingFromUrl, manualPosting, parsePostingUrl } from './core/imp
 export type { ManualFields, ParsedPostingUrl } from './core/import-url.js'
 export { prepareApplication } from './core/prepare.js'
 export type { PrepareOptions, PrepareResult } from './core/prepare.js'
+export { resolveCompanyLogo } from './core/sources/logo.js'
 export {
   addCompany,
   discoverCompany,

@@ -3,6 +3,7 @@ import { applyHardFilters, isFresh, isRelevant } from './match.js'
 import { dedupeKey, findProbableDuplicates, listNotes, renderIndex, slugify, upsertNote } from './notes.js'
 import { loadSeen, markSeen, saveSeen, type SeenLedger } from './seen.js'
 import { htmlToMarkdown, postingToNoteInput } from './sources/normalize.js'
+import { resolveCompanyLogo } from './sources/logo.js'
 import { getAdapter } from './sources/index.js'
 import type { Profile } from './profile.js'
 import type { Sources } from './sources-store.js'
@@ -118,8 +119,9 @@ function noteBody(posting: JobPosting): string {
 }
 
 /** Slug collisions (same company+title twice) get a nativeId suffix. */
-function upsertWithDecollide(ctx: IngestContext, posting: JobPosting): { slug: string; created: boolean } {
+async function upsertWithDecollide(ctx: IngestContext, posting: JobPosting): Promise<{ slug: string; created: boolean }> {
   const input = postingToNoteInput(posting, ctx.today)
+  input.logo = await resolveCompanyLogo(ctx.client, posting.company)
   try {
     return upsertNote(ctx.profile.paths.notesDir, input, noteBody(posting))
   } catch (error) {
@@ -175,7 +177,7 @@ async function ingest(posting: JobPosting, batch: FetchedBatch, ctx: IngestConte
     return
   }
 
-  const result = upsertWithDecollide(ctx, posting)
+  const result = await upsertWithDecollide(ctx, posting)
   ctx.noted.set(key, result.slug)
   ctx.summary.created++
   ctx.summary.createdSlugs.push(result.slug)

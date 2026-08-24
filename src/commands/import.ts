@@ -4,6 +4,7 @@ import { findProbableDuplicates, notesForCompany, renderIndex, upsertNote } from
 import { loadProfile, resolveHome } from '../core/profile.js'
 import { defaultHttpClient } from '../core/sources/http.js'
 import { htmlToMarkdown, postingToNoteInput } from '../core/sources/normalize.js'
+import { resolveCompanyLogo } from '../core/sources/logo.js'
 import { tryAutoTrack } from '../core/sources-store.js'
 import { AmtError } from '../core/errors.js'
 import type { JobPosting } from '../core/sources/types.js'
@@ -54,9 +55,11 @@ export default createCommand({
     const home = resolveHome()
     const profile = await loadProfile(home)
     const { posting, source } = await resolvePosting(args as unknown as ImportArgs)
+    const input = postingToNoteInput(posting, new Date().toISOString().slice(0, 10))
+    input.logo = await resolveCompanyLogo(defaultHttpClient, posting.company)
     const result = upsertNote(
       profile.paths.notesDir,
-      postingToNoteInput(posting, new Date().toISOString().slice(0, 10)),
+      input,
       posting.descriptionHtml ? htmlToMarkdown(posting.descriptionHtml) : '',
     )
 

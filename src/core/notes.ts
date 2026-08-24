@@ -48,6 +48,8 @@ export const jobNoteSchema = z.object({
   salaryMin: z.number().int().nullable().default(null),
   salaryMax: z.number().int().nullable().default(null),
   salaryCurrency: z.string().nullable().default(null),
+  /** Favicon URL, resolved best-effort from the company name. */
+  logo: z.string().nullable().default(null),
   yearsRequired: z.number().int().nullable().default(null),
   publishedAt: isoDate.nullable().default(null),
   discoveredAt: isoDate,
@@ -253,6 +255,8 @@ export function upsertNote(
   }
 
   const merged = { ...note, slug: existing.note.slug }
+  // A resolved logo is sticky — refreshes without one must not clear it.
+  if (merged.logo === null) merged.logo = existing.note.logo
   for (const field of HUMAN_FIELDS) {
     // @ts-expect-error — same schema on both sides, field-wise copy
     merged[field] = existing.note[field]
@@ -393,7 +397,8 @@ function tableRow(note: JobNote): string {
       : ''
   const score = note.score !== null ? `⭐ ${note.score}` : ''
   const cut = note.cutReason ? `✂️ ${note.cutReason}` : ''
-  return `| ${score} | ${cell(note.company)} | [[${note.slug}]] ${cell(note.title)} `
+  const logo = note.logo ? `<img src="${note.logo}" width="16"> ` : ''
+  return `| ${score} | ${logo}${cell(note.company)} | [[${note.slug}]] ${cell(note.title)} `
     + `| ${note.workMode ?? '?'} | ${salary} | ${cut} | [↗](${note.url}) |`
 }
 

@@ -227,6 +227,18 @@ describe('index view', () => {
     expect(listNotes(dir)).toHaveLength(2)
   })
 
+  it('renders a resolved logo inline in the company cell', () => {
+    const dir = freshDir()
+    upsertNote(
+      dir,
+      posting({ slug: 'logo-one', logo: 'https://icons.duckduckgo.com/ip3/acme.com.ico' }),
+      '',
+    )
+    expect(renderIndex(dir)).toContain(
+      '<img src="https://icons.duckduckgo.com/ip3/acme.com.ico" width="16"> Acme GmbH',
+    )
+  })
+
   it('buckets new/shortlist by placement and ranks by score', () => {
     const dir = freshDir()
     upsertNote(dir, posting({ slug: 'remote-a', nativeId: 'r1', workMode: 'remote' }), '')

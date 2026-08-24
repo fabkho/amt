@@ -377,17 +377,30 @@ function byRank(a: { note: JobNote }, b: { note: JobNote }): number {
   return (b.note.discoveredAt ?? '').localeCompare(a.note.discoveredAt ?? '')
 }
 
-function indexLine(note: JobNote): string {
+const TABLE_HEADER = [
+  '| ⭐ | Company | Role | Mode | Salary | Note | |',
+  '| --- | --- | --- | --- | --- | --- | --- |',
+]
+
+function cell(value: string): string {
+  return value.replaceAll('|', String.raw`\|`)
+}
+
+function tableRow(note: JobNote): string {
   const salary
     = note.salaryMin || note.salaryMax
-      ? ` · ${[note.salaryMin, note.salaryMax].filter(Boolean).join('–')}`
+      ? [note.salaryMin, note.salaryMax].filter(Boolean).join('–')
       : ''
-  const score = note.score !== null ? ` · ⭐ ${note.score}` : ''
-  const cut = note.cutReason ? ` · ✂️ ${note.cutReason}` : ''
-  return (
-    `- [[${note.slug}]] — **${note.company}**, ${note.title}`
-    + ` (${note.workMode ?? '?'}${score}${salary}${cut}) [↗](${note.url})`
-  )
+  const score = note.score !== null ? `⭐ ${note.score}` : ''
+  const cut = note.cutReason ? `✂️ ${note.cutReason}` : ''
+  return `| ${score} | ${cell(note.company)} | [[${note.slug}]] ${cell(note.title)} `
+    + `| ${note.workMode ?? '?'} | ${salary} | ${cut} | [↗](${note.url}) |`
+}
+
+function pushTable(lines: string[], notes: { note: JobNote }[]): void {
+  lines.push(...TABLE_HEADER)
+  for (const { note } of notes) lines.push(tableRow(note))
+  lines.push('')
 }
 
 // Statuses where the stack is big enough that placement buckets pay off —
@@ -407,12 +420,10 @@ export function renderIndex(notesDir: string, cities: string[] = []): string {
         const inBucket = group.filter(s => placement(s.note, cities) === bucket)
         if (inBucket.length === 0) continue
         lines.push(`### ${bucket} (${inBucket.length})`, '')
-        for (const { note } of inBucket) lines.push(indexLine(note))
-        lines.push('')
+        pushTable(lines, inBucket)
       }
     } else {
-      for (const { note } of group) lines.push(indexLine(note))
-      lines.push('')
+      pushTable(lines, group)
     }
   }
   const content = lines.join('\n')

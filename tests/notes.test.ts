@@ -219,6 +219,7 @@ describe('index view', () => {
     const content = renderIndex(dir)
     expect(content).toContain('## new (1)')
     expect(content).toContain('## cut (1)')
+    expect(content).toContain('| ⭐ | Company | Role | Mode | Salary | Note | |')
     expect(content).toContain('✂️ ethics')
     expect(content).toContain('68000–75000')
     expect(readFileSync(join(dir, '_index.md'), 'utf-8')).toBe(content)

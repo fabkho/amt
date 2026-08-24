@@ -126,7 +126,9 @@ async function upsertWithDecollide(ctx: IngestContext, posting: JobPosting): Pro
     return upsertNote(ctx.profile.paths.notesDir, input, noteBody(posting))
   } catch (error) {
     if (!(error instanceof AmtError) || error.code !== 'NOTE_SLUG_TAKEN') throw error
-    input.slug = `${input.slug}-${slugify(posting.nativeId).slice(0, 8)}`
+    // The END of the nativeId discriminates — arbeitnow ids share their
+    // title-derived prefix ("…-mainz-375160" vs "…-koln-454616").
+    input.slug = `${input.slug}-${slugify(posting.nativeId).slice(-8).replace(/^-+/, '')}`
     return upsertNote(ctx.profile.paths.notesDir, input, noteBody(posting))
   }
 }

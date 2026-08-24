@@ -170,7 +170,7 @@ describe('amt mcp server', () => {
 
   it('ships both workflow prompts with profile context', async () => {
     const { prompts } = await client.listPrompts()
-    expect(prompts.map(p => p.name).sort()).toEqual(['find-new-jobs', 'write-application'])
+    expect(prompts.map(p => p.name).sort()).toEqual(['daily-update', 'find-new-jobs', 'write-application'])
 
     const search = await client.getPrompt({ name: 'find-new-jobs', arguments: {} })
     const text = (search.messages[0]!.content as { text: string }).text

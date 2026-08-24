@@ -518,14 +518,9 @@ export function createServer(): McpServer {
 
   // ─── Prompts ───────────────────────────────────────────────────
 
-  server.registerPrompt(
-    'find-new-jobs',
-    {
-      title: 'Find New Jobs',
-      description:
-        'Daily update: crawl sources, run agent channels, rank everything new, present the inbox delta.',
-      argsSchema: z.object({}).default({}),
-    },
+  // One workflow, two names: "daily-update" is the explicit daily verb,
+  // "find-new-jobs" stays for compatibility and discoverability.
+  const dailyUpdateHandler =
     async () => {
       let context = ''
       let channels = ''
@@ -560,8 +555,23 @@ export function createServer(): McpServer {
           },
         ],
       }
-    },
-  )
+    }
+
+  for (const [name, title] of [
+    ['daily-update', 'Daily Update'],
+    ['find-new-jobs', 'Find New Jobs'],
+  ] as const) {
+    server.registerPrompt(
+      name,
+      {
+        title,
+        description:
+          'Daily update: crawl sources, run agent channels, rank everything new, present the inbox delta.',
+        argsSchema: z.object({}).default({}),
+      },
+      dailyUpdateHandler,
+    )
+  }
 
   server.registerPrompt(
     'write-application',

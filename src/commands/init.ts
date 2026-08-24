@@ -5,7 +5,8 @@ import { consola } from 'consola'
 import { AmtError, toErrorMessage } from '../core/errors.js'
 import { profileSchema, resolveHome } from '../core/profile.js'
 import { z } from 'zod'
-import { loadSources, saveSources } from '../core/sources-store.js'
+import { loadSources, saveSources, upsertChannel, type ChannelSource } from '../core/sources-store.js'
+import { slugify } from '../core/notes.js'
 import { log } from '../utils/logger.js'
 
 function profileTemplate(answers: {
@@ -14,6 +15,7 @@ function profileTemplate(answers: {
   phone: string
   location: string
   salaryFloor: number
+  stacks: string[]
   cities: string[]
   notesDir: string
   outputBase: string
@@ -35,7 +37,7 @@ identity:
     en: "${answers.location}"
   links: []
 search:
-  stacksPrimary: [typescript]
+  stacksPrimary: [${answers.stacks.join(", ") || "typescript"}]
   salaryFloor: ${answers.salaryFloor}
   locations:
     remote: true
@@ -68,7 +70,7 @@ export default defineCommand({
       const home = resolveHome()
       const profilePath = join(home, 'profile.yaml')
       assertInitPreconditions(profilePath, args.force)
-      const { answers, boardsAnswer } = await askOnboarding()
+      const { answers, boardsAnswer, channelsAnswer } = await askOnboarding()
       mkdirSync(home, { recursive: true })
       writeFileSync(profilePath, profileTemplate(answers))
 
@@ -85,6 +87,12 @@ export default defineCommand({
         }
       }
       saveSources(home, sources)
+      if (channelsAnswer) {
+        for (const entry of defaultChannels(answers.stacks, answers.cities)) {
+          upsertChannel(home, entry)
+        }
+        log.info('Channel recipes seeded — your agent executes them in search rounds.')
+      }
 
       // A colleague's first prepare needs CV data — scaffold a commented
       // template so the requirement is visible from day one.
@@ -133,6 +141,9 @@ async function askOnboarding() {
     log.warn('Could not read a salary floor — using 50000 as a placeholder; edit profile.yaml.')
     salaryFloor = 50_000
   }
+  const stacksRaw = String(
+    await consola.prompt('Your stack keywords (comma-separated, e.g. "vue, typescript, node"):', { type: 'text' }),
+  )
   const citiesRaw = String(
     await consola.prompt('Hybrid-acceptable cities (comma-separated, empty for remote-only):', { type: 'text' }),
   )
@@ -142,17 +153,24 @@ async function askOnboarding() {
   const outputBase = String(
     await consola.prompt('Directory for application folders:', { type: 'text', default: '~/Applications-out' }),
   )
-  const boardsAnswer = await consola.prompt('Crawl the Arbeitnow board (German market, free API)?', {
-    type: 'confirm',
-  })
+  const boardsAnswer = await consola.prompt(
+    'Crawl the default boards (Arbeitnow + Bundesagentur für Arbeit, free APIs)?',
+    { type: 'confirm' },
+  )
+  const channelsAnswer = await consola.prompt(
+    'Seed agent channel recipes (LinkedIn/StepStone/VueJobs)? Your AGENT runs these during search rounds — the tool itself never does.',
+    { type: 'confirm' },
+  )
   return {
     boardsAnswer,
+    channelsAnswer,
     answers: {
       name,
       email,
       phone,
       location,
       salaryFloor,
+      stacks: stacksRaw.split(',').map(k => k.trim().toLowerCase()).filter(Boolean),
       cities: citiesRaw.split(',').map(c => c.trim()).filter(Boolean),
       notesDir,
       outputBase,
@@ -197,3 +215,62 @@ projects:
     url: "https://github.com/you/project"
     desc: "One line."
 `
+
+/**
+ * Hydrated channel seeds — the field-tested recipes from
+ * skills/job-search/channels.md, filled with the user's answers. Consent is
+ * asked in onboarding because the AGENT will execute these; the tool never does.
+ */
+function defaultChannels(stacks: string[], cities: string[]) {
+  const keywords = stacks.length > 0 ? stacks : ['typescript']
+  const channels: ChannelSource[] = [
+    {
+      name: 'linkedin-guest',
+      description: 'LinkedIn guest search API — personal use, agent-executed',
+      recipe: {
+        urlTemplate:
+          'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords={kw}&location=Germany&f_WT={wt}&f_TPR=r604800&start={0|25|50}',
+        keywords,
+        params: 'f_WT=2 remote, f_WT=3 hybrid; last 7 days; paginate start=0/25/50; send a browser User-Agent',
+        parse:
+          '<h3 class="base-search-card__title"> = title; company = the <a> inside <h4 class="base-search-card__subtitle">; href = …/jobs/view/…',
+      },
+      priority: 1,
+      yield: 'very high — the main discovery channel in practice',
+    },
+    {
+      name: 'stepstone',
+      description: 'StepStone search pages — personal use, agent-executed',
+      recipe: {
+        urlTemplate: `https://www.stepstone.de/jobs/{slug}/in-{${cities.map(slugify).join('|') || 'deutschland'}}?radius=100`,
+        slugs: keywords.map(slugify),
+        params: 'append &rw=1 for remote; detail pages are flaky — retry with --http1.1',
+        parse:
+          'search results: "title":"…", "url":"/stellenangebote--…"; details: prefer the application/ld+json JobPosting block; skip dead postings ("Oh nein, der Job ist nicht mehr verfügbar")',
+      },
+      priority: 2,
+      yield: 'high — good discovery via slugs, flaky detail pages',
+    },
+    {
+      name: 'bing-rss',
+      description: 'Bing RSS fallback for company/role searches',
+      recipe: { urlTemplate: 'https://www.bing.com/search?format=rss&q={urlencoded}' },
+      priority: 4,
+      yield: 'fallback only',
+    },
+  ]
+  if (keywords.some(k => k.includes('vue'))) {
+    channels.push({
+      name: 'vuejobs',
+      description: 'VueJobs internal API — niche, on-target for Vue roles',
+      recipe: {
+        urlTemplate: 'https://vuejobs.com/api/posts',
+        params: 'plain GET, JSON array of ~25 postings; undocumented endpoint — agent-executed only',
+        parse: 'filter by the profile (remote countries / work_place / seniority); feed via import with manual fields (apply_url as the URL)',
+      },
+      priority: 3,
+      yield: 'medium — small volume, high stack precision',
+    })
+  }
+  return channels
+}

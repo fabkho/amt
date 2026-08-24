@@ -142,7 +142,10 @@ async function ingest(posting: JobPosting, batch: FetchedBatch, ctx: IngestConte
   // An existing note always wins over the ledger — the user may have
   // imported something the crawler once dismissed.
   if (ctx.noted.has(key)) {
-    upsertNote(ctx.profile.paths.notesDir, postingToNoteInput(posting, ctx.today), noteBody(posting))
+    const input = postingToNoteInput(posting, ctx.today)
+    // Backfill for notes created before logos existed — cached per company.
+    input.logo = await resolveCompanyLogo(ctx.client, posting.company)
+    upsertNote(ctx.profile.paths.notesDir, input, noteBody(posting))
     ctx.summary.refreshed++
     return
   }

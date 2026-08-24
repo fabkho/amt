@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.9](https://github.com/fabkho/amt/compare/amt-0.2.8...amt-0.2.9) (2026-08-24)
+
+
+### Features
+
+* description debt ([#14](https://github.com/fabkho/amt/issues/14)) and drop find-new-jobs alias + naming ladder ([#21](https://github.com/fabkho/amt/issues/21)) ([#33](https://github.com/fabkho/amt/issues/33)) ([3491e1c](https://github.com/fabkho/amt/commit/3491e1c744a825941aa3eb2ade8e855f4d4619ee))
+
 ## [0.2.8](https://github.com/fabkho/amt/compare/amt-0.2.7...amt-0.2.8) (2026-08-24)
 
 

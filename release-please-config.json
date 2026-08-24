@@ -7,7 +7,14 @@
       "bump-patch-for-minor-pre-major": true,
       "include-v-in-tag": false,
       "component": "amt",
-      "include-component-in-tag": true
+      "include-component-in-tag": true,
+      "extra-files": [
+        {
+          "type": "json",
+          "path": ".claude-plugin/plugin.json",
+          "jsonpath": "$.version"
+        }
+      ]
     }
   }
 }

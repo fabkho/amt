@@ -9,6 +9,7 @@ import {
   removeChannel,
   removeCompany,
   slugCandidates,
+  tryAutoTrack,
   upsertChannel,
   type HttpClient,
 } from '../src/index.js'
@@ -27,6 +28,42 @@ const probingClient: HttpClient = {
     throw new Error('404')
   },
 }
+
+/** A recruitee sandbox that answers for the "personio" slug with a posting
+ *  whose company is NOT the queried name — the real FD-Sandbox incident. */
+const sandboxClient: HttpClient = {
+  json: async (url) => {
+    if (url === 'https://personio.recruitee.com/api/offers/') {
+      const base = JSON.parse(readFileSync(join(fixturesDir, 'recruitee.json'), 'utf-8'))
+      base.offers = [{ ...base.offers[0], company_name: 'FD Sandbox' }]
+      return base
+    }
+    throw new Error(`404: ${url}`)
+  },
+  text: async () => {
+    throw new Error('404')
+  },
+}
+
+describe('auto-track plausibility', () => {
+  it('refuses to auto-track a discovery whose postings do not name the company', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'amt-home-'))
+    // manual add still works but reports verified:false
+    const manual = await addCompany(sandboxClient, home, 'personio', 'manual')
+    expect(manual.verified).toBe(false)
+    // auto path (tryAutoTrack) rejects it — no sandbox in sources.yaml
+    const home2 = mkdtempSync(join(tmpdir(), 'amt-home-'))
+    const tracked = await tryAutoTrack(sandboxClient, home2, true, 'personio')
+    expect(tracked).toBeNull()
+    expect(loadSources(home2).companies).toHaveLength(0)
+  })
+
+  it('verifies a real match', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'amt-home-'))
+    const added = await addCompany(probingClient, home, 'shopware AG', 'auto')
+    expect(added.verified).toBe(true)
+  })
+})
 
 describe('slugCandidates', () => {
   it('generates bare, squashed, and suffix variants', () => {

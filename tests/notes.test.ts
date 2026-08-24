@@ -139,6 +139,18 @@ describe('notes CRUD', () => {
     expect(note.cutReason).toBe('company_type')
   })
 
+  it('stamps appliedAt when a note becomes applied, and offer is a valid status', () => {
+    const dir = freshDir()
+    upsertNote(dir, posting(), 'a')
+    const applied = setStatus(dir, 'acme-gmbh-senior-frontend', 'applied', { at: '2026-08-24' })
+    expect(applied.application?.appliedAt).toBe('2026-08-24')
+    // re-stamping keeps the first date
+    const again = setStatus(dir, 'acme-gmbh-senior-frontend', 'applied', { at: '2026-09-01' })
+    expect(again.application?.appliedAt).toBe('2026-08-24')
+    // offer is a real terminal status
+    expect(setStatus(dir, 'acme-gmbh-senior-frontend', 'offer').status).toBe('offer')
+  })
+
   it('filters by status', () => {
     const dir = freshDir()
     upsertNote(dir, posting(), 'a')

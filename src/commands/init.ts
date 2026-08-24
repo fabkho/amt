@@ -96,13 +96,13 @@ export default defineCommand({
 
       // A colleague's first prepare needs CV data — scaffold a commented
       // template so the requirement is visible from day one.
-      const cvDataPath = join(home, 'cv-data.en.yaml')
-      if (!existsSync(cvDataPath)) {
-        writeFileSync(cvDataPath, CV_DATA_TEMPLATE)
+      for (const lang of ['en', 'de']) {
+        const cvDataPath = join(home, `cv-data.${lang}.yaml`)
+        if (!existsSync(cvDataPath)) writeFileSync(cvDataPath, CV_DATA_TEMPLATE)
       }
 
       log.success(`Profile written to ${profilePath} — refine role, stacks, and tone rules there.`)
-      log.info(`CV data template at ${cvDataPath} — fill it before your first \`prepare\`.`)
+      log.info(`CV data templates (cv-data.en.yaml, cv-data.de.yaml) in ${home} — fill one before your first \`prepare\`.`)
       log.info('Track companies with `amt sources add <company>`, then run `amt crawl`.')
     } catch (error) {
       const code = error instanceof AmtError ? error.code : 'UNEXPECTED'

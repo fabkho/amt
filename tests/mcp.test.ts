@@ -86,6 +86,7 @@ describe('amt mcp server', () => {
       'add_source',
       'crawl_jobs',
       'discover',
+      'get_inbox',
       'get_job',
       'import_job',
       'list_jobs',

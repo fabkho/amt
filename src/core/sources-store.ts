@@ -145,6 +145,33 @@ export async function discoverCompany(
 export interface AddCompanyResult extends DiscoveryResult {
   name: string
   alreadyTracked: boolean
+  /** Whether the discovered board's postings actually name this company. */
+  verified: boolean
+}
+
+function normalizeName(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/\b(gmbh|ag|se|inc|co|kg|ltd|llc)\b\.?/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
+/**
+ * Does the discovered board actually belong to this company? Slug-probing can
+ * land on a squatter or an ATS sandbox (recruitee "personio" = "FD Sandbox").
+ * If the postings carry company names and none echo the query, it is not ours.
+ * When the payload has no usable company names, we cannot disprove it — allow,
+ * but the caller can tell (verified:false).
+ */
+function verifyDiscovery(name: string, postings: JobPosting[]): boolean {
+  const wanted = normalizeName(name)
+  const tokens = wanted.split(' ').filter(t => t.length >= 3)
+  const names = postings.map(p => normalizeName(p.company)).filter(Boolean)
+  if (names.length === 0) return true
+  return names.some(n => n.includes(wanted) || wanted.includes(n) || tokens.some(t => n.includes(t)))
 }
 
 export async function addCompany(
@@ -161,15 +188,24 @@ export async function addCompany(
       `No ATS found for "${name}" — probed ${ATS_ORDER.join(', ')} with slug variants ${slugCandidates(name).join(', ')}.`,
     )
   }
+  const verified = verifyDiscovery(name, found.postings)
+  // Auto-tracking must not silently adopt a squatter/sandbox — only humans
+  // (manual) may override a failed name check.
+  if (!verified && addedBy === 'auto') {
+    throw new AmtError(
+      'COMPANY_UNVERIFIED',
+      `Discovered ${found.ats}:${found.slug} for "${name}", but its postings do not name the company — not auto-tracking.`,
+    )
+  }
   const existing = sources.companies.find(
     c => c.ats === found.ats && c.slug === found.slug,
   )
   if (existing) {
-    return { ...found, name: existing.name, alreadyTracked: true }
+    return { ...found, name: existing.name, alreadyTracked: true, verified }
   }
   sources.companies.push({ name, ats: found.ats, slug: found.slug, addedBy })
   saveSources(home, sources)
-  return { ...found, name, alreadyTracked: false }
+  return { ...found, name, alreadyTracked: false, verified }
 }
 
 /**

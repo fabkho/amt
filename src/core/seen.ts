@@ -57,3 +57,20 @@ export function markSeen(
 ): void {
   ledger[key] = { reason, cutReason, at }
 }
+
+/**
+ * Forget ledger entries so the next crawl re-judges those postings against the
+ * current profile — the deterministic answer to "I loosened a filter, bring
+ * them back". The ledger stores no posting bodies, so re-crawling is the only
+ * way to re-evaluate; dropping the keys is what lets that happen.
+ */
+export function forgetSeen(
+  home: string,
+  reason?: 'filtered' | 'off-stack',
+): number {
+  const ledger = loadSeen(home)
+  const keys = Object.keys(ledger).filter(k => !reason || ledger[k]!.reason === reason)
+  for (const key of keys) delete ledger[key]
+  saveSeen(home, ledger)
+  return keys.length
+}

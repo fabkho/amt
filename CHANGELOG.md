@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.7](https://github.com/fabkho/amt/compare/amt-0.2.6...amt-0.2.7) (2026-08-24)
+
+
+### Features
+
+* channel engine — the binary crawls channel recipes itself ([#26](https://github.com/fabkho/amt/issues/26)) ([#27](https://github.com/fabkho/amt/issues/27)) ([0472cc0](https://github.com/fabkho/amt/commit/0472cc0ecfb23949dfcba9f57a505195cacb3c45))
+
+
+### Bug Fixes
+
+* channel engine stringifies only scalar field values ([#29](https://github.com/fabkho/amt/issues/29)) ([26cc486](https://github.com/fabkho/amt/commit/26cc4867adccdcc6f265638b96fe503e1ae8d3d1))
+
 ## [0.2.6](https://github.com/fabkho/amt/compare/amt-0.2.5...amt-0.2.6) (2026-08-24)
 
 

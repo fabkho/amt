@@ -1,3 +1,4 @@
+import { placeMatches } from './notes.js'
 import type { CutReason } from './notes.js'
 import type { Profile } from './profile.js'
 import type { JobPosting } from './sources/types.js'
@@ -125,9 +126,10 @@ const checkYearsRequired: Check = (posting, search) => {
 const checkLocation: Check = (posting, search) => {
   const explicit = posting.workMode === 'onsite' || posting.workMode === 'hybrid'
   if (!explicit || !posting.location) return null
-  const location = posting.location.toLowerCase()
+  // Exonym-aware so an explicit hybrid role in "Cologne" is not cut when the
+  // profile city is "Köln" (shared with the index buckets).
   const matchesCity = search.locations.cities.some(city =>
-    location.includes(city.name.toLowerCase()),
+    placeMatches(posting.location, city.name),
   )
   return matchesCity
     ? null

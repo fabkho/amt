@@ -192,4 +192,23 @@ describe('applyHardFilters', async () => {
       ).passed,
     ).toBe(true)
   })
+
+  it('does not cut a profile city under its English exonym', async () => {
+    const base = await loadProfile(fixtureHome)
+    const koeln = {
+      ...base,
+      search: {
+        ...base.search,
+        locations: { remote: false, cities: [{ name: 'Köln', minHomeOfficeDays: 3 }] },
+      },
+    }
+    // "Cologne" / "München"→"Munich" must be recognized as the profile cities
+    expect(
+      applyHardFilters(posting({ workMode: 'hybrid', location: 'Cologne, Germany' }), koeln).passed,
+    ).toBe(true)
+    // a genuinely different city still cuts
+    expect(
+      applyHardFilters(posting({ workMode: 'onsite', location: 'Munich, Germany' }), koeln).cutReason,
+    ).toBe('location')
+  })
 })

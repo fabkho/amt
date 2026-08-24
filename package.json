@@ -9,7 +9,8 @@
   },
   "files": [
     "dist",
-    "templates"
+    "templates",
+    "assets"
   ],
   "type": "module",
   "exports": {

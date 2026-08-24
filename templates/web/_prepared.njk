@@ -1,0 +1,10 @@
+<div class="assessment">
+  {% if result.letterIsPlaceholder %}
+    <strong>Application folder scaffolded</strong> at <code>{{ result.folder }}</code>.
+    The cover letter is still a placeholder — draft it with your agent (tone rules apply), then
+    re-run prepare to render.
+  {% else %}
+    <strong>Application prepared.</strong> Files in <code>{{ result.folder }}</code>.
+  {% endif %}
+  <div class="meta" style="margin-top:.4rem">{{ result.next }}</div>
+</div>

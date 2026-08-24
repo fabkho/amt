@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.6](https://github.com/fabkho/amt/compare/amt-0.2.5...amt-0.2.6) (2026-08-24)
+
+
+### Features
+
+* company logos in notes and the index table ([88c555d](https://github.com/fabkho/amt/commit/88c555d183fe6ce260cf29890ba38328953e05c5))
+* daily inbox — one file per day, ranked, linked from the index ([dd5b1c6](https://github.com/fabkho/amt/commit/dd5b1c6cd9b61a0d8ab8d6352f0ce52676926682))
+* daily-update prompt — the explicit daily verb ([2fa0384](https://github.com/fabkho/amt/commit/2fa038415b60f532eb91c18bdf034c48036dd9c9))
+* ranking debt is data — unranked notes surface in every entry tool ([78ce794](https://github.com/fabkho/amt/commit/78ce794e7573f325faabe68d183dc85944edd723))
+* unify crawl — one verb, full coverage ([c42a03b](https://github.com/fabkho/amt/commit/c42a03bda3bde4507d3d094d161dc61e02a99abf))
+
+
+### Bug Fixes
+
+* backfill logos on note refresh, not only on creation ([6c6a98a](https://github.com/fabkho/amt/commit/6c6a98a6f133e78ce28496c3beaea9cbef2117a2))
+* slug de-collision uses the end of the nativeId ([43439db](https://github.com/fabkho/amt/commit/43439db23e5859353b1b99661379aef8b11510e4))
+
 ## [0.2.5](https://github.com/fabkho/amt/compare/amt-0.2.4...amt-0.2.5) (2026-08-24)
 
 

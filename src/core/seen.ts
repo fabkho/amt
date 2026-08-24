@@ -34,7 +34,14 @@ export function loadSeen(home: string): SeenLedger {
   const path = ledgerPath(home)
   if (!existsSync(path)) return {}
   try {
-    return ledgerSchema.parse(JSON.parse(readFileSync(path, 'utf-8')))
+    const ledger = ledgerSchema.parse(JSON.parse(readFileSync(path, 'utf-8')))
+    // Migration: the 0.2.6–0.2.9 window briefly keyed the ledger by identity
+    // (company::title). Those entries can never match the source:nativeId keys
+    // again — drop them so the file stops growing and their postings re-judge.
+    for (const key of Object.keys(ledger)) {
+      if (key.includes('::')) delete ledger[key]
+    }
+    return ledger
   } catch (error) {
     throw new AmtError(
       'SEEN_LEDGER_INVALID',

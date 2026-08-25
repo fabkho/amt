@@ -1,6 +1,6 @@
 {
   "name": "@fabkho/amt",
-  "version": "0.2.11",
+  "version": "0.2.12",
   "description": "Job application toolkit: crawl postings, manage job notes, render CVs and cover letters",
   "license": "MIT",
   "bin": {

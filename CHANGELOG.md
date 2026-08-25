@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.12](https://github.com/fabkho/amt/compare/amt-0.2.11...amt-0.2.12) (2026-08-25)
+
+
+### Bug Fixes
+
+* **web:** reject dropdown, live header stats, external links, clickable stats ([#44](https://github.com/fabkho/amt/issues/44)) ([4ab94dd](https://github.com/fabkho/amt/commit/4ab94dd0fe300240db93a67ea03d2296292482fd))
+
 ## [0.2.11](https://github.com/fabkho/amt/compare/amt-0.2.10...amt-0.2.11) (2026-08-25)
 
 

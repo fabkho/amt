@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/fabkho/amt/compare/amt-0.3.1...amt-0.3.2) (2026-08-25)
+
+
+### Features
+
+* home_office_below cut reason for roles under the HO floor ([#64](https://github.com/fabkho/amt/issues/64)) ([#67](https://github.com/fabkho/amt/issues/67)) ([ee57753](https://github.com/fabkho/amt/commit/ee57753bb139b479a6c1a26e4aeefc8bddbbf07d))
+
 ## [0.3.1](https://github.com/fabkho/amt/compare/amt-0.3.0...amt-0.3.1) (2026-08-25)
 
 

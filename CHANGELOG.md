@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.9](https://github.com/fabkho/amt/compare/amt-0.3.8...amt-0.3.9) (2026-08-25)
+
+
+### Bug Fixes
+
+* /jobs reject is reactive + persist filters in the URL ([#82](https://github.com/fabkho/amt/issues/82)) ([87f87a0](https://github.com/fabkho/amt/commit/87f87a082aebd10e9e1ece9bb60cf10ffc31eef9))
+
 ## [0.3.8](https://github.com/fabkho/amt/compare/amt-0.3.7...amt-0.3.8) (2026-08-25)
 
 

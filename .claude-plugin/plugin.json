@@ -1,7 +1,7 @@
 {
   "name": "amt",
   "description": "Job-search toolkit: crawl postings, manage job notes with statuses and scores, prepare applications (CV + cover letter). Bundles the amt MCP server and workflow skills. Requires the amt binaries: pnpm add -g @fabkho/amt",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "author": {
     "name": "fabkho"
   }

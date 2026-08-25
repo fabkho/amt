@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.11](https://github.com/fabkho/amt/compare/amt-0.2.10...amt-0.2.11) (2026-08-25)
+
+
+### Features
+
+* amt serve — local web dashboard (htmx + petite-vue, paper aesthetic) ([#42](https://github.com/fabkho/amt/issues/42)) ([eade265](https://github.com/fabkho/amt/commit/eade26584a27f6eff441c16aa955088c265479c6))
+
 ## [0.2.10](https://github.com/fabkho/amt/compare/amt-0.2.9...amt-0.2.10) (2026-08-24)
 
 

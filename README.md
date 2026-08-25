@@ -78,30 +78,19 @@ Prefer a screen to a terminal? **`amt serve`** opens a local dashboard at
 `http://localhost:4400` — triage the day's arrivals like a stack of files.
 
 <p align="center">
-  <img src="assets/web/screenshots/hero.png" width="900" alt="The amt dashboard — a paper-styled inbox of ranked job postings with a reject dialog">
+  <img src="assets/web/screenshots/dashboard.png" width="820" alt="The amt dashboard: a paper-styled inbox of ranked job postings with accept/reject/favorite actions">
 </p>
 
 - **📥 Inbox** — the day's new postings, ranked; **⭐ favorite**, **accept → shortlist**,
   or **reject** (with a reason) right from the row. Rejected/accepted rows leave
   the inbox as you clear it.
-- **One original-posting click** — each row opens the real ad in a new tab.
-
-<p align="center">
-  <img src="assets/web/screenshots/board.png" width="820" alt="The Aktenboard: every note, filterable by status, work mode, city, score, favorites, or text">
-</p>
-
 - **Aktenboard** — every note, filterable by status, remote/hybrid, city, minimum
-  score, favorites, or free text; the header stat cards are shortcuts into it.
-
-<p align="center">
-  <img src="assets/web/screenshots/detail.png" width="820" alt="A job detail page with the full description, assessment, and triage actions">
-</p>
-
-- **Detail** — the full description and your assessment, with the same triage actions.
+  score, favorites, or free text. The header cards are shortcuts into it.
+- **One original-posting click** — each row opens the real ad in a new tab.
 
 It's server-rendered (htmx, no build step, no framework), and **every click
 writes straight to your markdown notes** — so Obsidian and the dashboard never
-disagree. The imagery above is generated from a fictional demo dataset by
+disagree. The screenshot is generated from a fictional demo dataset by
 `pnpm shoot` ([scripts/shoot.mjs](./scripts/shoot.mjs)); design notes in
 [docs/webview-plan.md](./docs/webview-plan.md).
 

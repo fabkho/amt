@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.8](https://github.com/fabkho/amt/compare/amt-0.3.7...amt-0.3.8) (2026-08-25)
+
+
+### Features
+
+* /jobs board defaults to active, hiding cut/rejected (#—) ([#80](https://github.com/fabkho/amt/issues/80)) ([fc487ef](https://github.com/fabkho/amt/commit/fc487ef6f9d5c931430a01e3cb942714c84a454c))
+
 ## [0.3.7](https://github.com/fabkho/amt/compare/amt-0.3.6...amt-0.3.7) (2026-08-25)
 
 

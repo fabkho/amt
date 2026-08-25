@@ -5,7 +5,7 @@ import { consola } from 'consola'
 import { AmtError, toErrorMessage } from '../core/errors.js'
 import { profileSchema, resolveHome } from '../core/profile.js'
 import { z } from 'zod'
-import { loadSources, saveSources, upsertChannel, type ChannelSource } from '../core/sources-store.js'
+import { loadSources, saveSources, upsertSource, type SourceEntry } from '../core/sources-store.js'
 import { slugify } from '../core/notes.js'
 import { log } from '../utils/logger.js'
 
@@ -211,7 +211,7 @@ projects:
 const LINKEDIN_UA =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128 Safari/537.36'
 
-const LINKEDIN_CHANNEL: ChannelSource = {
+const LINKEDIN_CHANNEL: SourceEntry = {
   name: 'linkedin-guest',
   description: 'LinkedIn guest search — tool-crawled (browser UA, per-posting detail)',
   crawl: {
@@ -241,7 +241,7 @@ const LINKEDIN_CHANNEL: ChannelSource = {
   yield: 'very high — the main discovery channel in practice',
 }
 
-const VUEJOBS_CHANNEL: ChannelSource = {
+const VUEJOBS_CHANNEL: SourceEntry = {
   name: 'vuejobs',
   description: 'VueJobs internal API — tool-crawled (JSON)',
   crawl: {
@@ -255,7 +255,7 @@ const VUEJOBS_CHANNEL: ChannelSource = {
   yield: 'medium — small volume, high stack precision',
 }
 
-function stepstoneChannel(stacks: string[], cities: string[]): ChannelSource {
+function stepstoneChannel(stacks: string[], cities: string[]): SourceEntry {
   const keywords = stacks.length > 0 ? stacks : ['typescript']
   return {
     name: 'stepstone',
@@ -272,7 +272,7 @@ function stepstoneChannel(stacks: string[], cities: string[]): ChannelSource {
   }
 }
 
-function defaultChannels(stacks: string[], cities: string[]): ChannelSource[] {
+function defaultChannels(stacks: string[], cities: string[]): SourceEntry[] {
   return [LINKEDIN_CHANNEL, VUEJOBS_CHANNEL, stepstoneChannel(stacks, cities)]
 }
 
@@ -286,12 +286,14 @@ function seedWorkspace(
   const sources = loadSources(home)
   if (boardsAnswer) {
     for (const board of ['arbeitnow', 'arbeitsagentur']) {
-      if (!sources.boards.includes(board)) sources.boards.push(board)
+      if (!sources.sources.some(s => s.name === board)) {
+        sources.sources.push({ name: board, execute: 'tool' })
+      }
     }
   }
   saveSources(home, sources)
   if (channelsAnswer) {
-    for (const entry of defaultChannels(answers.stacks, answers.cities)) upsertChannel(home, entry)
+    for (const entry of defaultChannels(answers.stacks, answers.cities)) upsertSource(home, entry)
     log.info('Channel recipes seeded — your agent executes them in search rounds.')
   }
   // A colleague's first prepare needs CV data — scaffold a commented template

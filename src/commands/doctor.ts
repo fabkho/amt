@@ -4,7 +4,7 @@ import { createCommand } from './_shared.js'
 import { AmtError } from '../core/errors.js'
 import { loadProfile, resolveHome, type Profile } from '../core/profile.js'
 import { chromiumInstalled, installChromium } from '../core/render/pdf.js'
-import { loadSources } from '../core/sources-store.js'
+import { loadSources, sourceKind } from '../core/sources-store.js'
 import { log } from '../utils/logger.js'
 
 interface Checks {
@@ -38,13 +38,14 @@ async function checkHome(home: string): Promise<HomeChecks> {
   let next: string | null = null
   if (cvData.length === 0) {
     next = `Create cv-data.en.yaml (and/or .de) in ${profile.paths.cvDataDir} — prepare needs it.`
-  } else if (sources.boards.length === 0 && sources.companies.length === 0) {
+  } else if (!sources.sources.some(s => sourceKind(s) !== 'agent')) {
     next = 'Add crawl sources: amt sources add <company>'
   }
+  const by = (kind: string): number => sources.sources.filter(s => sourceKind(s) === kind).length
   return {
     profile: 'ok',
     cvData,
-    sources: `${sources.boards.length} board(s), ${sources.companies.length} companies, ${sources.channels.length} agent channel(s)`,
+    sources: `${by('board')} board(s), ${by('company')} companies, ${by('crawl')} crawl channel(s), ${by('agent')} agent channel(s)`,
     next,
   }
 }

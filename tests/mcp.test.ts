@@ -35,7 +35,7 @@ function makeHome(): string {
   writeFileSync(join(dir, 'profile.yaml'), profile)
   writeFileSync(
     join(dir, 'sources.yaml'),
-    'boards: []\ncompanies: []\nchannels:\n  - name: linkedin-guest\n    description: guest search\n',
+    'sources:\n  - name: linkedin-guest\n    description: guest search\n    recipe: {}\n',
   )
   upsertNote(
     notesDir,
@@ -100,7 +100,7 @@ describe('amt mcp server', () => {
     const { json } = await call('discover')
     expect(json!.home).toBe(home)
     expect((json!.profile as { name: string }).name).toBe('Jane Doe')
-    expect((json!.sources as { channels: unknown[] }).channels).toHaveLength(1)
+    expect((json!.sources as { sources: unknown[] }).sources).toHaveLength(1)
     expect((json!.noteCounts as Record<string, number>).new).toBe(1)
   })
 

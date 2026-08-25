@@ -7,22 +7,18 @@ import { getAdapter } from './sources/index.js'
 import { slugify } from './notes.js'
 import type { HttpClient, JobPosting } from './sources/types.js'
 
-// The crawl list is tool-managed state (hydrated by init, grown organically
+// The source list is tool-managed state (hydrated by init, grown organically
 // by shortlist/apply/import), so it lives in sources.yaml — never in the
 // hand-edited profile.yaml.
 //
-// Three sections:
-//   boards    — clean zero-config APIs, crawled by the tool
-//   companies — ATS career pages, crawled by the tool
-//   channels  — agent-executed recipes (LinkedIn guest, StepStone …); the
-//               tool only stores and serves them, it never runs them.
-
-const company = z.object({
-  name: z.string(),
-  ats: z.string(),
-  slug: z.string(),
-  addedBy: z.enum(['init', 'manual', 'auto']).default('manual'),
-})
+// ONE list. An entry's shape says how the tool fetches it:
+//   - a bare name           → a built-in board adapter (arbeitnow, …)
+//   - { ats, slug }         → an ATS career page (recruitee, greenhouse, …)
+//   - { crawl }             → a machine-crawl recipe the tool runs itself
+//   - { recipe } (no crawl) → an agent-only recipe the tool stores but never runs
+// `execute` ('tool' | 'agent') is DERIVED from that shape (agent iff recipe-only)
+// and stamped into the file for visibility; the fetch path reads the shape, not
+// the flag, so a hand-edited execute can never disagree with what actually runs.
 
 /** How a field is pulled from a crawled item — a bare selector/path, or a spec. */
 const channelField = z.union([
@@ -71,44 +67,106 @@ const channelCrawl = z.looseObject({
   }).optional(),
 })
 
-const channel = z.looseObject({
+const source = z.looseObject({
   name: z.string(),
+  /** Derived from the entry shape; stamped on save. See file header. */
+  execute: z.enum(['tool', 'agent']).optional(),
   description: z.string().optional(),
-  /** Free-form recipe data (agent-executed channels): URL templates, parse hints, … */
+  /** ATS career page. */
+  ats: z.string().optional(),
+  slug: z.string().optional(),
+  addedBy: z.enum(['init', 'manual', 'auto']).optional(),
+  /** Free-form recipe data (agent-executed sources): URL templates, parse hints, … */
   recipe: z.unknown().optional(),
-  /** Machine-usable spec — present ⇒ the tool crawls this channel itself. */
+  /** Machine-usable spec — present ⇒ the tool crawls this source itself. */
   crawl: channelCrawl.optional(),
 })
 
-export type ChannelSource = z.output<typeof channel>
+export type SourceEntry = z.output<typeof source>
 export type ChannelCrawl = z.output<typeof channelCrawl>
+/** @deprecated use SourceEntry — kept for one release. */
+export type ChannelSource = SourceEntry
+/** @deprecated use SourceEntry — kept for one release. */
+export type CompanySource = SourceEntry
 
 export const sourcesSchema = z.object({
-  boards: z.array(z.string()).default([]),
-  companies: z.array(company).default([]),
-  channels: z.array(channel).default([]),
+  sources: z.array(source).default([]),
 })
 
 export type Sources = z.output<typeof sourcesSchema>
-export type CompanySource = z.output<typeof company>
+
+/** What the fetcher does with an entry — inferred from its shape, not `execute`. */
+export function sourceKind(entry: SourceEntry): 'board' | 'company' | 'crawl' | 'agent' {
+  if (entry.ats) return 'company'
+  if (entry.crawl) return 'crawl'
+  if (entry.recipe !== undefined) return 'agent'
+  return 'board'
+}
+
+/** Tool-fetched (board/company/crawl) vs agent-only (recipe). */
+export function isToolSource(entry: SourceEntry): boolean {
+  return sourceKind(entry) !== 'agent'
+}
+
+/** Agent-only sources the tool cannot fetch — the agent must run these. */
+export function pendingSources(sources: Sources): SourceEntry[] {
+  return sources.sources.filter(s => sourceKind(s) === 'agent')
+}
+
+function executeOf(entry: SourceEntry): 'tool' | 'agent' {
+  return isToolSource(entry) ? 'tool' : 'agent'
+}
 
 function sourcesPath(home: string): string {
   return join(home, 'sources.yaml')
 }
 
+interface LegacySources {
+  boards?: unknown[]
+  companies?: unknown[]
+  channels?: unknown[]
+}
+
+/** The pre-unification shape: separate boards/companies/channels, no `sources`. */
+function isLegacy(raw: unknown): raw is LegacySources {
+  if (typeof raw !== 'object' || raw === null) return false
+  const r = raw as Record<string, unknown>
+  return r.sources === undefined && ('boards' in r || 'companies' in r || 'channels' in r)
+}
+
+/** Fold the three legacy lists into one `sources` list, stamping `execute`. */
+function migrateLegacy(raw: LegacySources): { sources: SourceEntry[] } {
+  const boards = (raw.boards ?? []).map(name => ({ name: String(name), execute: 'tool' }))
+  const companies = (raw.companies ?? []).map(c => ({ ...(c as object), execute: 'tool' }))
+  const channels = (raw.channels ?? []).map((c) => {
+    const entry = c as Record<string, unknown>
+    return { ...entry, execute: entry.crawl ? 'tool' : 'agent' }
+  })
+  return { sources: [...boards, ...companies, ...channels] as SourceEntry[] }
+}
+
 export function loadSources(home: string): Sources {
   const path = sourcesPath(home)
   if (!existsSync(path)) return sourcesSchema.parse({})
-  const result = sourcesSchema.safeParse(parse(readFileSync(path, 'utf-8')))
-  if (!result.success) {
-    throw new AmtError('SOURCES_INVALID', `${path}:\n${z.prettifyError(result.error)}`)
+  const rawText = readFileSync(path, 'utf-8')
+  const raw = parse(rawText) as unknown
+  const parsed = sourcesSchema.safeParse(isLegacy(raw) ? migrateLegacy(raw) : raw)
+  if (!parsed.success) {
+    throw new AmtError('SOURCES_INVALID', `${path}:\n${z.prettifyError(parsed.error)}`)
   }
-  return result.data
+  // One-time migration: preserve the old file as .bak, rewrite in the new shape.
+  if (isLegacy(raw)) {
+    writeFileSync(`${path}.bak`, rawText)
+    saveSources(home, parsed.data)
+  }
+  return parsed.data
 }
 
 export function saveSources(home: string, sources: Sources): void {
   mkdirSync(dirname(sourcesPath(home)), { recursive: true })
-  writeFileSync(sourcesPath(home), stringify(sources))
+  // Stamp the derived execute so the file always reflects what actually runs.
+  const stamped = { sources: sources.sources.map(e => ({ ...e, execute: executeOf(e) })) }
+  writeFileSync(sourcesPath(home), stringify(stamped))
 }
 
 const ATS_ORDER = ['recruitee', 'ashby', 'greenhouse', 'lever', 'personio', 'smartrecruiters']
@@ -208,13 +266,13 @@ export async function addCompany(
       `Discovered ${found.ats}:${found.slug} for "${name}", but its postings do not name the company — not auto-tracking.`,
     )
   }
-  const existing = sources.companies.find(
+  const existing = sources.sources.find(
     c => c.ats === found.ats && c.slug === found.slug,
   )
   if (existing) {
     return { ...found, name: existing.name, alreadyTracked: true, verified }
   }
-  sources.companies.push({ name, ats: found.ats, slug: found.slug, addedBy })
+  sources.sources.push({ name, execute: 'tool', ats: found.ats, slug: found.slug, addedBy })
   saveSources(home, sources)
   return { ...found, name, alreadyTracked: false, verified }
 }
@@ -239,38 +297,36 @@ export async function tryAutoTrack(
   }
 }
 
-/** Same-name channels are replaced — updating a recipe is the common case. */
-export function upsertChannel(
+/** Same-name entries are replaced — updating a recipe is the common case. */
+export function upsertSource(
   home: string,
-  entry: ChannelSource,
+  entry: SourceEntry,
 ): { updated: boolean } {
   const sources = loadSources(home)
   const needle = entry.name.toLowerCase()
-  const index = sources.channels.findIndex(c => c.name.toLowerCase() === needle)
-  if (index >= 0) sources.channels[index] = entry
-  else sources.channels.push(entry)
+  const index = sources.sources.findIndex(c => c.name.toLowerCase() === needle)
+  if (index >= 0) sources.sources[index] = entry
+  else sources.sources.push(entry)
   saveSources(home, sources)
   return { updated: index >= 0 }
 }
 
-export function removeChannel(home: string, name: string): boolean {
+/** Removes any entry matching the given name or ATS slug. */
+export function removeSource(home: string, nameOrSlug: string): boolean {
   const sources = loadSources(home)
-  const needle = name.toLowerCase()
-  const before = sources.channels.length
-  sources.channels = sources.channels.filter(c => c.name.toLowerCase() !== needle)
-  if (sources.channels.length === before) return false
+  const needle = nameOrSlug.toLowerCase()
+  const before = sources.sources.length
+  sources.sources = sources.sources.filter(
+    c => c.name.toLowerCase() !== needle && (c.slug ?? '').toLowerCase() !== needle,
+  )
+  if (sources.sources.length === before) return false
   saveSources(home, sources)
   return true
 }
 
-export function removeCompany(home: string, nameOrSlug: string): boolean {
-  const sources = loadSources(home)
-  const needle = nameOrSlug.toLowerCase()
-  const before = sources.companies.length
-  sources.companies = sources.companies.filter(
-    c => c.name.toLowerCase() !== needle && c.slug.toLowerCase() !== needle,
-  )
-  if (sources.companies.length === before) return false
-  saveSources(home, sources)
-  return true
-}
+/** @deprecated use upsertSource — kept for one release. */
+export const upsertChannel = upsertSource
+/** @deprecated use removeSource — kept for one release. */
+export const removeChannel = removeSource
+/** @deprecated use removeSource — kept for one release. */
+export const removeCompany = removeSource

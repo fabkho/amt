@@ -4,14 +4,16 @@ Seed these via `add_channel` (MCP) or `amt sources add-channel` when the user ha
 none — after asking. Replace the placeholder keywords, slugs, and cities with the
 user's profile.
 
-There are two kinds of channel:
+All sources live in one `sources:` list in sources.yaml; an entry's shape says
+how it runs (`execute` is derived and stamped for you):
 
-- **Tool-crawled** — a channel with a `crawl:` block (URL template + machine
+- **Tool-crawled** — a source with a `crawl:` block (URL template + machine
   parse spec). `amt crawl` fetches it itself, through the same pipeline as any
-  board. `amt init` seeds these for LinkedIn and VueJobs.
-- **Agent-executed** — a channel with only a free-form `recipe:` (no `crawl`
+  board. `amt init` seeds these for LinkedIn and VueJobs. (`execute: tool`)
+- **Agent-executed** — a source with only a free-form `recipe:` (no `crawl`
   block). The tool stores it but never runs it; your agent fetches/parses it
   during a round (StepStone, whose detail pages are bot-walled, lives here).
+  (`execute: agent`)
 
 Field-tested yield ranking: **LinkedIn ≫ StepStone > VueJobs.**
 The tracked-company ATS crawl is the verifier/closer, not a discovery channel.
@@ -38,11 +40,11 @@ crawl:
   render: false               # true = fetch via the bundled Chromium (JS/bot-walled pages)
 ```
 
-A channel with the fields above is validated live against LinkedIn and VueJobs
+A source with the fields above is validated live against LinkedIn and VueJobs
 in the seeds below. Everything else stays an agent-executed `recipe:`.
 
 ```yaml
-channels:
+sources:
   - name: linkedin-guest
     description: LinkedIn guest search API — personal use, agent-executed
     crawl:

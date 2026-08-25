@@ -2,7 +2,7 @@ import { defineCommand } from 'citty'
 import { createCommand } from './_shared.js'
 import { resolveHome } from '../core/profile.js'
 import { defaultHttpClient } from '../core/sources/http.js'
-import { addCompany, loadSources, removeChannel, removeCompany, upsertChannel } from '../core/sources-store.js'
+import { addCompany, loadSources, removeSource, sourceKind, upsertSource } from '../core/sources-store.js'
 import { AmtError } from '../core/errors.js'
 
 const list = createCommand({
@@ -10,13 +10,16 @@ const list = createCommand({
   description: 'Show boards, tracked companies, and agent channels',
   run() {
     const sources = loadSources(resolveHome())
+    const byKind = (kind: string): typeof sources.sources => sources.sources.filter(s => sourceKind(s) === kind)
+    const companies = byKind('company')
     return {
       result: sources,
       human: [
-        `Boards: ${sources.boards.join(', ') || '(none)'}`,
-        `Companies (${sources.companies.length}):`,
-        ...sources.companies.map(c => `  ${c.name} → ${c.ats}:${c.slug} (${c.addedBy})`),
-        `Agent channels: ${sources.channels.map(c => c.name).join(', ') || '(none)'}`,
+        `Boards: ${byKind('board').map(s => s.name).join(', ') || '(none)'}`,
+        `Companies (${companies.length}):`,
+        ...companies.map(c => `  ${c.name} → ${c.ats}:${c.slug} (${c.addedBy ?? 'manual'})`),
+        `Crawl channels: ${byKind('crawl').map(c => c.name).join(', ') || '(none)'}`,
+        `Agent channels: ${byKind('agent').map(c => c.name).join(', ') || '(none)'}`,
       ],
     }
   },
@@ -77,7 +80,7 @@ const addChannel = createCommand({
       ...(args.priority !== undefined && { priority: Number(args.priority) }),
       ...(args.yield !== undefined && { yield: args.yield as string }),
     }
-    const { updated } = upsertChannel(resolveHome(), entry)
+    const { updated } = upsertSource(resolveHome(), entry)
     return {
       result: { name: entry.name, updated },
       human: [`${updated ? 'Updated' : 'Added'} channel ${entry.name}.`],
@@ -93,7 +96,7 @@ const remove = createCommand({
   },
   run(args) {
     const name = args.company as string
-    const removed = removeCompany(resolveHome(), name) || removeChannel(resolveHome(), name)
+    const removed = removeSource(resolveHome(), name)
     if (!removed) {
       throw new AmtError('COMPANY_NOT_TRACKED', `"${name}" is not in sources.yaml`)
     }

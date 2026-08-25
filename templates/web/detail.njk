@@ -13,7 +13,7 @@
       {% if note.score != null %}· ⭐ {{ note.score }}{% endif %}
       {% if note.salaryMin or note.salaryMax %}· {{ note.salaryMin }}–{{ note.salaryMax }} {{ note.salaryCurrency }}{% endif %}
     </div>
-    {% if url %}<p style="margin:.5rem 0"><a href="{{ url }}" target="_blank" rel="noreferrer noopener">Original posting ↗</a></p>{% endif %}
+    {% if url %}<p style="margin:.5rem 0"><a href="{{ url }}" target="_blank" rel="noreferrer noopener" title="Open on {{ platform.label }}">{% if platform.icon %}<img class="platform-icon" src="{{ platform.icon }}" alt="" width="14" height="14">{% endif %}Original posting on {{ platform.label }} ↗</a></p>{% endif %}
   </div>
 </div>
 

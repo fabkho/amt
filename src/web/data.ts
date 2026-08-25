@@ -16,6 +16,30 @@ export interface RowView {
   location: string
   logo: string | null
   bucket: string
+  platform: { label: string; icon: string }
+}
+
+// Where a posting came from → a human label + a platform favicon, so the
+// "open" link shows where it goes. Favicons come from the same DuckDuckGo
+// service already used for company logos (no bundled brand assets).
+const PLATFORMS: Record<string, { label: string; domain: string }> = {
+  'linkedin-guest': { label: 'LinkedIn', domain: 'linkedin.com' },
+  stepstone: { label: 'StepStone', domain: 'stepstone.de' },
+  vuejobs: { label: 'VueJobs', domain: 'vuejobs.com' },
+  arbeitnow: { label: 'Arbeitnow', domain: 'arbeitnow.com' },
+  arbeitsagentur: { label: 'Bundesagentur für Arbeit', domain: 'arbeitsagentur.de' },
+  recruitee: { label: 'Recruitee', domain: 'recruitee.com' },
+  greenhouse: { label: 'Greenhouse', domain: 'greenhouse.io' },
+  lever: { label: 'Lever', domain: 'lever.co' },
+  ashby: { label: 'Ashby', domain: 'ashbyhq.com' },
+  personio: { label: 'Personio', domain: 'personio.com' },
+  smartrecruiters: { label: 'SmartRecruiters', domain: 'smartrecruiters.com' },
+}
+
+export function platformOf(source: string): { label: string; icon: string } {
+  const p = PLATFORMS[source]
+  if (!p) return { label: source || 'source', icon: '' }
+  return { label: p.label, icon: `https://icons.duckduckgo.com/ip3/${p.domain}.ico` }
 }
 
 export interface Filters {
@@ -47,6 +71,7 @@ function toRow(note: JobNote, cities: string[]): RowView {
     location: note.location ?? '',
     logo: safeUrl(note.logo),
     bucket: placement(note, cities),
+    platform: platformOf(note.source),
   }
 }
 

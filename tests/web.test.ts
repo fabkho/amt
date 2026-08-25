@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vite-plus/test'
 import { loadProfile, profileSchema, readNote, upsertNote, type Profile } from '../src/index.js'
 import { changeStatus, dashboard, detail, jobs, toggleFavorite } from '../src/web/handlers.js'
-import { jobRows, safeUrl, stats } from '../src/web/data.js'
+import { jobRows, platformOf, safeUrl, stats } from '../src/web/data.js'
 
 async function env(): Promise<Profile> {
   const home = mkdtempSync(join(tmpdir(), 'amt-web-'))
@@ -102,6 +102,19 @@ describe('web handlers', () => {
 
     const fromBoard = await changeStatus(profile, profile.paths.notesDir, 'koeln-role', 'shortlist', undefined, 'http://localhost:4400/jobs')
     expect(fromBoard.body).toContain('id="row-koeln-role"') // kept, badge updated
+  })
+})
+
+describe('platformOf', () => {
+  it('maps a known source to a label + favicon', () => {
+    const p = platformOf('linkedin-guest')
+    expect(p.label).toBe('LinkedIn')
+    expect(p.icon).toContain('linkedin.com')
+  })
+  it('falls back to the raw source with no icon', () => {
+    const p = platformOf('some-unknown-board')
+    expect(p.label).toBe('some-unknown-board')
+    expect(p.icon).toBe('')
   })
 })
 

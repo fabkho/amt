@@ -13,7 +13,7 @@ import {
 import { trackAndReindex } from '../core/tracking.js'
 import { defaultHttpClient } from '../core/sources/http.js'
 import { htmlToMarkdown } from '../core/sources/normalize.js'
-import { jobRows, safeUrl, stats, type Filters } from './data.js'
+import { jobRows, platformOf, safeUrl, stats, type Filters } from './data.js'
 import { render } from './render.js'
 import type { Profile } from '../core/profile.js'
 
@@ -71,6 +71,7 @@ export function detail(profile: Profile, slug: string): Reply {
     note,
     url: safeUrl(note.url),
     logo: safeUrl(note.logo),
+    platform: platformOf(note.source),
     description: region ? htmlToMarkdown(region) : '',
     assessment: assessmentText(body) ?? '',
   }))

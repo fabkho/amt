@@ -255,20 +255,31 @@ const VUEJOBS_CHANNEL: SourceEntry = {
   yield: 'medium — small volume, high stack precision',
 }
 
-function stepstoneChannel(stacks: string[], cities: string[]): SourceEntry {
-  const keywords = stacks.length > 0 ? stacks : ['typescript']
+function stepstoneChannel(stacks: string[], _cities: string[]): SourceEntry {
+  const keywords = (stacks.length > 0 ? stacks : ['typescript']).map(slugify)
   return {
     name: 'stepstone',
-    description: 'StepStone search pages — agent-executed (detail pages bot-walled)',
-    recipe: {
-      urlTemplate: `https://www.stepstone.de/jobs/{slug}/in-{${cities.map(slugify).join('|') || 'deutschland'}}?radius=100`,
-      slugs: keywords.map(slugify),
-      params: 'append &rw=1 for remote; detail pages are flaky — retry with --http1.1',
-      parse:
-        'search results: "title":"…", "url":"/stellenangebote--…"; details: prefer the application/ld+json JobPosting block; skip dead postings ("Oh nein, der Job ist nicht mehr verfügbar")',
+    description: 'StepStone search — tool-crawled via headless Chromium (render)',
+    crawl: {
+      urlTemplate: 'https://www.stepstone.de/jobs/{keyword}/in-deutschland?radius=100',
+      keywords,
+      // The results page is React + ad/analytics-heavy; render and read the
+      // job cards' data-at attributes. Detail pages stay bot-walled, so no
+      // detail spec — title/company/location is enough for filtering + ranking.
+      render: true,
+      headers: { 'User-Agent': LINKEDIN_UA },
+      mode: 'selectors',
+      item: '[data-at="job-item"]',
+      fields: {
+        title: '[data-at="job-item-title"]',
+        company: '[data-at="job-item-company-name"]',
+        location: '[data-at="job-item-location"]',
+        url: { selector: 'a[href*="/stellenangebote"]', attr: 'href' },
+      },
+      nativeId: { field: 'url', regex: '--(\\d+)-inline' },
     },
     priority: 2,
-    yield: 'high — good discovery via slugs, flaky detail pages',
+    yield: 'high — broad discovery, now machine-crawled (list only, no description)',
   }
 }
 

@@ -113,7 +113,7 @@ function itemsFrom(body: string, spec: ChannelCrawl): unknown[] {
   return spec.item ? root.querySelectorAll(spec.item) : [root]
 }
 
-function toPosting(item: unknown, spec: ChannelCrawl, source: string): JobPosting | null {
+function toPosting(item: unknown, spec: ChannelCrawl, source: string, origin: string): JobPosting | null {
   const fields = spec.fields ?? {}
   const mode = spec.mode ?? 'selectors'
   const get = (name: string): string | null => {
@@ -121,8 +121,11 @@ function toPosting(item: unknown, spec: ChannelCrawl, source: string): JobPostin
     return f === undefined ? null : extractField(item, normField(f, mode), mode)
   }
   const title = get('title')
-  const url = get('url')
-  if (!title || !url) return null // an item without a title or link is noise
+  const rawUrl = get('url')
+  if (!title || !rawUrl) return null // an item without a title or link is noise
+  // Resolve a relative href ("/stellenangebote--…") against the page origin so
+  // the stored url is clickable — StepStone and other list pages emit relative.
+  const url = rawUrl.startsWith('/') ? origin + rawUrl : rawUrl
 
   const company = get('company') ?? source
   // nativeId: dedicated extractor (regex on the url, or a field), else the url.
@@ -155,19 +158,29 @@ async function fetchBody(
   url: string,
   spec: ChannelCrawl,
 ): Promise<string> {
-  if (spec.render === true) return renderHtml(url, spec.headers)
+  if (spec.render === true) return renderHtml(url, { headers: spec.headers, waitFor: spec.item })
   return client.text(url, { headers: spec.headers })
 }
 
 /** Fetch a JS-rendered page via the bundled Chromium. Lazy-loaded — most
- *  channels never need it, and Playwright is a heavy import. */
-async function renderHtml(url: string, headers?: Record<string, string>): Promise<string> {
+ *  channels never need it, and Playwright is a heavy import. Waits for
+ *  `domcontentloaded` then for the target selector (ad/analytics-heavy sites
+ *  like StepStone never reach `networkidle`); falls back to a short settle. */
+async function renderHtml(
+  url: string,
+  options: { headers?: Record<string, string>; waitFor?: string } = {},
+): Promise<string> {
   const { chromium } = await import('playwright')
   const browser = await chromium.launch()
   try {
-    const context = await browser.newContext(headers ? { extraHTTPHeaders: headers } : {})
+    const context = await browser.newContext(options.headers ? { extraHTTPHeaders: options.headers } : {})
     const page = await context.newPage()
-    await page.goto(url, { waitUntil: 'networkidle', timeout: 30_000 })
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30_000 })
+    if (options.waitFor) {
+      await page.waitForSelector(options.waitFor, { timeout: 15_000 }).catch(() => undefined)
+    } else {
+      await page.waitForTimeout(2500)
+    }
     return await page.content()
   } finally {
     await browser.close()
@@ -194,13 +207,14 @@ async function fetchInto(
 ): Promise<void> {
   const pg = spec.paginate
   const pages = pg?.maxPages ?? 1
+  const origin = new URL(baseUrl).origin
   for (let page = 0; page < pages; page++) {
     await pace()
     const url = pg ? withOffset(baseUrl, pg.param, (pg.start ?? 0) + page * pg.step) : baseUrl
     const body = await fetchBody(client, url, spec)
     let added = 0
     for (const item of itemsFrom(body, spec)) {
-      const posting = toPosting(item, spec, channel.name)
+      const posting = toPosting(item, spec, channel.name, origin)
       if (posting && !byId.has(posting.nativeId)) {
         byId.set(posting.nativeId, posting)
         added++
@@ -243,7 +257,7 @@ export function channelDetailFetcher(
     await new Promise(resolve => setTimeout(resolve, DETAIL_DELAY_MS))
     const url = detail.urlTemplate.replaceAll('{id}', encodeURIComponent(nativeId))
     const body = channel.crawl?.render === true
-      ? await renderHtml(url, channel.crawl.headers)
+      ? await renderHtml(url, { headers: channel.crawl.headers, waitFor: detail.selector })
       : await client.text(url, { headers: channel.crawl?.headers })
     if (detail.path) {
       return scalarString(dotPath(JSON.parse(body), detail.path))

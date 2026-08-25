@@ -10,7 +10,6 @@ import {
   detail,
   rejectDialog,
   jobs,
-  toggleFavorite,
   type Reply,
 } from './handlers.js'
 
@@ -77,8 +76,6 @@ async function routePost(
   switch (parts[2]) {
     case 'status':
       return changeStatus(profile, home, slug, form.get('status') ?? '', form.get('reason') ?? undefined, fromUrl, form.get('cutNote') ?? undefined)
-    case 'favorite':
-      return toggleFavorite(profile, slug)
     default:
       return NOT_FOUND
   }

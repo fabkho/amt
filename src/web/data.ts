@@ -11,7 +11,6 @@ export interface RowView {
   url: string
   status: JobStatus
   score: number | null
-  favorite: boolean
   workMode: string
   location: string
   logo: string | null
@@ -48,7 +47,6 @@ export interface Filters {
   bucket?: string
   minScore?: number
   q?: string
-  favorite?: boolean
 }
 
 /** Only http(s) survives into href/src — external postings could carry a
@@ -66,7 +64,6 @@ function toRow(note: JobNote, cities: string[]): RowView {
     url: safeUrl(note.url),
     status: note.status,
     score: note.score,
-    favorite: note.favorite,
     workMode: note.workMode ?? '',
     location: note.location ?? '',
     logo: safeUrl(note.logo),
@@ -75,9 +72,8 @@ function toRow(note: JobNote, cities: string[]): RowView {
   }
 }
 
-/** Best-first, favorites floated up within equal scores. */
+/** Best-first by score. */
 function byRank(a: RowView, b: RowView): number {
-  if (a.favorite !== b.favorite) return a.favorite ? -1 : 1
   return (b.score ?? -1) - (a.score ?? -1)
 }
 
@@ -85,7 +81,6 @@ function matches(row: RowView, f: Filters): boolean {
   if (f.status && row.status !== f.status) return false
   if (f.workMode && row.workMode !== f.workMode) return false
   if (f.bucket && row.bucket !== f.bucket) return false
-  if (f.favorite && !row.favorite) return false
   if (f.minScore !== undefined && (row.score ?? -1) < f.minScore) return false
   if (f.q) {
     const hay = `${row.company} ${row.title}`.toLowerCase()
@@ -105,18 +100,15 @@ export function jobRows(profile: Profile, filters: Filters = {}): RowView[] {
 export interface Stats {
   counts: Record<string, number>
   unranked: number
-  favorites: number
 }
 
 export function stats(profile: Profile): Stats {
   const notes = listNotes(profile.paths.notesDir)
   const counts: Record<string, number> = {}
   let unranked = 0
-  let favorites = 0
   for (const { note } of notes) {
     counts[note.status] = (counts[note.status] ?? 0) + 1
     if (note.status === 'new' && note.score === null) unranked++
-    if (note.favorite) favorites++
   }
-  return { counts, unranked, favorites }
+  return { counts, unranked }
 }

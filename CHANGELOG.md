@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.16](https://github.com/fabkho/amt/compare/amt-0.2.15...amt-0.2.16) (2026-08-25)
+
+
+### Features
+
+* channel crawl pagination ([#39](https://github.com/fabkho/amt/issues/39)) ([#54](https://github.com/fabkho/amt/issues/54)) ([05eb56e](https://github.com/fabkho/amt/commit/05eb56e1f22d1f107129b321f7c653af61c04b3f))
+
 ## [0.2.15](https://github.com/fabkho/amt/compare/amt-0.2.14...amt-0.2.15) (2026-08-25)
 
 

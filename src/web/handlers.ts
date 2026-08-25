@@ -85,9 +85,11 @@ function rowReply(profile: Profile, slug: string): Reply {
   return html(render('_row', { row }) + statsOob(profile))
 }
 
-/** Empty body removes the row from its list; OOB stats keep the header live. */
-function removeRowReply(profile: Profile): Reply {
-  return html(statsOob(profile))
+/** Removes the row from its list via an explicit OOB delete (an OOB-only body
+ *  has no main content for htmx to swap into the target, so the row would
+ *  otherwise linger); OOB stats keep the header live. */
+function removeRowReply(profile: Profile, slug: string): Reply {
+  return html(`<div id="row-${slug}" hx-swap-oob="delete"></div>${statsOob(profile)}`)
 }
 
 export async function changeStatus(
@@ -105,14 +107,16 @@ export async function changeStatus(
     ? { cutReason: (CUT_REASONS.includes(reason as CutReason) ? reason : 'personal_fit') as CutReason }
     : {}
   const note = setStatus(profile.paths.notesDir, slug, status as JobStatus, opts)
-  await trackAndReindex(defaultHttpClient, home, profile, note)
+  // ATS auto-track + reindex is network-heavy (seconds); don't make the click
+  // wait on it — fire and forget so the row updates instantly.
+  void trackAndReindex(defaultHttpClient, home, profile, note).catch(() => undefined)
   // The dashboard's inbox/shortlist are status-scoped, so a changed row leaves
   // them — remove it. The /jobs board shows a mixed list, so keep the row and
   // just refresh its badge.
   // HX-Current-URL is absolute in practice; parse with a base so a relative
   // value (or empty) never throws.
   const onBoard = new URL(fromUrl || '/', 'http://x').pathname.startsWith('/jobs')
-  return onBoard ? rowReply(profile, slug) : removeRowReply(profile)
+  return onBoard ? rowReply(profile, slug) : removeRowReply(profile, slug)
 }
 
 export function toggleFavorite(profile: Profile, slug: string): Reply {

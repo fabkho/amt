@@ -89,7 +89,8 @@ describe('web handlers', () => {
   it('removes the row from the dashboard but keeps it (updated) on the board', async () => {
     const profile = await env()
     const fromDashboard = await changeStatus(profile, profile.paths.notesDir, 'remote-role', 'shortlist', undefined, '/')
-    expect(fromDashboard.body).not.toContain('id="row-remote-role"') // removed from inbox
+    // removed from the inbox via an explicit OOB delete (not just an empty body)
+    expect(fromDashboard.body).toContain('id="row-remote-role" hx-swap-oob="delete"')
 
     const fromBoard = await changeStatus(profile, profile.paths.notesDir, 'koeln-role', 'shortlist', undefined, 'http://localhost:4400/jobs')
     expect(fromBoard.body).toContain('id="row-koeln-role"') // kept, badge updated

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.12](https://github.com/fabkho/amt/compare/amt-0.3.11...amt-0.3.12) (2026-08-25)
+
+
+### Features
+
+* open button shows the platform icon in place of the label ([#89](https://github.com/fabkho/amt/issues/89)) ([d71b498](https://github.com/fabkho/amt/commit/d71b49827481c7340a080e4bc76ab73fdf9a0603))
+
 ## [0.3.11](https://github.com/fabkho/amt/compare/amt-0.3.10...amt-0.3.11) (2026-08-25)
 
 

@@ -142,7 +142,6 @@ h2.section {
 }
 .row:last-child { border-bottom: 0; }
 .row:hover { background: rgba(44, 44, 42, 0.02); border-left-color: var(--color-accent); }
-.row.fav { border-left-color: var(--color-accent-light); }
 
 .score { font-size: var(--text-md); color: var(--color-accent); text-align: center; }
 .score.none { color: var(--color-ink-faint); }
@@ -211,9 +210,6 @@ dialog.reject-dialog select { width: 100%; font-family: var(--font-mono); font-s
 .dialog-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem; }
 .dialog-actions .confirm { border-color: var(--color-accent); color: var(--color-accent); }
 .dialog-actions .confirm:hover { background: var(--color-accent); color: #fff; }
-button.star { border: 0; font-size: var(--text-lg); padding: 0.2rem 0.35rem; color: var(--color-ink-faint); }
-button.star.on { color: var(--color-accent-light); }
-
 .status-badge {
   font-size: var(--text-2xs);
   text-transform: uppercase;

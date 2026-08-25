@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vite-plus/test'
 import { loadProfile, profileSchema, readNote, upsertNote, type Profile } from '../src/index.js'
-import { changeStatus, dashboard, detail, jobs, toggleFavorite } from '../src/web/handlers.js'
+import { changeStatus, dashboard, detail, jobs } from '../src/web/handlers.js'
 import { jobRows, platformOf, safeUrl, stats } from '../src/web/data.js'
 
 async function env(): Promise<Profile> {
@@ -63,13 +63,6 @@ describe('web handlers', () => {
     expect(reply.body).toContain('reject')
   })
 
-  it('toggles favorite and returns the updated row', async () => {
-    const profile = await env()
-    const reply = toggleFavorite(profile, 'remote-role')
-    expect(reply.status).toBe(200)
-    expect(readNote(profile.paths.notesDir, 'remote-role').note.favorite).toBe(true)
-    expect(reply.body).toContain('★')
-  })
 
   it('rejects an invalid status with 400 and does not corrupt the note', async () => {
     const profile = await env()

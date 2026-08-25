@@ -6,7 +6,6 @@ import {
   readNote,
   setStatus,
   staleApplications,
-  updateNote,
   type CutReason,
   type JobStatus,
 } from '../core/notes.js'
@@ -32,7 +31,6 @@ function parseFilters(query: URLSearchParams): Filters {
     workMode: query.get('workMode') || undefined,
     bucket: query.get('bucket') || undefined,
     q: query.get('q') || undefined,
-    favorite: query.get('favorite') === '1',
     minScore: Number.isFinite(num) && num > 0 ? num : undefined,
   }
 }
@@ -123,11 +121,5 @@ export async function changeStatus(
   // value (or empty) never throws.
   const onBoard = new URL(fromUrl || '/', 'http://x').pathname.startsWith('/jobs')
   return onBoard ? rowReply(profile, slug) : removeRowReply(profile, slug)
-}
-
-export function toggleFavorite(profile: Profile, slug: string): Reply {
-  const { note } = readNote(profile.paths.notesDir, slug)
-  updateNote(profile.paths.notesDir, slug, { favorite: !note.favorite })
-  return rowReply(profile, slug)
 }
 

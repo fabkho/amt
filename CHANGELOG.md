@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.10](https://github.com/fabkho/amt/compare/amt-0.3.9...amt-0.3.10) (2026-08-25)
+
+
+### Features
+
+* suggest_profile_updates — learn from cut history ([#69](https://github.com/fabkho/amt/issues/69)) ([#84](https://github.com/fabkho/amt/issues/84)) ([971038a](https://github.com/fabkho/amt/commit/971038a137f9c6fc896c4e68d5622317b7087026))
+
 ## [0.3.9](https://github.com/fabkho/amt/compare/amt-0.3.8...amt-0.3.9) (2026-08-25)
 
 

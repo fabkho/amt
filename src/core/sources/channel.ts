@@ -174,6 +174,42 @@ async function renderHtml(url: string, headers?: Record<string, string>): Promis
   }
 }
 
+const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
+
+/** Append an offset query param to a URL, respecting an existing query string. */
+function withOffset(url: string, param: string, offset: number): string {
+  return `${url}${url.includes('?') ? '&' : '?'}${param}=${offset}`
+}
+
+/** Fetch one base URL, walking offset pages when `paginate` is set. Adds new
+ *  postings into `byId`; a page yielding nothing new (empty or all-seen) ends
+ *  the walk, so a short result tail costs one extra request, not `maxPages`. */
+async function fetchInto(
+  client: HttpClient,
+  channel: ChannelSource,
+  spec: ChannelCrawl,
+  baseUrl: string,
+  byId: Map<string, JobPosting>,
+  pace: () => Promise<void>,
+): Promise<void> {
+  const pg = spec.paginate
+  const pages = pg?.maxPages ?? 1
+  for (let page = 0; page < pages; page++) {
+    await pace()
+    const url = pg ? withOffset(baseUrl, pg.param, (pg.start ?? 0) + page * pg.step) : baseUrl
+    const body = await fetchBody(client, url, spec)
+    let added = 0
+    for (const item of itemsFrom(body, spec)) {
+      const posting = toPosting(item, spec, channel.name)
+      if (posting && !byId.has(posting.nativeId)) {
+        byId.set(posting.nativeId, posting)
+        added++
+      }
+    }
+    if (added === 0) break // empty or fully-duplicate page — the tail ran out
+  }
+}
+
 /** Crawl one channel's recipe into deduped postings. */
 export async function fetchChannel(
   client: HttpClient,
@@ -184,13 +220,13 @@ export async function fetchChannel(
   if (!spec) return []
   const urls = buildUrls(spec, search.stacks, search.cities)
   const byId = new Map<string, JobPosting>()
-  for (const [i, url] of urls.entries()) {
-    if (i > 0) await new Promise(resolve => setTimeout(resolve, REQUEST_DELAY_MS))
-    const body = await fetchBody(client, url, spec)
-    for (const item of itemsFrom(body, spec)) {
-      const posting = toPosting(item, spec, channel.name)
-      if (posting && !byId.has(posting.nativeId)) byId.set(posting.nativeId, posting)
-    }
+  let first = true
+  const pace = async (): Promise<void> => {
+    if (!first) await sleep(REQUEST_DELAY_MS)
+    first = false
+  }
+  for (const url of urls) {
+    await fetchInto(client, channel, spec, url, byId, pace)
   }
   return [...byId.values()]
 }

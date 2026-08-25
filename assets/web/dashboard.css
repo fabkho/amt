@@ -206,7 +206,12 @@ dialog.reject-dialog {
 dialog.reject-dialog::backdrop { background: rgba(44, 44, 42, 0.35); }
 dialog.reject-dialog h3 { margin: 0 0 0.25rem; font-size: var(--text-lg); }
 dialog.reject-dialog label { display: block; margin: 0.9rem 0 0.35rem; font-size: var(--text-2xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-ink-muted); }
-dialog.reject-dialog select { width: 100%; font-family: var(--font-mono); font-size: var(--text-base); padding: 0.45rem; border: 1px solid var(--color-line); border-radius: var(--radius); background: transparent; }
+dialog.reject-dialog select,
+dialog.reject-dialog textarea { width: 100%; box-sizing: border-box; font-family: var(--font-mono); font-size: var(--text-base); padding: 0.45rem; border: 1px solid var(--color-line); border-radius: var(--radius); background: transparent; color: inherit; }
+dialog.reject-dialog textarea { resize: vertical; min-height: 3.5rem; }
+dialog.reject-dialog textarea::placeholder { color: var(--color-ink-faint); }
+dialog.reject-dialog select:focus,
+dialog.reject-dialog textarea:focus { outline: none; border-color: var(--color-accent); }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem; }
 .dialog-actions .confirm { border-color: var(--color-accent); color: var(--color-accent); }
 .dialog-actions .confirm:hover { background: var(--color-accent); color: #fff; }

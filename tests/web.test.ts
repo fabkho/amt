@@ -104,6 +104,17 @@ describe('web handlers', () => {
     const fromBoard = await changeStatus(profile, profile.paths.notesDir, 'koeln-role', 'shortlist', undefined, 'http://localhost:4400/jobs')
     expect(fromBoard.body).toContain('id="row-koeln-role"') // kept, badge updated
   })
+
+  it('board reject drops the row from the default active view but keeps it under status=all', async () => {
+    const active = await env()
+    const dropped = await changeStatus(active, active.paths.notesDir, 'remote-role', 'cut', 'personal_fit', 'http://x/jobs')
+    expect(dropped.body).toContain('id="row-remote-role" hx-swap-oob="delete"') // cut leaves active view
+
+    const all = await env()
+    const kept = await changeStatus(all, all.paths.notesDir, 'remote-role', 'cut', 'personal_fit', 'http://x/jobs?status=all')
+    expect(kept.body).toContain('id="row-remote-role"')
+    expect(kept.body).not.toContain('hx-swap-oob="delete"') // still matches status=all → kept + updated
+  })
 })
 
 describe('platformOf', () => {

@@ -83,11 +83,13 @@ export function detail(profile: Profile, slug: string): Reply {
 
 const statsOob = (profile: Profile): string => render('_stats_oob', { stats: stats(profile) })
 
-/** The updated row (+ live stats). Used when the row stays in its list. */
-function rowReply(profile: Profile, slug: string): Reply {
-  const row = jobRows(profile).find(r => r.slug === slug)
-  if (!row) return { status: 404, body: statsOob(profile) }
-  return html(render('_row', { row }) + statsOob(profile))
+/** The updated row (+ live stats), scoped to the board's current filters —
+ *  if the changed note no longer matches the view, it's removed instead. */
+function boardReply(profile: Profile, slug: string, filters: Filters): Reply {
+  const row = jobRows(profile, filters).find(r => r.slug === slug)
+  return row
+    ? html(render('_row', { row }) + statsOob(profile))
+    : removeRowReply(profile, slug)
 }
 
 /** Removes the row from its list via an explicit OOB delete (an OOB-only body
@@ -120,12 +122,14 @@ export async function changeStatus(
   // ATS auto-track + reindex is network-heavy (seconds); don't make the click
   // wait on it — fire and forget so the row updates instantly.
   void trackAndReindex(defaultHttpClient, home, profile, note).catch(() => undefined)
-  // The dashboard's inbox/shortlist are status-scoped, so a changed row leaves
-  // them — remove it. The /jobs board shows a mixed list, so keep the row and
-  // just refresh its badge.
+  // The dashboard's inbox/shortlist are status-scoped, so a changed row always
+  // leaves them — remove it. On the /jobs board, keep the row only if the
+  // updated note still matches the board's current filters (e.g. a reject/cut
+  // drops out of the default "active" view); otherwise remove it.
   // HX-Current-URL is absolute in practice; parse with a base so a relative
   // value (or empty) never throws.
-  const onBoard = new URL(fromUrl || '/', 'http://x').pathname.startsWith('/jobs')
-  return onBoard ? rowReply(profile, slug) : removeRowReply(profile, slug)
+  const url = new URL(fromUrl || '/', 'http://x')
+  if (!url.pathname.startsWith('/jobs')) return removeRowReply(profile, slug)
+  return boardReply(profile, slug, parseFilters(url.searchParams))
 }
 

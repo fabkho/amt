@@ -94,6 +94,7 @@ describe('amt mcp server', () => {
       'prune_below_threshold',
       'remove_source',
       'set_job_status',
+      'suggest_profile_updates',
     ])
   })
 

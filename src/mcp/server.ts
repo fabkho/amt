@@ -15,6 +15,7 @@ import {
   listNotes,
   resolveCompanyLogo,
   pruneBelowThreshold,
+  suggestProfileUpdates,
   rankingDebt as computeRankingDebt,
   notesForCompany,
   loadProfile,
@@ -533,6 +534,33 @@ export function createServer(): McpServer {
         return jsonContent({ threshold: floor, pruned: pruned.length, slugs: pruned })
       } catch (error) {
         return toolErrorResponse('pruning below threshold', error)
+      }
+    },
+  )
+
+  // ─── Tool: suggest_profile_updates ─────────────────────────────
+
+  server.registerTool(
+    'suggest_profile_updates',
+    {
+      title: 'Suggest Profile Updates',
+      description:
+        "Mine the user's cut history for patterns worth promoting into profile.yaml — "
+        + 'repeat-cut companies (companyBlocklist candidates) and the cut-reason mix. '
+        + 'PROPOSE these to the user and let them confirm; never edit profile.yaml yourself.',
+      inputSchema: z.object({
+        minCuts: z.number().int().min(2).optional().describe('Min times a company must be cut to suggest blocklisting (default 2).'),
+      }),
+    },
+    async ({ minCuts }) => {
+      try {
+        const profile = await loadProfile(resolveHome())
+        return jsonContent(suggestProfileUpdates(profile.paths.notesDir, {
+          minCuts,
+          existingBlocklist: profile.search.companyBlocklist,
+        }))
+      } catch (error) {
+        return toolErrorResponse('suggesting profile updates', error)
       }
     },
   )

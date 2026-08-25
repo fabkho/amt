@@ -27,6 +27,7 @@ export {
   renderIndex,
   pruneBelowThreshold,
   rankingDebt,
+  suggestProfileUpdates,
   setStatus,
   slugify,
   staleApplications,
@@ -39,6 +40,7 @@ export { forgetSeen, loadSeen } from './core/seen.js'
 export type {
   CutReason,
   Followup,
+  ProfileSuggestions,
   JobNote,
   NoteUpdate,
   JobNoteInput,

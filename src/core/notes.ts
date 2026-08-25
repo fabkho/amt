@@ -459,6 +459,44 @@ export function pruneBelowThreshold(notesDir: string, threshold: number): string
   return pruned
 }
 
+export interface ProfileSuggestions {
+  /** Companies you've cut ≥ minCuts times and haven't blocklisted yet. */
+  repeatCompanies: { name: string; cuts: number; reasons: string[] }[]
+  /** Distribution of cut reasons across all cuts — what's doing the filtering. */
+  cutReasonCounts: { reason: string; count: number }[]
+}
+
+/**
+ * Mines your cut notes for patterns worth promoting into profile.yaml —
+ * agent-proposed, user-confirmed (this only reads; it never edits the profile).
+ * Repeat-cut companies are the strongest signal for the companyBlocklist.
+ */
+export function suggestProfileUpdates(
+  notesDir: string,
+  opts: { minCuts?: number; existingBlocklist?: string[] } = {},
+): ProfileSuggestions {
+  const minCuts = opts.minCuts ?? 2
+  const blocked = new Set((opts.existingBlocklist ?? []).map(c => c.toLowerCase()))
+  const byCompany = new Map<string, { cuts: number; reasons: Set<string> }>()
+  const reasons = new Map<string, number>()
+  for (const { note } of listNotes(notesDir, { status: ['cut'] })) {
+    const entry = byCompany.get(note.company) ?? { cuts: 0, reasons: new Set<string>() }
+    entry.cuts++
+    if (note.cutReason) entry.reasons.add(note.cutReason)
+    byCompany.set(note.company, entry)
+    if (note.cutReason) reasons.set(note.cutReason, (reasons.get(note.cutReason) ?? 0) + 1)
+  }
+  return {
+    repeatCompanies: [...byCompany.entries()]
+      .filter(([name, e]) => e.cuts >= minCuts && !blocked.has(name.toLowerCase()))
+      .map(([name, e]) => ({ name, cuts: e.cuts, reasons: [...e.reasons] }))
+      .sort((a, b) => b.cuts - a.cuts),
+    cutReasonCounts: [...reasons.entries()]
+      .map(([reason, count]) => ({ reason, count }))
+      .sort((a, b) => b.count - a.count),
+  }
+}
+
 /** Regenerates the `_index.md` overview — a view, never a source of truth. */
 // German cities appear under their English names in ATS data —
 // "Cologne, Germany" must land in the Köln bucket.

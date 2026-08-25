@@ -10,6 +10,7 @@ import {
   pruneBelowThreshold,
   rankingDebt,
   readNote,
+  suggestProfileUpdates,
   renderIndex,
   setStatus,
   slugify,
@@ -182,6 +183,25 @@ describe('notes CRUD', () => {
     expect(readNote(dir, 'low').note.cutReason).toBe('below_threshold')
     expect(readNote(dir, 'high').note.status).toBe('new') // ≥ floor kept
     expect(readNote(dir, 'unranked').note.status).toBe('new') // never touched
+  })
+
+  it('suggestProfileUpdates surfaces repeat-cut companies and reason mix', () => {
+    const dir = freshDir()
+    const cut = (slug: string, company: string, reason: 'company_type' | 'stack') => {
+      upsertNote(dir, posting({ slug, title: slug, company }), 'x')
+      setStatus(dir, slug, 'cut', { cutReason: reason, cutNote: 'n' })
+    }
+    cut('a1', 'Body Shop AG', 'company_type')
+    cut('a2', 'Body Shop AG', 'company_type') // same company, 2× → suggested
+    cut('b1', 'Once GmbH', 'stack') // 1× → not suggested
+    upsertNote(dir, posting({ slug: 'live', title: 'live', company: 'Keep GmbH' }), 'x') // not cut
+
+    const s = suggestProfileUpdates(dir, { existingBlocklist: [] })
+    expect(s.repeatCompanies.map(c => c.name)).toEqual(['Body Shop AG'])
+    expect(s.repeatCompanies[0]!.cuts).toBe(2)
+    expect(s.cutReasonCounts.find(r => r.reason === 'company_type')!.count).toBe(2)
+    // already-blocklisted companies are not re-suggested
+    expect(suggestProfileUpdates(dir, { existingBlocklist: ['body shop ag'] }).repeatCompanies).toHaveLength(0)
   })
 
   it('rankingDebt bundles unranked and undescribed as one definition', () => {

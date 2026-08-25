@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.6](https://github.com/fabkho/amt/compare/amt-0.3.5...amt-0.3.6) (2026-08-25)
+
+
+### Features
+
+* score threshold — dashboard cap, show-more, daily auto-prune ([#60](https://github.com/fabkho/amt/issues/60)) ([#76](https://github.com/fabkho/amt/issues/76)) ([2d69368](https://github.com/fabkho/amt/commit/2d693688d244f53cafed3b744f267997e9a8cd81))
+
 ## [0.3.5](https://github.com/fabkho/amt/compare/amt-0.3.4...amt-0.3.5) (2026-08-25)
 
 

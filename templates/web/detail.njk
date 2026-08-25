@@ -1,0 +1,41 @@
+{% extends "layout.njk" %}
+{% block content %}
+<p><a href="/jobs">← Akten</a></p>
+<div class="detail-head">
+  {% if note.logo %}<img class="logo-lg" src="{{ note.logo }}" alt="">{% endif %}
+  <div>
+    <h2 style="margin:0">{{ note.title }}</h2>
+    <div class="meta">
+      <strong>{{ note.company }}</strong>
+      {% if note.workMode %}· <span class="tag {{ 'remote' if note.workMode == 'remote' }}">{{ note.workMode }}</span>{% endif %}
+      {% if note.location %}· {{ note.location }}{% endif %}
+      · <span class="status-badge">{{ note.status }}</span>
+      {% if note.score != null %}· ⭐ {{ note.score }}{% endif %}
+      {% if note.salaryMin or note.salaryMax %}· {{ note.salaryMin }}–{{ note.salaryMax }} {{ note.salaryCurrency }}{% endif %}
+    </div>
+    <p style="margin:.5rem 0"><a href="{{ note.url }}" target="_blank" rel="noreferrer">Original posting ↗</a></p>
+  </div>
+</div>
+
+<div class="actions" style="margin:1rem 0">
+  <button class="star {{ 'on' if note.favorite }}"
+    hx-post="/jobs/{{ note.slug }}/favorite" hx-target="closest .actions" hx-swap="none">
+    {{ '★ favorited' if note.favorite else '☆ favorite' }}
+  </button>
+  <button class="accept" hx-post="/jobs/{{ note.slug }}/status" hx-vals='{"status":"shortlist"}' hx-swap="none">accept → shortlist</button>
+  <button hx-post="/jobs/{{ note.slug }}/status" hx-vals='{"status":"applied"}' hx-swap="none">mark applied</button>
+  <span class="reject-form">
+    <select hx-post="/jobs/{{ note.slug }}/status" hx-swap="none" hx-vals='js:{status:"cut",reason:event.target.value}'>
+      <option value="">reject (cut)…</option>
+      {% for r in cutReasons %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
+    </select>
+  </span>
+  <button hx-post="/jobs/{{ note.slug }}/prepare" hx-target="#prep" hx-swap="innerHTML">build application</button>
+</div>
+<div id="prep"></div>
+
+{% if assessment %}<div class="assessment"><strong>Assessment:</strong> {{ assessment }}</div>{% endif %}
+
+{% if description %}<div class="description" style="white-space:pre-wrap">{{ description }}</div>
+{% else %}<div class="empty">No description captured — fetch it via the agent (re-import) to rank on real content.</div>{% endif %}
+{% endblock %}

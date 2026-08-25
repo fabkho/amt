@@ -72,6 +72,16 @@ prompt does exactly this) — and the second run renders everything to PDF, html
 and txt. Templates are plain Nunjucks + CSS (`templates/`), PDFs come out of
 real Chromium, so what you preview is what HR gets.
 
+## Der Schalter (web dashboard)
+
+Prefer a screen to a terminal? `amt serve` opens a local dashboard at
+`http://localhost:4400` — an inbox to triage the day's arrivals (⭐ favorite,
+accept → shortlist, reject with a reason, build application) and a filterable
+Aktenboard (status, remote/hybrid, city, min score, search). It's server-rendered
+(htmx, no build) and every click writes straight to your markdown notes, so
+Obsidian and the dashboard never disagree. Design and plan in
+[docs/webview-plan.md](./docs/webview-plan.md).
+
 ## Die Quellenlage (sources)
 
 amt crawls **official job APIs** directly: boards like Arbeitnow, the

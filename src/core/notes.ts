@@ -57,6 +57,7 @@ export const jobNoteSchema = z.object({
   discoveredAt: isoDate,
   status: z.enum(JOB_STATUSES).default('new'),
   score: z.number().int().min(0).max(100).nullable().default(null),
+  favorite: z.boolean().default(false),
   flags: z.array(z.string()).default([]),
   cutReason: z.enum(CUT_REASONS).nullable().default(null),
   cutNote: z.string().nullable().default(null),
@@ -79,6 +80,7 @@ export type CutReason = (typeof CUT_REASONS)[number]
 const HUMAN_FIELDS = [
   'status',
   'score',
+  'favorite',
   'flags',
   'cutReason',
   'cutNote',
@@ -332,6 +334,7 @@ function setAssessment(body: string, assessment: string): string {
 
 export interface NoteUpdate {
   score?: number | null
+  favorite?: boolean
   flags?: string[]
   /** Agent reasoning — stored under an "## Assessment" heading in the body. */
   assessment?: string
@@ -347,6 +350,7 @@ export function updateNote(
   if (update.score !== undefined) {
     note.score = update.score === null ? null : jobNoteSchema.shape.score.parse(update.score)
   }
+  if (update.favorite !== undefined) note.favorite = update.favorite
   if (update.flags !== undefined) note.flags = update.flags
   const newBody
     = update.assessment !== undefined ? setAssessment(body, update.assessment) : body

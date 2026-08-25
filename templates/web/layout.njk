@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>amt — {{ page }}</title>
+  <link rel="stylesheet" href="/assets/dashboard.css">
+  <script src="/assets/vendor/htmx.min.js" defer></script>
+  <script src="/assets/vendor/petite-vue.iife.js" defer></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="masthead">
+      <h1>amt <small>— das Amt für die Jobsuche</small></h1>
+      <nav class="tabs">
+        <a href="/" class="{{ 'active' if page == 'dashboard' }}">Dashboard</a>
+        <a href="/jobs" class="{{ 'active' if page == 'jobs' }}">Akten</a>
+      </nav>
+    </header>
+    {% block content %}{% endblock %}
+    <footer>amt · Sprechzeiten rund um die Uhr · Änderungen landen direkt in deinen Notizen</footer>
+  </div>
+</body>
+</html>

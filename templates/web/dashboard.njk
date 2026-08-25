@@ -1,0 +1,21 @@
+{% extends "layout.njk" %}
+{% block content %}
+<div class="stats">
+  <div class="stat"><div class="n">{{ stats.unranked }}</div><div class="k">📥 unranked</div></div>
+  <div class="stat"><div class="n">{{ stats.favorites }}</div><div class="k">★ favorites</div></div>
+  <div class="stat"><div class="n">{{ stats.counts.shortlist or 0 }}</div><div class="k">shortlist</div></div>
+  <div class="stat"><div class="n">{{ stats.counts.applied or 0 }}</div><div class="k">applied</div></div>
+  <div class="stat"><div class="n">{{ stats.counts.interview or 0 }}</div><div class="k">interview</div></div>
+  <div class="stat"><div class="n">{{ stats.counts.offer or 0 }}</div><div class="k">offer</div></div>
+</div>
+
+<h2 class="section">📥 Inbox — new &amp; unranked ({{ inbox | length }})</h2>
+<div class="rows">
+  {% for row in inbox %}{% include "_row.njk" %}{% else %}<div class="empty">Der Stapel ist abgearbeitet — nothing new to triage.</div>{% endfor %}
+</div>
+
+<h2 class="section">Shortlist ({{ shortlist | length }})</h2>
+<div class="rows">
+  {% for row in shortlist %}{% include "_row.njk" %}{% else %}<div class="empty">Nothing shortlisted yet.</div>{% endfor %}
+</div>
+{% endblock %}

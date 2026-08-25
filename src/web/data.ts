@@ -77,8 +77,15 @@ function byRank(a: RowView, b: RowView): number {
   return (b.score ?? -1) - (a.score ?? -1)
 }
 
+// Dead statuses hidden by the default "active" view — most triage ignores them.
+const DEAD_STATUSES = new Set<string>(['cut', 'rejected'])
+
 function matches(row: RowView, f: Filters): boolean {
-  if (f.status && row.status !== f.status) return false
+  // status: 'all' shows everything; a specific status is exact; the default
+  // (unset) is "active" — everything except cut/rejected.
+  if (f.status === 'all') { /* no status filter */ }
+  else if (f.status) { if (row.status !== f.status) return false }
+  else if (DEAD_STATUSES.has(row.status)) return false
   if (f.workMode && row.workMode !== f.workMode) return false
   if (f.bucket && row.bucket !== f.bucket) return false
   if (f.minScore !== undefined && (row.score ?? -1) < f.minScore) return false

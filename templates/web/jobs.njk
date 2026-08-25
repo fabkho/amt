@@ -5,7 +5,8 @@
 <form class="filters" hx-get="/jobs" hx-target="#job-rows" hx-select="#job-rows" hx-swap="outerHTML" hx-trigger="change, keyup delay:300ms from:find input[name=q]">
   <label for="f-status">status</label>
   <select id="f-status" name="status">
-    <option value="">all</option>
+    <option value="" {{ 'selected' if not filters.status }}>active (hide rejected/cut)</option>
+    <option value="all" {{ 'selected' if filters.status == 'all' }}>all (incl. rejected/cut)</option>
     {% for s in ['new','shortlist','applied','interview','offer','rejected','cut'] %}
       <option value="{{ s }}" {{ 'selected' if filters.status == s }}>{{ s }}</option>
     {% endfor %}

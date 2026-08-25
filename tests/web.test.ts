@@ -2,7 +2,7 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vite-plus/test'
-import { loadProfile, profileSchema, readNote, upsertNote, type Profile } from '../src/index.js'
+import { loadProfile, profileSchema, readNote, setStatus, upsertNote, type Profile } from '../src/index.js'
 import { changeStatus, dashboard, detail, jobs } from '../src/web/handlers.js'
 import { jobRows, platformOf, safeUrl, stats } from '../src/web/data.js'
 
@@ -35,6 +35,14 @@ describe('web data', () => {
     expect(jobRows(profile, { workMode: 'remote' })).toHaveLength(1)
     expect(jobRows(profile, { q: 'php' })[0]!.slug).toBe('koeln-role')
     expect(stats(profile).unranked).toBe(2)
+  })
+
+  it('default view hides cut/rejected; status "all" and "cut" reveal them', async () => {
+    const profile = await env()
+    setStatus(profile.paths.notesDir, 'koeln-role', 'cut', { cutReason: 'personal_fit' })
+    expect(jobRows(profile).map(r => r.slug)).toEqual(['remote-role']) // active hides the cut one
+    expect(jobRows(profile, { status: 'all' })).toHaveLength(2)
+    expect(jobRows(profile, { status: 'cut' }).map(r => r.slug)).toEqual(['koeln-role'])
   })
 })
 

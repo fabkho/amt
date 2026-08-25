@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.14](https://github.com/fabkho/amt/compare/amt-0.2.13...amt-0.2.14) (2026-08-25)
+
+
+### Features
+
+* follow-up nudges + channel-crawl reliability ([#36](https://github.com/fabkho/amt/issues/36)/[#37](https://github.com/fabkho/amt/issues/37)) ([#50](https://github.com/fabkho/amt/issues/50)) ([84f29cb](https://github.com/fabkho/amt/commit/84f29cba6771546b22e05fc78d1addaf7c925258))
+
 ## [0.2.13](https://github.com/fabkho/amt/compare/amt-0.2.12...amt-0.2.13) (2026-08-25)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.5](https://github.com/fabkho/amt/compare/amt-0.3.4...amt-0.3.5) (2026-08-25)
+
+
+### Features
+
+* remove the favorite/star system ([#65](https://github.com/fabkho/amt/issues/65)) ([#74](https://github.com/fabkho/amt/issues/74)) ([5c1548a](https://github.com/fabkho/amt/commit/5c1548a9a28146f46f0e955620cd6ed43e8d87c1))
+
 ## [0.3.4](https://github.com/fabkho/amt/compare/amt-0.3.3...amt-0.3.4) (2026-08-25)
 
 

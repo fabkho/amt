@@ -16,6 +16,14 @@ export interface RowView {
   logo: string | null
   bucket: string
   platform: { label: string; icon: string }
+  appliedAt: string | null
+  appliedDaysAgo: number | null
+  hasDocs: boolean
+}
+
+function daysAgo(iso: string | null | undefined): number | null {
+  if (!iso) return null
+  return Math.floor((Date.now() - Date.parse(iso)) / 86_400_000)
 }
 
 // Where a posting came from → a human label + a platform favicon, so the
@@ -69,6 +77,9 @@ function toRow(note: JobNote, cities: string[]): RowView {
     logo: safeUrl(note.logo),
     bucket: placement(note, cities),
     platform: platformOf(note.source),
+    appliedAt: note.application?.appliedAt ?? null,
+    appliedDaysAgo: daysAgo(note.application?.appliedAt),
+    hasDocs: Boolean(note.application?.folder),
   }
 }
 

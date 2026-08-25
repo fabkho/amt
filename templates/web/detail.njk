@@ -12,18 +12,32 @@
       · <span class="status-badge">{{ note.status }}</span>
       {% if note.score != null %}· ⭐ {{ note.score }}{% endif %}
       {% if note.salaryMin or note.salaryMax %}· {{ note.salaryMin }}–{{ note.salaryMax }} {{ note.salaryCurrency }}{% endif %}
+      {% if note.application and note.application.appliedAt %}· <span class="applied-meta">applied {{ note.application.appliedAt }}{% if appliedDaysAgo != null %} · {{ appliedDaysAgo }}d ago{% endif %}</span>{% endif %}
     </div>
     {% if url %}<p style="margin:.5rem 0"><a href="{{ url }}" target="_blank" rel="noreferrer noopener" title="Open on {{ platform.label }}">{% if platform.icon %}<img class="platform-icon" src="{{ platform.icon }}" alt="" width="14" height="14">{% endif %}Original posting on {{ platform.label }} ↗</a></p>{% endif %}
   </div>
 </div>
 
 <div class="actions" style="margin:1rem 0">
-  <button class="accept" hx-post="/jobs/{{ note.slug }}/status" hx-vals='{"status":"shortlist"}'
-    hx-swap="none" hx-on::after-request="location.reload()">accept → shortlist</button>
-  <button hx-post="/jobs/{{ note.slug }}/status" hx-vals='{"status":"applied"}'
-    hx-swap="none" hx-on::after-request="location.reload()">mark applied</button>
-  <button class="reject" hx-get="/jobs/{{ note.slug }}/reject?from=detail" hx-target="body" hx-swap="beforeend"
-    hx-on:click="document.getElementById('reject-dialog')?.remove()">reject</button>
+  {% set adv = { 'applied': 'interview', 'interview': 'offer' } %}
+  {% if note.application and note.application.folder %}<button class="btn docs" title="Open the documents folder"
+    hx-post="/jobs/{{ note.slug }}/reveal" hx-swap="none">📁 open documents</button>{% endif %}
+  {% if note.status == 'new' or note.status == 'shortlist' %}
+    {% if note.status == 'new' %}<button class="accept" hx-post="/jobs/{{ note.slug }}/status" hx-vals='{"status":"shortlist"}'
+      hx-swap="none" hx-on::after-request="location.reload()">accept → shortlist</button>{% endif %}
+    <button class="accept" hx-post="/jobs/{{ note.slug }}/status" hx-vals='{"status":"applied"}'
+      hx-swap="none" hx-on::after-request="location.reload()">mark applied</button>
+    <button class="reject" hx-get="/jobs/{{ note.slug }}/reject?from=detail" hx-target="body" hx-swap="beforeend"
+      hx-on:click="document.getElementById('reject-dialog')?.remove()">reject</button>
+  {% elif adv[note.status] %}
+    <button class="accept" hx-post="/jobs/{{ note.slug }}/status" hx-vals='{"status":"{{ adv[note.status] }}"}'
+      hx-swap="none" hx-on::after-request="location.reload()">→ {{ adv[note.status] }}</button>
+    <button class="reject" hx-post="/jobs/{{ note.slug }}/status" hx-vals='{"status":"rejected"}'
+      hx-swap="none" hx-on::after-request="location.reload()">rejected</button>
+  {% elif note.status == 'offer' %}
+    <button class="reject" hx-post="/jobs/{{ note.slug }}/status" hx-vals='{"status":"rejected"}'
+      hx-swap="none" hx-on::after-request="location.reload()">rejected</button>
+  {% endif %}
 </div>
 
 {% if assessment %}<div class="assessment"><strong>Assessment:</strong> {{ assessment }}</div>{% endif %}

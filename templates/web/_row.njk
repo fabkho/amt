@@ -9,16 +9,33 @@
       {% if row.workMode %}<span class="tag {{ 'remote' if row.workMode == 'remote' }}">{{ row.workMode }}</span>{% endif %}
       {% if row.bucket and row.bucket != 'Other' and row.bucket != 'Remote' %}<span class="tag">{{ row.bucket }}</span>{% endif %}
       <span class="status-badge">{{ row.status }}</span>
+      {% if row.appliedAt %}<span class="applied-meta">applied {{ row.appliedAt }}{% if row.appliedDaysAgo != null %} · {{ row.appliedDaysAgo }}d ago{% endif %}</span>{% endif %}
       {% if row.location %}{{ row.location }}{% endif %}
     </div>
   </div>
   <div class="actions">
+    {% set adv = { 'applied': 'interview', 'interview': 'offer' } %}
+    {% if row.hasDocs %}<button class="btn docs" title="Open the documents folder"
+      hx-post="/jobs/{{ row.slug }}/reveal" hx-swap="none">📁 docs</button>{% endif %}
     {% if row.url %}<a class="btn open" href="{{ row.url }}" target="_blank" rel="noreferrer noopener" title="Open on {{ row.platform.label }}">{% if row.platform.icon %}<img class="platform-icon" src="{{ row.platform.icon }}" alt="" width="14" height="14">{% endif %}open ↗</a>{% endif %}
-    <button class="accept" title="Accept → shortlist"
-      hx-post="/jobs/{{ row.slug }}/status" hx-vals='{"status":"shortlist"}'
-      hx-target="#row-{{ row.slug }}" hx-swap="outerHTML">accept</button>
-    <button class="reject" title="Reject → cut"
-      hx-get="/jobs/{{ row.slug }}/reject" hx-target="body" hx-swap="beforeend"
-      hx-on:click="document.getElementById('reject-dialog')?.remove()">reject</button>
+    {% if row.status == 'new' or row.status == 'shortlist' %}
+      <button class="accept" title="{{ 'Shortlist' if row.status == 'new' else 'Mark applied' }}"
+        hx-post="/jobs/{{ row.slug }}/status" hx-vals='{"status":"{{ 'shortlist' if row.status == 'new' else 'applied' }}"}'
+        hx-target="#row-{{ row.slug }}" hx-swap="outerHTML">{{ 'accept' if row.status == 'new' else 'mark applied' }}</button>
+      <button class="reject" title="Reject → cut"
+        hx-get="/jobs/{{ row.slug }}/reject" hx-target="body" hx-swap="beforeend"
+        hx-on:click="document.getElementById('reject-dialog')?.remove()">reject</button>
+    {% elif adv[row.status] %}
+      <button class="accept" title="Advance to {{ adv[row.status] }}"
+        hx-post="/jobs/{{ row.slug }}/status" hx-vals='{"status":"{{ adv[row.status] }}"}'
+        hx-target="#row-{{ row.slug }}" hx-swap="outerHTML">→ {{ adv[row.status] }}</button>
+      <button class="reject" title="They rejected me"
+        hx-post="/jobs/{{ row.slug }}/status" hx-vals='{"status":"rejected"}'
+        hx-target="#row-{{ row.slug }}" hx-swap="outerHTML">rejected</button>
+    {% elif row.status == 'offer' %}
+      <button class="reject" title="They rejected me"
+        hx-post="/jobs/{{ row.slug }}/status" hx-vals='{"status":"rejected"}'
+        hx-target="#row-{{ row.slug }}" hx-swap="outerHTML">rejected</button>
+    {% endif %}
   </div>
 </div>

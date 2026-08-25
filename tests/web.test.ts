@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vite-plus/test'
 import { loadProfile, profileSchema, readNote, setStatus, upsertNote, type Profile } from '../src/index.js'
-import { changeStatus, dashboard, detail, jobs } from '../src/web/handlers.js'
+import { changeStatus, dashboard, detail, jobs, revealDocs } from '../src/web/handlers.js'
 import { jobRows, platformOf, safeUrl, stats } from '../src/web/data.js'
 
 async function env(): Promise<Profile> {
@@ -103,6 +103,20 @@ describe('web handlers', () => {
 
     const fromBoard = await changeStatus(profile, profile.paths.notesDir, 'koeln-role', 'shortlist', undefined, 'http://localhost:4400/jobs')
     expect(fromBoard.body).toContain('id="row-koeln-role"') // kept, badge updated
+  })
+
+  it('applied rows show advance + rejected actions, not accept/cut', async () => {
+    const profile = await env()
+    setStatus(profile.paths.notesDir, 'remote-role', 'applied')
+    const reply = jobs(profile, new URLSearchParams({ status: 'applied' }))
+    expect(reply.body).toContain('→ interview')
+    expect(reply.body).toContain('rejected')
+    expect(reply.body).not.toContain('>accept</button>')
+  })
+
+  it('revealDocs 404s when the note has no documents folder', async () => {
+    const profile = await env()
+    expect(revealDocs(profile, 'remote-role').status).toBe(404)
   })
 
   it('board reject drops the row from the default active view but keeps it under status=all', async () => {

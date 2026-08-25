@@ -9,6 +9,8 @@ import {
   type CutReason,
   type JobStatus,
 } from '../core/notes.js'
+import { existsSync } from 'node:fs'
+import { spawn } from 'node:child_process'
 import { trackAndReindex } from '../core/tracking.js'
 import { defaultHttpClient } from '../core/sources/http.js'
 import { htmlToMarkdown } from '../core/sources/normalize.js'
@@ -76,6 +78,9 @@ export function detail(profile: Profile, slug: string): Reply {
     url: safeUrl(note.url),
     logo: safeUrl(note.logo),
     platform: platformOf(note.source),
+    appliedDaysAgo: note.application?.appliedAt
+      ? Math.floor((Date.now() - Date.parse(note.application.appliedAt)) / 86_400_000)
+      : null,
     description: region ? htmlToMarkdown(region) : '',
     assessment: assessmentText(body) ?? '',
   }))
@@ -131,5 +136,16 @@ export async function changeStatus(
   const url = new URL(fromUrl || '/', 'http://x')
   if (!url.pathname.startsWith('/jobs')) return removeRowReply(profile, slug)
   return boardReply(profile, slug, parseFilters(url.searchParams))
+}
+
+/** Reveal the application's documents folder in the OS file manager (the server
+ *  runs on the user's machine, so it can `open` locally). */
+export function revealDocs(profile: Profile, slug: string): Reply {
+  const { note } = readNote(profile.paths.notesDir, slug)
+  const folder = note.application?.folder
+  if (!folder || !existsSync(folder)) return { status: 404, body: 'no documents folder' }
+  const opener = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'explorer' : 'xdg-open'
+  spawn(opener, [folder], { detached: true, stdio: 'ignore' }).unref()
+  return { status: 204, body: '' }
 }
 

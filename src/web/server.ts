@@ -9,6 +9,7 @@ import {
   dashboard,
   detail,
   rejectDialog,
+  revealDocs,
   jobs,
   type Reply,
 } from './handlers.js'
@@ -76,6 +77,8 @@ async function routePost(
   switch (parts[2]) {
     case 'status':
       return changeStatus(profile, home, slug, form.get('status') ?? '', form.get('reason') ?? undefined, fromUrl, form.get('cutNote') ?? undefined)
+    case 'reveal':
+      return revealDocs(profile, slug)
     default:
       return NOT_FOUND
   }

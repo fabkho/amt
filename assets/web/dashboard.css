@@ -191,6 +191,9 @@ button.reject:hover { border-color: var(--color-ink); color: var(--color-ink-mut
 }
 .btn.open:hover { background: var(--color-accent); color: #fff; border-color: var(--color-accent); text-decoration: none; }
 .platform-icon { width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px; border-radius: 2px; object-fit: contain; }
+.applied-meta { color: var(--color-ink-faint); }
+.btn.docs { border-color: var(--color-line); color: var(--color-ink-muted); }
+.btn.docs:hover { border-color: var(--color-ink-muted); text-decoration: none; }
 
 /* Reject dialog */
 dialog.reject-dialog {

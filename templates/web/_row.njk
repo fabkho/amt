@@ -17,7 +17,7 @@
     {% set adv = { 'applied': 'interview', 'interview': 'offer' } %}
     {% if row.hasDocs %}<button class="btn docs" title="Open the documents folder"
       hx-post="/jobs/{{ row.slug }}/reveal" hx-swap="none">📁 docs</button>{% endif %}
-    {% if row.url %}<a class="btn open" href="{{ row.url }}" target="_blank" rel="noreferrer noopener" title="Open on {{ row.platform.label }}">{% if row.platform.icon %}<img class="platform-icon" src="{{ row.platform.icon }}" alt="" width="14" height="14">{% endif %}open ↗</a>{% endif %}
+    {% if row.url %}<a class="btn open" href="{{ row.url }}" target="_blank" rel="noreferrer noopener" title="Open on {{ row.platform.label }}">{% if row.platform.icon %}<img class="platform-icon" src="{{ row.platform.icon }}" alt="" width="14" height="14">{% else %}open{% endif %} ↗</a>{% endif %}
     {% if row.status == 'new' or row.status == 'shortlist' %}
       <button class="accept" title="{{ 'Shortlist' if row.status == 'new' else 'Mark applied' }}"
         hx-post="/jobs/{{ row.slug }}/status" hx-vals='{"status":"{{ 'shortlist' if row.status == 'new' else 'applied' }}"}'

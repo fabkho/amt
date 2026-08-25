@@ -43,25 +43,28 @@ search:
 tone: { salutation: { de: "Hallo,", en: "Hi," }, closing: { de: "Viele Grüße", en: "Best regards" }, rules: [] }
 paths: { notesDir: "${notes}", outputBase: "${home}/out" }
 `)
-  const N = o => ({ company: 'X', slug: 'x', title: 'Role', url: 'https://example.com', source: 'manual', nativeId: String(Math.random()), discoveredAt: '2026-08-25', ...o })
+  // Demo imagery: real, resolvable favicons stand in for the fictional
+  // companies' logos, and real source names give each open link its platform icon.
+  const logo = d => `https://icons.duckduckgo.com/ip3/${d}.ico`
+  const N = o => ({ company: 'X', slug: 'x', title: 'Role', url: 'https://example.com', source: 'linkedin-guest', nativeId: String(Math.random()), discoveredAt: '2026-08-25', ...o })
   const mk = (slug, company, title, body, over = {}) => upsertNote(notes, N({ slug, company, title, ...over }), body)
-  mk('nordlicht-senior-vue', 'Nordlicht Studio', 'Senior Vue Engineer (all genders)', 'Vue 3, Nuxt, TypeScript, Pinia. Product team building a collaborative planning tool. Fully remote across the EU, four-day-week friendly.', { workMode: 'remote', salaryMin: 75000, salaryMax: 95000, salaryCurrency: 'EUR' })
-  updateNote(notes, 'nordlicht-senior-vue', { score: 91, favorite: true })
-  mk('kranich-frontend', 'Kranich Digital', 'Frontend Engineer — Nuxt', 'Nuxt 3 storefront team, design-system ownership, hybrid in Cologne (3 days remote).', { workMode: 'hybrid', location: 'Köln, Germany' })
+  mk('nordlicht-senior-vue', 'Nordlicht Studio', 'Senior Vue Engineer (all genders)', 'Vue 3, Nuxt, TypeScript, Pinia. Product team building a collaborative planning tool. Fully remote across the EU, four-day-week friendly.', { workMode: 'remote', salaryMin: 75000, salaryMax: 95000, salaryCurrency: 'EUR', source: 'linkedin-guest', logo: logo('linear.app') })
+  updateNote(notes, 'nordlicht-senior-vue', { score: 91 })
+  mk('kranich-frontend', 'Kranich Digital', 'Frontend Engineer — Nuxt', 'Nuxt 3 storefront team, design-system ownership, hybrid in Cologne (3 days remote).', { workMode: 'hybrid', location: 'Köln, Germany', source: 'stepstone', logo: logo('vercel.com') })
   updateNote(notes, 'kranich-frontend', { score: 84 })
-  mk('brueckner-fullstack', 'Brückner Labs', 'Fullstack TypeScript Developer', 'TypeScript/Node backend + Vue frontend for an analytics product. Munich, hybrid.', { workMode: 'hybrid', location: 'München' })
+  mk('brueckner-fullstack', 'Brückner Labs', 'Fullstack TypeScript Developer', 'TypeScript/Node backend + Vue frontend for an analytics product. Munich, hybrid.', { workMode: 'hybrid', location: 'München', source: 'vuejobs', logo: logo('gitlab.com') })
   updateNote(notes, 'brueckner-fullstack', { score: 76 })
-  mk('aurora-laravel', 'Aurora Commerce', 'PHP / Laravel Developer', 'Laravel + Vue e-commerce platform, fully remote team.', { workMode: 'remote' })
+  mk('aurora-laravel', 'Aurora Commerce', 'PHP / Laravel Developer', 'Laravel + Vue e-commerce platform, fully remote team.', { workMode: 'remote', source: 'greenhouse', logo: logo('shopify.com') })
   updateNote(notes, 'aurora-laravel', { score: 68 })
-  mk('helios-frontend', 'Helios Energy', 'Frontend Developer (m/w/d)', '', { workMode: 'remote' })
-  mk('taleon-engineer', 'Taleon GmbH', 'Software Engineer Web', '', { workMode: 'hybrid', location: 'Berlin' })
-  mk('vivid-vue', 'Vivid Interfaces', 'Senior Vue Engineer', 'Design-systems team, remote.', { workMode: 'remote' })
-  updateNote(notes, 'vivid-vue', { score: 82, favorite: true }); setStatus(notes, 'vivid-vue', 'shortlist')
-  mk('faaren-fullstack', 'Meridian Mobility', 'Senior Fullstack Developer', 'Laravel + Vue/Nuxt, fully remote.', { workMode: 'remote' })
+  mk('helios-frontend', 'Helios Energy', 'Frontend Developer (m/w/d)', '', { workMode: 'remote', source: 'stepstone', logo: logo('figma.com') })
+  mk('taleon-engineer', 'Taleon GmbH', 'Software Engineer Web', '', { workMode: 'hybrid', location: 'Berlin', source: 'arbeitnow', logo: logo('notion.so') })
+  mk('vivid-vue', 'Vivid Interfaces', 'Senior Vue Engineer', 'Design-systems team, remote.', { workMode: 'remote', source: 'linkedin-guest', logo: logo('framer.com') })
+  updateNote(notes, 'vivid-vue', { score: 82 }); setStatus(notes, 'vivid-vue', 'shortlist')
+  mk('faaren-fullstack', 'Meridian Mobility', 'Senior Fullstack Developer', 'Laravel + Vue/Nuxt, fully remote.', { workMode: 'remote', source: 'lever', logo: logo('miro.com') })
   updateNote(notes, 'faaren-fullstack', { score: 90 }); setStatus(notes, 'faaren-fullstack', 'shortlist')
-  mk('koppla-pe', 'Baukasten', 'Product Engineer — Frontend', 'Vue 3 / TS / Tailwind.', { workMode: 'hybrid', location: 'Köln' })
+  mk('koppla-pe', 'Baukasten', 'Product Engineer — Frontend', 'Vue 3 / TS / Tailwind.', { workMode: 'hybrid', location: 'Köln', source: 'vuejobs', logo: logo('asana.com') })
   updateNote(notes, 'koppla-pe', { score: 80 }); setStatus(notes, 'koppla-pe', 'applied')
-  mk('flow-pe', 'Flusskiesel', 'Senior Product Engineer', 'TypeScript, Vue, Node.', { workMode: 'remote' })
+  mk('flow-pe', 'Flusskiesel', 'Senior Product Engineer', 'TypeScript, Vue, Node.', { workMode: 'remote', source: 'stepstone', logo: logo('linktr.ee') })
   updateNote(notes, 'flow-pe', { score: 92 }); setStatus(notes, 'flow-pe', 'interview')
   return home
 }

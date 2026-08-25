@@ -2,7 +2,7 @@
 {% block content %}
 <p><a href="/jobs">← Akten</a></p>
 <div class="detail-head">
-  {% if note.logo %}<img class="logo-lg" src="{{ note.logo }}" alt="">{% endif %}
+  {% if logo %}<img class="logo-lg" src="{{ logo }}" alt="">{% endif %}
   <div>
     <h2 style="margin:0">{{ note.title }}</h2>
     <div class="meta">
@@ -13,26 +13,22 @@
       {% if note.score != null %}· ⭐ {{ note.score }}{% endif %}
       {% if note.salaryMin or note.salaryMax %}· {{ note.salaryMin }}–{{ note.salaryMax }} {{ note.salaryCurrency }}{% endif %}
     </div>
-    <p style="margin:.5rem 0"><a href="{{ note.url }}" target="_blank" rel="noreferrer">Original posting ↗</a></p>
+    {% if url %}<p style="margin:.5rem 0"><a href="{{ url }}" target="_blank" rel="noreferrer noopener">Original posting ↗</a></p>{% endif %}
   </div>
 </div>
 
 <div class="actions" style="margin:1rem 0">
   <button class="star {{ 'on' if note.favorite }}"
-    hx-post="/jobs/{{ note.slug }}/favorite" hx-target="closest .actions" hx-swap="none">
+    hx-post="/jobs/{{ note.slug }}/favorite" hx-swap="none" hx-on::after-request="location.reload()">
     {{ '★ favorited' if note.favorite else '☆ favorite' }}
   </button>
-  <button class="accept" hx-post="/jobs/{{ note.slug }}/status" hx-vals='{"status":"shortlist"}' hx-swap="none">accept → shortlist</button>
-  <button hx-post="/jobs/{{ note.slug }}/status" hx-vals='{"status":"applied"}' hx-swap="none">mark applied</button>
-  <span class="reject-form">
-    <select name="reason" hx-post="/jobs/{{ note.slug }}/status" hx-swap="none" hx-vals='{"status":"cut"}'>
-      <option value="" selected>reject (cut)…</option>
-      {% for r in cutReasons %}<option value="{{ r }}">{{ r | replace('_', ' ') }}</option>{% endfor %}
-    </select>
-  </span>
-  <button hx-post="/jobs/{{ note.slug }}/prepare" hx-target="#prep" hx-swap="innerHTML">build application</button>
+  <button class="accept" hx-post="/jobs/{{ note.slug }}/status" hx-vals='{"status":"shortlist"}'
+    hx-swap="none" hx-on::after-request="location.reload()">accept → shortlist</button>
+  <button hx-post="/jobs/{{ note.slug }}/status" hx-vals='{"status":"applied"}'
+    hx-swap="none" hx-on::after-request="location.reload()">mark applied</button>
+  <button class="reject" hx-get="/jobs/{{ note.slug }}/reject?from=detail" hx-target="body" hx-swap="beforeend"
+    hx-on:click="document.getElementById('reject-dialog')?.remove()">reject</button>
 </div>
-<div id="prep"></div>
 
 {% if assessment %}<div class="assessment"><strong>Assessment:</strong> {{ assessment }}</div>{% endif %}
 

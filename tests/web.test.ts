@@ -3,8 +3,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vite-plus/test'
 import { loadProfile, profileSchema, readNote, upsertNote, type Profile } from '../src/index.js'
-import { dashboard, detail, jobs, toggleFavorite } from '../src/web/handlers.js'
-import { jobRows, stats } from '../src/web/data.js'
+import { changeStatus, dashboard, detail, jobs, toggleFavorite } from '../src/web/handlers.js'
+import { jobRows, safeUrl, stats } from '../src/web/data.js'
 
 async function env(): Promise<Profile> {
   const home = mkdtempSync(join(tmpdir(), 'amt-web-'))
@@ -12,7 +12,11 @@ async function env(): Promise<Profile> {
   const base = await loadProfile(join(import.meta.dirname, 'fixtures/profile-home'))
   const profile = profileSchema.parse({
     ...base,
-    search: { ...base.search, locations: { remote: true, cities: [{ name: 'Köln', minHomeOfficeDays: 3 }] } },
+    search: {
+      ...base.search,
+      autoTrackCompanies: false,
+      locations: { remote: true, cities: [{ name: 'Köln', minHomeOfficeDays: 3 }] },
+    },
     paths: { ...base.paths, notesDir, outputBase: notesDir },
   })
   const posting = (over: Record<string, unknown>) => ({
@@ -55,7 +59,8 @@ describe('web handlers', () => {
     const profile = await env()
     const reply = detail(profile, 'remote-role')
     expect(reply.body).toContain('Original posting')
-    expect(reply.body).toContain('build application')
+    expect(reply.body).toContain('accept → shortlist')
+    expect(reply.body).toContain('reject')
   })
 
   it('toggles favorite and returns the updated row', async () => {
@@ -64,5 +69,45 @@ describe('web handlers', () => {
     expect(reply.status).toBe(200)
     expect(readNote(profile.paths.notesDir, 'remote-role').note.favorite).toBe(true)
     expect(reply.body).toContain('★')
+  })
+
+  it('rejects an invalid status with 400 and does not corrupt the note', async () => {
+    const profile = await env()
+    const reply = await changeStatus(profile, profile.paths.notesDir, 'remote-role', 'bogus')
+    expect(reply.status).toBe(400)
+    expect(readNote(profile.paths.notesDir, 'remote-role').note.status).toBe('new')
+  })
+
+  it('cut with no reason defaults to personal_fit', async () => {
+    const profile = await env()
+    await changeStatus(profile, profile.paths.notesDir, 'remote-role', 'cut', '')
+    const { note } = readNote(profile.paths.notesDir, 'remote-role')
+    expect(note.status).toBe('cut')
+    expect(note.cutReason).toBe('personal_fit')
+  })
+
+  it('removes the row from the dashboard but keeps it (updated) on the board', async () => {
+    const profile = await env()
+    const fromDashboard = await changeStatus(profile, profile.paths.notesDir, 'remote-role', 'shortlist', undefined, '/')
+    expect(fromDashboard.body).not.toContain('id="row-remote-role"') // removed from inbox
+
+    const fromBoard = await changeStatus(profile, profile.paths.notesDir, 'koeln-role', 'shortlist', undefined, 'http://localhost:4400/jobs')
+    expect(fromBoard.body).toContain('id="row-koeln-role"') // kept, badge updated
+  })
+})
+
+describe('safeUrl', () => {
+  it('passes http(s) and blocks other schemes', () => {
+    expect(safeUrl('https://example.com/x')).toBe('https://example.com/x')
+    expect(safeUrl('javascript:alert(1)')).toBe('')
+    expect(safeUrl(null)).toBe('')
+  })
+
+  it('minScore=abc is ignored, not applied as NaN', async () => {
+    const profile = await env()
+    expect(jobRows(profile).length).toBe(jobRows(profile, {}).length)
+    const both = jobs(profile, new URLSearchParams({ minScore: 'abc' }))
+    expect(both.body).toContain('remote-role')
+    expect(both.body).toContain('koeln-role')
   })
 })

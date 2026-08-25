@@ -1,0 +1,21 @@
+<dialog class="reject-dialog" id="reject-dialog"
+  hx-on::load="this.showModal()"
+  hx-on:close="this.remove()">
+  <form
+    hx-post="/jobs/{{ note.slug }}/status"
+    hx-vals='{"status":"cut"}'
+    {% if fromDetail %}hx-swap="none" hx-on::after-request="window.location='/jobs'"
+    {% else %}hx-target="#row-{{ note.slug }}" hx-swap="outerHTML" hx-on::after-request="document.getElementById('reject-dialog').close()"{% endif %}>
+    <h3>Reject — {{ note.company }}</h3>
+    <p class="meta">{{ note.title }}</p>
+    <label for="reject-reason">Reason (optional — Enter to reject)</label>
+    <select id="reject-reason" name="reason" autofocus>
+      <option value="" selected>— no specific reason —</option>
+      {% for r in cutReasons %}<option value="{{ r }}">{{ r | replace('_', ' ') }}</option>{% endfor %}
+    </select>
+    <div class="dialog-actions">
+      <button type="button" class="cancel" hx-on:click="document.getElementById('reject-dialog').close()">cancel</button>
+      <button type="submit" class="confirm">reject</button>
+    </div>
+  </form>
+</dialog>

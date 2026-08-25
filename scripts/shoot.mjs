@@ -78,12 +78,6 @@ function waitForServer() {
   })
 }
 
-const pngSize = name => {
-  const h = readFileSync(join(SHOTS, `${name}.png`)).subarray(16, 24)
-  return { width: h.readUInt32BE(0), height: h.readUInt32BE(4) }
-}
-const inline = name => `data:image/png;base64,${readFileSync(join(SHOTS, `${name}.png`)).toString('base64')}`
-
 async function run() {
   mkdirSync(SHOTS, { recursive: true })
   const home = await seedDemo()
@@ -92,66 +86,16 @@ async function run() {
   try {
     await waitForServer()
     const browser = await chromium.launch()
-    const ctx = await browser.newContext({ viewport: { width: 1200, height: 820 }, deviceScaleFactor: 2, colorScheme: 'light', reducedMotion: 'reduce' })
+    const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 }, deviceScaleFactor: 2, colorScheme: 'light', reducedMotion: 'reduce' })
     const page = await ctx.newPage()
-
-    // Full-page windows (opaque — the paper background is part of the look).
     await page.goto(`${URL}/`, { waitUntil: 'networkidle' })
-    await page.screenshot({ path: join(SHOTS, 'dashboard.png'), clip: { x: 0, y: 0, width: 1200, height: 820 } })
-
-    await page.goto(`${URL}/jobs?status=new&workMode=remote`, { waitUntil: 'networkidle' })
-    await page.screenshot({ path: join(SHOTS, 'board.png'), clip: { x: 0, y: 0, width: 1200, height: 640 } })
-
-    await page.goto(`${URL}/jobs/nordlicht-senior-vue`, { waitUntil: 'networkidle' })
-    await page.screenshot({ path: join(SHOTS, 'detail.png'), clip: { x: 0, y: 0, width: 1200, height: 720 } })
-
-    // The reject modal as a transparent cut-out: kill the backdrop wash so
-    // omitBackground can see through to transparency.
-    await page.goto(`${URL}/`, { waitUntil: 'networkidle' })
-    await page.addStyleTag({ content: '::backdrop{background:transparent!important}' })
-    await page.locator('.row .reject').first().click()
-    await page.waitForSelector('#reject-dialog[open]')
-    await page.locator('#reject-dialog').screenshot({ path: join(SHOTS, 'reject.png'), omitBackground: true })
-
-    await composeHero(ctx)
+    await page.screenshot({ path: join(SHOTS, 'dashboard.png'), fullPage: true })
     await browser.close()
-    console.log('shots + hero written to assets/web/screenshots/')
+    console.log('dashboard.png written to assets/web/screenshots/')
   } finally {
     server.kill('SIGKILL')
     rmSync(home, { recursive: true, force: true })
   }
-}
-
-async function composeHero(ctx) {
-  const DASH = 640 // rendered width of the dashboard window in the hero
-  const dScale = DASH / pngSize('dashboard').width
-  const rScale = dScale * 1.02
-  const rejectW = Math.round(pngSize('reject').width * rScale)
-  const html = `<!doctype html><meta charset="utf-8"><style>
-    *{margin:0;box-sizing:border-box}
-    html,body{width:1000px;height:640px}
-    .ground{position:fixed;inset:0;background:
-      radial-gradient(120% 90% at 50% -25%, #fff 0%, rgb(255 255 255 / 0%) 55%),
-      linear-gradient(165deg, #ece9e6 0%, #e2ddd3 100%);}
-    .stage{position:relative;width:1000px;height:640px}
-    .win{position:absolute;border-radius:14px;overflow:hidden;
-      box-shadow:0 2px 6px rgb(60 50 40 / 8%), 0 18px 40px rgb(60 50 40 / 14%), 0 50px 90px rgb(60 50 40 / 10%);
-      outline:1px solid rgb(255 255 255 / 60%);outline-offset:-1px}
-    .dash{left:70px;top:70px;width:${DASH}px}
-    .modal{position:absolute;right:78px;bottom:74px;width:${rejectW}px;border-radius:12px;
-      filter:drop-shadow(0 2px 6px rgb(60 50 40 / 10%)) drop-shadow(0 20px 44px rgb(60 50 40 / 22%));}
-    img{display:block;width:100%}
-  </style>
-  <div class="ground"></div>
-  <div class="stage">
-    <div class="win dash"><img src="${inline('dashboard')}"></div>
-    <img class="modal" src="${inline('reject')}">
-  </div>`
-  const page = await ctx.newPage()
-  await page.setViewportSize({ width: 1000, height: 640 })
-  await page.setContent(html, { waitUntil: 'load' })
-  await page.screenshot({ path: join(SHOTS, 'hero.png') })
-  await page.close()
 }
 
 run().catch(e => { console.error(e); process.exit(1) })

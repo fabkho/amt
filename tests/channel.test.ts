@@ -85,6 +85,30 @@ describe('fetchChannel — selectors mode', () => {
     expect(first.descriptionHtml).toBeNull()
   })
 
+  it('resolves a relative href against the page origin', async () => {
+    const relHtml = `<li class="card">
+      <h3 class="title">Vue Dev</h3>
+      <a class="company" href="c">Rel Co</a>
+      <a class="link" href="/stellenangebote--vue-dev-rel-co--14422292-inline.html">view</a>
+    </li>`
+    const { client } = textClient(() => relHtml)
+    const rel: ChannelSource = {
+      name: 'stepstone',
+      crawl: {
+        urlTemplate: 'https://www.stepstone.de/jobs/{keyword}/in-deutschland',
+        keywords: ['vue-js'],
+        mode: 'selectors',
+        item: 'li.card',
+        fields: { title: 'h3.title', url: { selector: 'a.link', attr: 'href' } },
+        nativeId: { field: 'url', regex: '--(\\d+)-inline' },
+      },
+    }
+    const postings = await fetchChannel(client, rel, search)
+    expect(postings).toHaveLength(1)
+    expect(postings[0]!.url).toBe('https://www.stepstone.de/stellenangebote--vue-dev-rel-co--14422292-inline.html')
+    expect(postings[0]!.nativeId).toBe('14422292')
+  })
+
   it('drops items missing a title or url', async () => {
     const { client } = textClient(() => '<li class="card"><span class="loc">Köln</span></li>')
     expect(await fetchChannel(client, { ...channel, crawl: { ...channel.crawl!, item: 'li.card' } }, search))

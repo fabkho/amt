@@ -61,6 +61,13 @@ Statuses: `new → shortlist → applied → interview` (or `rejected` / `cut` �
 `amt import <url>` for pasted ATS links (`--company/--title` for LinkedIn & co.).
 The `_index.md` overview in your notes directory keeps itself current.
 
+**It learns from you.** Every cut carries a reason and an optional note, every
+score an assessment — all in the markdown, so any future session reads back
+*why* you passed on something. `amt suggest` (MCP: `suggest_profile_updates`)
+turns that history into proposed `profile.yaml` updates — companies you keep
+cutting, your reason mix — for you to confirm. Your blocklists and rules are the
+memory that hardens over time: the agent proposes, you approve.
+
 ## Die Ausfertigung (CV & cover letters)
 
 amt doesn't just find jobs — it produces the application. `amt prepare <slug>`
@@ -78,14 +85,17 @@ Prefer a screen to a terminal? **`amt serve`** opens a local dashboard at
 `http://localhost:4400` — triage the day's arrivals like a stack of files.
 
 <p align="center">
-  <img src="assets/web/screenshots/dashboard.png" width="820" alt="The amt dashboard: a paper-styled inbox of ranked job postings with accept/reject/favorite actions">
+  <img src="assets/web/screenshots/dashboard.png" width="820" alt="The amt dashboard: a paper-styled inbox of ranked job postings with accept and reject actions">
 </p>
 
-- **📥 Inbox** — the day's new postings, ranked; **⭐ favorite**, **accept → shortlist**,
-  or **reject** (with a reason) right from the row. Rejected/accepted rows leave
-  the inbox as you clear it.
+- **📥 Inbox** — the day's new postings, ranked; **accept → shortlist** or
+  **reject** (with a reason and a free-text note) right from the row. Postings
+  below your score threshold are pruned automatically; rows leave the inbox as
+  you clear them.
 - **Aktenboard** — every note, filterable by status, remote/hybrid, city, minimum
-  score, favorites, or free text. The header cards are shortcuts into it.
+  score, or free text — filters kept in the URL. Defaults to **active** (hides
+  rejected/cut). Rows carry the source platform's icon; applied roles show when
+  you applied and a button to open their documents folder.
 - **One original-posting click** — each row opens the real ad in a new tab.
 
 It's server-rendered (htmx, no build step, no framework), and **every click

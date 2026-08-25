@@ -3,14 +3,14 @@
 <h2 class="section">Akten ({{ rows | length }})</h2>
 
 <form class="filters" hx-get="/jobs" hx-target="#job-rows" hx-select="#job-rows" hx-swap="outerHTML" hx-push-url="true" hx-trigger="change, keyup delay:300ms from:find input[name=q]">
-  <label for="f-status">status</label>
-  <select id="f-status" name="status">
-    <option value="" {{ 'selected' if not filters.status }}>active (hide rejected/cut)</option>
-    <option value="all" {{ 'selected' if filters.status == 'all' }}>all (incl. rejected/cut)</option>
+  <span class="filter-label" id="status-label">status</span>
+  <div class="status-chips" role="group" aria-labelledby="status-label">
     {% for s in ['new','shortlist','applied','interview','offer','rejected','cut'] %}
-      <option value="{{ s }}" {{ 'selected' if filters.status == s }}>{{ s }}</option>
+      <label class="chip {{ 'on' if filters.statuses and s in filters.statuses }}">
+        <input type="checkbox" name="status" value="{{ s }}" {{ 'checked' if filters.statuses and s in filters.statuses }}>{{ s }}
+      </label>
     {% endfor %}
-  </select>
+  </div>
   <label for="f-mode">mode</label>
   <select id="f-mode" name="workMode">
     <option value="">any</option>

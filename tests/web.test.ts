@@ -37,12 +37,19 @@ describe('web data', () => {
     expect(stats(profile).unranked).toBe(2)
   })
 
-  it('default view hides cut/rejected; status "all" and "cut" reveal them', async () => {
+  it('no statuses selected hides cut/rejected; selecting one or more reveals them', async () => {
     const profile = await env()
     setStatus(profile.paths.notesDir, 'koeln-role', 'cut', { cutReason: 'personal_fit' })
-    expect(jobRows(profile).map(r => r.slug)).toEqual(['remote-role']) // active hides the cut one
-    expect(jobRows(profile, { status: 'all' })).toHaveLength(2)
-    expect(jobRows(profile, { status: 'cut' }).map(r => r.slug)).toEqual(['koeln-role'])
+    expect(jobRows(profile).map(r => r.slug)).toEqual(['remote-role']) // default active hides the cut one
+    expect(jobRows(profile, { statuses: ['cut'] }).map(r => r.slug)).toEqual(['koeln-role'])
+  })
+
+  it('multiple selected statuses return the union', async () => {
+    const profile = await env()
+    setStatus(profile.paths.notesDir, 'koeln-role', 'cut', { cutReason: 'personal_fit' })
+    // remote-role is 'new', koeln-role is now 'cut' → selecting both yields both
+    expect(jobRows(profile, { statuses: ['new', 'cut'] }).map(r => r.slug).sort())
+      .toEqual(['koeln-role', 'remote-role'])
   })
 })
 
@@ -119,15 +126,15 @@ describe('web handlers', () => {
     expect(revealDocs(profile, 'remote-role').status).toBe(404)
   })
 
-  it('board reject drops the row from the default active view but keeps it under status=all', async () => {
+  it('board reject drops the row from the default active view but keeps it when cut is selected', async () => {
     const active = await env()
     const dropped = await changeStatus(active, active.paths.notesDir, 'remote-role', 'cut', 'personal_fit', 'http://x/jobs')
     expect(dropped.body).toContain('id="row-remote-role" hx-swap-oob="delete"') // cut leaves active view
 
-    const all = await env()
-    const kept = await changeStatus(all, all.paths.notesDir, 'remote-role', 'cut', 'personal_fit', 'http://x/jobs?status=all')
+    const shown = await env()
+    const kept = await changeStatus(shown, shown.paths.notesDir, 'remote-role', 'cut', 'personal_fit', 'http://x/jobs?status=cut')
     expect(kept.body).toContain('id="row-remote-role"')
-    expect(kept.body).not.toContain('hx-swap-oob="delete"') // still matches status=all → kept + updated
+    expect(kept.body).not.toContain('hx-swap-oob="delete"') // still matches the 'cut' chip → kept + updated
   })
 })
 

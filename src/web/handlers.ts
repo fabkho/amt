@@ -28,8 +28,9 @@ const html = (body: string): Reply => ({ status: 200, body, contentType: 'text/h
 
 function parseFilters(query: URLSearchParams): Filters {
   const num = Number(query.get('minScore'))
+  const statuses = query.getAll('status').filter(Boolean)
   return {
-    status: query.get('status') || undefined,
+    statuses: statuses.length > 0 ? statuses : undefined,
     workMode: query.get('workMode') || undefined,
     bucket: query.get('bucket') || undefined,
     q: query.get('q') || undefined,
@@ -42,7 +43,7 @@ export function dashboard(profile: Profile): Reply {
   const threshold = profile.search.scoreThreshold
   // Unranked (score null) always show — they still need judging. Below-threshold
   // scored ones are tucked behind "show more".
-  const inboxAll = jobRows(profile, { status: 'new' })
+  const inboxAll = jobRows(profile, { statuses: ['new'] })
   return html(render('dashboard', {
     page: 'dashboard',
     stats: stats(profile),
@@ -50,7 +51,7 @@ export function dashboard(profile: Profile): Reply {
     followups: staleApplications(profile.paths.notesDir, today),
     inbox: inboxAll.filter(r => r.score === null || r.score >= threshold),
     inboxBelow: inboxAll.filter(r => r.score !== null && r.score < threshold),
-    shortlist: jobRows(profile, { status: 'shortlist' }),
+    shortlist: jobRows(profile, { statuses: ['shortlist'] }),
   }))
 }
 

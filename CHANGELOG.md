@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.11](https://github.com/fabkho/amt/compare/amt-0.3.10...amt-0.3.11) (2026-08-25)
+
+
+### Features
+
+* applied-flow UI — status-aware actions, applied date, docs link ([#86](https://github.com/fabkho/amt/issues/86)) ([1c1b0a2](https://github.com/fabkho/amt/commit/1c1b0a2e2a862ee735f5b3fb1fa75836299e37a8))
+
 ## [0.3.10](https://github.com/fabkho/amt/compare/amt-0.3.9...amt-0.3.10) (2026-08-25)
 
 

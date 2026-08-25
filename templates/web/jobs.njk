@@ -24,7 +24,7 @@
   </select>
   <label>min score</label>
   <input type="number" name="minScore" min="0" max="100" step="5" style="width:4rem" value="{{ filters.minScore if filters.minScore != null }}">
-  <label><input type="checkbox" name="favorite" value="1" {{ 'checked' if filters.favorite }}> ★ only</label>
+  <label class="check"><input type="checkbox" name="favorite" value="1" {{ 'checked' if filters.favorite }}> ★ only</label>
   <input type="search" name="q" placeholder="company / title…" value="{{ filters.q or '' }}">
 </form>
 

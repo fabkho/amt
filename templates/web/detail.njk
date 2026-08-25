@@ -25,9 +25,9 @@
   <button class="accept" hx-post="/jobs/{{ note.slug }}/status" hx-vals='{"status":"shortlist"}' hx-swap="none">accept → shortlist</button>
   <button hx-post="/jobs/{{ note.slug }}/status" hx-vals='{"status":"applied"}' hx-swap="none">mark applied</button>
   <span class="reject-form">
-    <select hx-post="/jobs/{{ note.slug }}/status" hx-swap="none" hx-vals='js:{status:"cut",reason:event.target.value}'>
-      <option value="">reject (cut)…</option>
-      {% for r in cutReasons %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
+    <select name="reason" hx-post="/jobs/{{ note.slug }}/status" hx-swap="none" hx-vals='{"status":"cut"}'>
+      <option value="" selected>reject (cut)…</option>
+      {% for r in cutReasons %}<option value="{{ r }}">{{ r | replace('_', ' ') }}</option>{% endfor %}
     </select>
   </span>
   <button hx-post="/jobs/{{ note.slug }}/prepare" hx-target="#prep" hx-swap="innerHTML">build application</button>

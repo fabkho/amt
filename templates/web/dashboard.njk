@@ -1,12 +1,12 @@
 {% extends "layout.njk" %}
 {% block content %}
 <div class="stats">
-  <div class="stat"><div class="n">{{ stats.unranked }}</div><div class="k">📥 unranked</div></div>
-  <div class="stat"><div class="n">{{ stats.favorites }}</div><div class="k">★ favorites</div></div>
-  <div class="stat"><div class="n">{{ stats.counts.shortlist or 0 }}</div><div class="k">shortlist</div></div>
-  <div class="stat"><div class="n">{{ stats.counts.applied or 0 }}</div><div class="k">applied</div></div>
-  <div class="stat"><div class="n">{{ stats.counts.interview or 0 }}</div><div class="k">interview</div></div>
-  <div class="stat"><div class="n">{{ stats.counts.offer or 0 }}</div><div class="k">offer</div></div>
+  <a class="stat" href="/jobs?status=new"><div class="n"><span id="s-unranked">{{ stats.unranked }}</span></div><div class="k">📥 unranked</div></a>
+  <a class="stat" href="/jobs?favorite=1"><div class="n"><span id="s-fav">{{ stats.favorites }}</span></div><div class="k">★ favorites</div></a>
+  <a class="stat" href="/jobs?status=shortlist"><div class="n"><span id="s-shortlist">{{ stats.counts.shortlist or 0 }}</span></div><div class="k">shortlist</div></a>
+  <a class="stat" href="/jobs?status=applied"><div class="n"><span id="s-applied">{{ stats.counts.applied or 0 }}</span></div><div class="k">applied</div></a>
+  <a class="stat" href="/jobs?status=interview"><div class="n"><span id="s-interview">{{ stats.counts.interview or 0 }}</span></div><div class="k">interview</div></a>
+  <a class="stat" href="/jobs?status=offer"><div class="n"><span id="s-offer">{{ stats.counts.offer or 0 }}</span></div><div class="k">offer</div></a>
 </div>
 
 <h2 class="section">📥 Inbox — new &amp; unranked ({{ inbox | length }})</h2>

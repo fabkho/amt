@@ -86,8 +86,9 @@ nav.tabs a.active { color: var(--color-ink); border-bottom: 2px solid var(--colo
 
 /* ─── Stat strip ───────────────────────────────────────── */
 .stats { display: flex; gap: 0; flex-wrap: wrap; margin-bottom: 1.5rem; border: 1px solid var(--color-line); border-radius: var(--radius); overflow: hidden; }
-.stat { flex: 1 1 auto; min-width: 90px; padding: 0.7rem 1rem; border-right: 1px dashed var(--color-line); }
+.stat { flex: 1 1 auto; min-width: 90px; padding: 0.7rem 1rem; border-right: 1px dashed var(--color-line); color: inherit; text-decoration: none; transition: background 0.12s ease; }
 .stat:last-child { border-right: 0; }
+.stat:hover { background: var(--color-accent-faint); text-decoration: none; }
 .stat .n { font-size: var(--text-xl); color: var(--color-accent); }
 .stat .k { font-size: var(--text-2xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-ink-muted); }
 
@@ -114,6 +115,8 @@ h2.section {
   padding: 0.35rem 0.5rem;
 }
 .filters label { color: var(--color-ink-muted); text-transform: uppercase; font-size: var(--text-2xs); letter-spacing: 0.06em; }
+.filters label.check { display: inline-flex; align-items: center; gap: 0.35rem; text-transform: none; font-size: var(--text-sm); color: var(--color-ink-subtle); }
+.filters label.check input { margin: 0; }
 
 /* ─── Job rows (the ledger) ────────────────────────────── */
 .rows { border: 1px solid var(--color-line); border-radius: var(--radius); overflow: hidden; }
@@ -136,7 +139,9 @@ h2.section {
 .logo-fallback { width: 20px; height: 20px; border-radius: 3px; background: var(--color-line); }
 
 .role { min-width: 0; }
-.role .title { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.role .title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.role .ext { margin-left: 0.4rem; color: var(--color-ink-faint); font-size: var(--text-sm); }
+.role .ext:hover { color: var(--color-accent); text-decoration: none; }
 .role .meta { font-size: var(--text-xs); color: var(--color-ink-muted); }
 .tag {
   display: inline-block;

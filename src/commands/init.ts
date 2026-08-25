@@ -39,6 +39,12 @@ identity:
 search:
   stacksPrimary: [${answers.stacks.join(", ") || "typescript"}]
   salaryFloor: ${answers.salaryFloor}
+  # What you are — used when the agent scores fit.
+  seniority: [senior]
+  # Buzzword/role phrases to hard-cut by title (reason 'buzzword').
+  titleBlocklist: []
+  # Seniority above your band — hard-cut by title (reason 'level').
+  levelBlocklist: [lead, staff, principal, head of, director, vp, chief]
   locations:
     remote: true
     cities:

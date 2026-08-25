@@ -128,6 +128,18 @@ describe('applyHardFilters', async () => {
     expect(result.cutReason).toBe('buzzword')
   })
 
+  it('cuts titles above the target seniority with reason level', () => {
+    for (const title of ['Lead Frontend Engineer', 'Staff Engineer', 'Head of Engineering']) {
+      const result = applyHardFilters(posting({ title }), profile)
+      expect(result.cutReason, title).toBe('level')
+    }
+  })
+
+  it('level match is word-bounded — does not cut "staffing" / "leading"', () => {
+    expect(applyHardFilters(posting({ title: 'Frontend Engineer (staffing agency)' }), profile).passed).toBe(true)
+    expect(applyHardFilters(posting({ title: 'Leading Frontend Engineer' }), profile).passed).toBe(true)
+  })
+
   it('cuts only bands that top out below the floor', () => {
     // whole band below floor → cut
     expect(

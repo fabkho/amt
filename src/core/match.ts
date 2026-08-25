@@ -90,6 +90,14 @@ const checkTitleBlocklist: Check = (posting, search) => {
   return hit ? cut('buzzword', `title contains "${hit}"`) : null
 }
 
+// Seniority above the target band ("Lead"/"Staff"/"Principal"…). Word-boundary
+// matched so "staff" cuts "Staff Engineer" but not "staffing", and kept
+// separate from the buzzword blocklist so the cut reads as a 'level' mismatch.
+const checkLevel: Check = (posting, search) => {
+  const hit = search.levelBlocklist.find(term => keywordPattern(term).test(posting.title))
+  return hit ? cut('level', `title implies "${hit}" — above target seniority`) : null
+}
+
 const checkCompanyBlocklist: Check = (posting, search) => {
   const company = posting.company.toLowerCase()
   const hit = search.companyBlocklist.find(c => company.includes(c.toLowerCase()))
@@ -144,6 +152,7 @@ const checkLocationBlocklist: Check = (posting, search) => {
 }
 
 const CHECKS: readonly Check[] = [
+  checkLevel,
   checkTitleBlocklist,
   checkLocationBlocklist,
   checkCompanyBlocklist,

@@ -142,14 +142,19 @@ function noteBody(posting: JobPosting): string {
   return posting.descriptionHtml ? htmlToMarkdown(posting.descriptionHtml) : ''
 }
 
-/** True when an existing note has no real (non-migration) description region. */
-function descriptionMissing(ctx: IngestContext, slug: string): boolean {
+/** The stored note for a slug, or null when it can't be read. */
+function tryReadNote(ctx: IngestContext, slug: string): ReturnType<typeof readNote> | null {
   try {
-    const text = descriptionText(readNote(ctx.profile.paths.notesDir, slug).body)
-    return !text || text.startsWith('Migriert aus')
+    return readNote(ctx.profile.paths.notesDir, slug)
   } catch {
-    return false
+    return null
   }
+}
+
+/** True when a note body has no real (non-migration) description region. */
+function descriptionMissing(body: string): boolean {
+  const text = descriptionText(body)
+  return !text || text.startsWith('Migriert aus')
 }
 
 /** Slug collisions (same company+title twice) get a nativeId suffix. */
@@ -185,15 +190,20 @@ async function ingest(posting: JobPosting, batch: FetchedBatch, ctx: IngestConte
   // imported something the crawler once dismissed.
   if (ctx.noted.has(identityKey)) {
     const slug = ctx.noted.get(identityKey)!
+    const existing = tryReadNote(ctx, slug)
     // Self-heal a description-less note (e.g. a LinkedIn detail that 429'd on
     // creation) — but only when it's actually missing, never re-fetching every
     // crawl for every note.
-    if (posting.descriptionHtml === null && batch.adapter.fetchDetail && descriptionMissing(ctx, slug)) {
+    if (posting.descriptionHtml === null && batch.adapter.fetchDetail && existing && descriptionMissing(existing.body)) {
       posting = { ...posting, descriptionHtml: await batch.adapter.fetchDetail(ctx.client, batch.companySlug ?? posting.company, posting.nativeId) }
     }
     const input = postingToNoteInput(posting, ctx.today)
-    // Backfill for notes created before logos existed — cached per company.
-    input.logo = await resolveCompanyLogo(ctx.client, posting.company)
+    // Resolve a logo only when the note lacks one (created before logos, or an
+    // earlier resolve failed). A resolved logo is sticky in upsertNote, so a
+    // null here preserves it — no need to hit the network every refresh.
+    if (!existing || existing.note.logo === null) {
+      input.logo = await resolveCompanyLogo(ctx.client, posting.company)
+    }
     upsertNote(ctx.profile.paths.notesDir, input, noteBody(posting))
     ctx.summary.refreshed++
     return

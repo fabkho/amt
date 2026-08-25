@@ -7,6 +7,7 @@ import {
   findProbableDuplicates,
   listNotes,
   notesForCompany,
+  rankingDebt,
   readNote,
   renderIndex,
   setStatus,
@@ -154,6 +155,19 @@ describe('notes CRUD', () => {
     expect(readNote(dir, 'acme-gmbh-senior-frontend').note.score).toBeNull()
     expect(undescribedNotes(dir)).toHaveLength(0)
     expect(unrankedNotes(dir)).toContain('acme-gmbh-senior-frontend')
+  })
+
+  it('rankingDebt bundles unranked and undescribed as one definition', () => {
+    const dir = freshDir()
+    // one unranked (no score), one scored-but-undescribed
+    upsertNote(dir, posting({ slug: 'unranked-1', title: 'Role A' }), 'We use Vue.')
+    upsertNote(dir, posting({ slug: 'guessed-1', title: 'Role B' }), '')
+    updateNote(dir, 'guessed-1', { score: 65 })
+
+    const debt = rankingDebt(dir)
+    expect(debt.unranked).toContain('unranked-1')
+    expect(debt.undescribed).toContain('guessed-1')
+    expect(debt.unranked).not.toContain('guessed-1')
   })
 
   it('lists applications waiting on a reply past the threshold, oldest first', () => {

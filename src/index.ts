@@ -25,6 +25,7 @@ export {
   placeMatches,
   placement,
   renderIndex,
+  rankingDebt,
   setStatus,
   slugify,
   staleApplications,

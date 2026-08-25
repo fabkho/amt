@@ -14,8 +14,7 @@ import {
   inboxNotes,
   listNotes,
   resolveCompanyLogo,
-  undescribedNotes,
-  unrankedNotes,
+  rankingDebt as computeRankingDebt,
   notesForCompany,
   loadProfile,
   loadSources,
@@ -106,14 +105,13 @@ export function createServer(): McpServer {
   // The ranking debt as data — attached to every response that could end a
   // session, so no agent can plausibly not know about unranked (or blindly
   // scored) notes.
-  function rankingDebt(notesDir: string): {
+  function rankingDebtPayload(notesDir: string): {
     count: number
     slugs: string[]
     undescribed?: string[]
     directive: string
   } | null {
-    const unranked = unrankedNotes(notesDir)
-    const undescribed = undescribedNotes(notesDir)
+    const { unranked, undescribed } = computeRankingDebt(notesDir)
     if (unranked.length === 0 && undescribed.length === 0) return null
     return {
       count: unranked.length,
@@ -144,7 +142,7 @@ export function createServer(): McpServer {
         const sources = loadSources(home)
         let profileSummary: unknown = null
         let noteCounts: Record<string, number> = {}
-        let unranked = null
+        let rankingDebt = null
         try {
           const profile = await loadProfile(home)
           profileSummary = {
@@ -159,14 +157,14 @@ export function createServer(): McpServer {
               listNotes(profile.paths.notesDir, { status: [status] }).length,
             ]),
           )
-          unranked = rankingDebt(profile.paths.notesDir)
+          rankingDebt = rankingDebtPayload(profile.paths.notesDir)
         } catch (error) {
           profileSummary = { missing: toErrorMessage(error) }
         }
         return jsonContent({
           name: 'amt',
           version,
-          unranked,
+          rankingDebt,
           home,
           profile: profileSummary,
           sources,
@@ -202,7 +200,7 @@ export function createServer(): McpServer {
         const profile = await loadProfile(home)
         const sources = loadSources(home)
         const summary = await crawl(defaultHttpClient, home, profile, sources)
-        const unranked = rankingDebt(profile.paths.notesDir)
+        const rankingDebt = rankingDebtPayload(profile.paths.notesDir)
         // Channels WITH a crawl spec were fetched by the tool above; only
         // agent-only recipes remain pending.
         const pending = sources.channels
@@ -210,14 +208,14 @@ export function createServer(): McpServer {
           .sort((a, b) => (Number(a.priority) || 99) - (Number(b.priority) || 99))
         if (pending.length === 0) {
           return jsonContent(
-            unranked
-              ? { ...summary, unranked, next: `${summary.next} THEN: ${unranked.directive}` }
+            rankingDebt
+              ? { ...summary, rankingDebt, next: `${summary.next} THEN: ${rankingDebt.directive}` }
               : summary,
           )
         }
         return jsonContent({
           ...summary,
-          unranked,
+          rankingDebt,
           pendingChannels: pending,
           next:
             `${summary.next} THEN, to complete the crawl: execute the pendingChannels recipes `
@@ -321,7 +319,7 @@ export function createServer(): McpServer {
               + 'with manual.descriptionHtml so this can be ranked on real content.',
           }),
           ...(filterWarnings.length > 0 && { filterWarnings }),
-          unranked: rankingDebt(profile.paths.notesDir),
+          rankingDebt: rankingDebtPayload(profile.paths.notesDir),
         })
       } catch (error) {
         return toolErrorResponse('importing the posting', error)
@@ -415,7 +413,7 @@ export function createServer(): McpServer {
           status: note.status,
           score: score ?? note.score,
           tracked,
-          unranked: rankingDebt(profile.paths.notesDir),
+          rankingDebt: rankingDebtPayload(profile.paths.notesDir),
         })
       } catch (error) {
         return toolErrorResponse('setting the job status', error)
@@ -623,10 +621,13 @@ export function createServer(): McpServer {
     async () => {
       let context = ''
       let channels = ''
+      let crawlable = 'none' // tool-crawled channel names, derived from sources
       try {
         const home = resolveHome()
         context = buildProfileSection(await loadProfile(home))
         const sources = loadSources(home)
+        const crawledNames = sources.channels.filter(c => c.crawl).map(c => c.name)
+        if (crawledNames.length) crawlable = crawledNames.join(', ')
         channels = sources.channels.length
           ? `Configured agent channels (execute in priority order when present): ${JSON.stringify(sources.channels, null, 2)}`
           : 'No agent channels configured. Offer to seed channel recipes into sources.yaml — personal, local data the tool stores but never executes. Ready-made, field-tested recipes (URL templates + parse hints): https://github.com/fabkho/amt/blob/main/skills/job-search/channels.md — ranking: 1. LinkedIn guest jobs API (very high yield), 2. StepStone search pages (high, flaky details), 3. VueJobs internal API (niche, on-target for Vue), 4. Bing RSS as fallback. Tracked-company ATS crawling is the verifier/closer, not a discovery channel.'
@@ -642,7 +643,7 @@ export function createServer(): McpServer {
               text: [
                 'Run the daily update (the user may just say "update"):',
                 '1. Call crawl_jobs and report the summary.',
-                '2. crawl_jobs already fetched tool-crawled channels (LinkedIn, VueJobs). Only the pendingChannels it returns (agent-only, no crawl spec) need you: fetch their URLs, parse postings, and feed relevant finds through import_job — use the manual fields for non-ATS sources.',
+                `2. crawl_jobs already fetched the tool-crawled channels (${crawlable}). Only the pendingChannels it returns (agent-only, no crawl spec) need you: fetch their URLs, parse postings, and feed relevant finds through import_job — use the manual fields for non-ATS sources.`,
                 '3. Rank EVERY unranked note (status "new", no score): judge stack fit and flags against the profile below, then persist score (0-100), flags, and your reasoning via set_job_status — never hand-edit note files. Cut clear mismatches with a cutReason. The round is not done while anything is unranked.',
                 "4. Present today's inbox delta: what arrived, how you ranked it, and where each candidate slots among the user's existing scores (the day's file is inbox/<date>.md in the notes dir). Never re-surface notes whose status is cut, rejected, or applied.",
                 '',

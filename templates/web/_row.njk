@@ -19,7 +19,7 @@
       hx-post="/jobs/{{ row.slug }}/favorite" hx-target="#row-{{ row.slug }}" hx-swap="outerHTML">
       {{ '★' if row.favorite else '☆' }}
     </button>
-    {% if row.url %}<a class="btn open" href="{{ row.url }}" target="_blank" rel="noreferrer noopener" title="Open the original posting">open ↗</a>{% endif %}
+    {% if row.url %}<a class="btn open" href="{{ row.url }}" target="_blank" rel="noreferrer noopener" title="Open on {{ row.platform.label }}">{% if row.platform.icon %}<img class="platform-icon" src="{{ row.platform.icon }}" alt="" width="14" height="14">{% endif %}open ↗</a>{% endif %}
     <button class="accept" title="Accept → shortlist"
       hx-post="/jobs/{{ row.slug }}/status" hx-vals='{"status":"shortlist"}'
       hx-target="#row-{{ row.slug }}" hx-swap="outerHTML">accept</button>

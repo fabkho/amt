@@ -2,7 +2,7 @@
 {% block content %}
 <h2 class="section">Akten ({{ rows | length }})</h2>
 
-<form class="filters" hx-get="/jobs" hx-target="#job-rows" hx-select="#job-rows" hx-swap="outerHTML" hx-trigger="change, keyup delay:300ms from:find input[name=q]">
+<form class="filters" hx-get="/jobs" hx-target="#job-rows" hx-select="#job-rows" hx-swap="outerHTML" hx-push-url="true" hx-trigger="change, keyup delay:300ms from:find input[name=q]">
   <label for="f-status">status</label>
   <select id="f-status" name="status">
     <option value="" {{ 'selected' if not filters.status }}>active (hide rejected/cut)</option>

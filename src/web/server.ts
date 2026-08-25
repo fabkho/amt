@@ -76,7 +76,7 @@ async function routePost(
   const slug = parts[1]
   switch (parts[2]) {
     case 'status':
-      return changeStatus(profile, home, slug, form.get('status') ?? '', form.get('reason') ?? undefined, fromUrl)
+      return changeStatus(profile, home, slug, form.get('status') ?? '', form.get('reason') ?? undefined, fromUrl, form.get('cutNote') ?? undefined)
     case 'favorite':
       return toggleFavorite(profile, slug)
     default:

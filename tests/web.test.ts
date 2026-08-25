@@ -86,6 +86,14 @@ describe('web handlers', () => {
     expect(note.cutReason).toBe('personal_fit')
   })
 
+  it('persists a free-text cutNote from the reject dialog', async () => {
+    const profile = await env()
+    await changeStatus(profile, profile.paths.notesDir, 'remote-role', 'cut', 'home_office_below', '/', 'only 50% remote')
+    const { note } = readNote(profile.paths.notesDir, 'remote-role')
+    expect(note.cutReason).toBe('home_office_below')
+    expect(note.cutNote).toBe('only 50% remote')
+  })
+
   it('removes the row from the dashboard but keeps it (updated) on the board', async () => {
     const profile = await env()
     const fromDashboard = await changeStatus(profile, profile.paths.notesDir, 'remote-role', 'shortlist', undefined, '/')

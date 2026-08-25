@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0](https://github.com/fabkho/amt/compare/amt-0.2.17...amt-0.3.0) (2026-08-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* collapse boards/companies/channels into one sources list ([#40](https://github.com/fabkho/amt/issues/40)) (#58)
+
+### Features
+
+* collapse boards/companies/channels into one sources list ([#40](https://github.com/fabkho/amt/issues/40)) ([#58](https://github.com/fabkho/amt/issues/58)) ([bf17e42](https://github.com/fabkho/amt/commit/bf17e4274e34b65dec476c747f45339f348d91b6))
+
 ## [0.2.17](https://github.com/fabkho/amt/compare/amt-0.2.16...amt-0.2.17) (2026-08-25)
 
 

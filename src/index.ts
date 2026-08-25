@@ -27,6 +27,7 @@ export {
   renderIndex,
   setStatus,
   slugify,
+  staleApplications,
   undescribedNotes,
   unrankedNotes,
   updateNote,
@@ -35,6 +36,7 @@ export {
 export { forgetSeen, loadSeen } from './core/seen.js'
 export type {
   CutReason,
+  Followup,
   JobNote,
   NoteUpdate,
   JobNoteInput,

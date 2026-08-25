@@ -9,6 +9,23 @@
   <a class="stat" href="/jobs?status=offer"><div class="n"><span id="s-offer">{{ stats.counts.offer or 0 }}</span></div><div class="k">offer</div></a>
 </div>
 
+{% if followups | length %}
+<h2 class="section">⏰ Follow up — applied, no reply yet ({{ followups | length }})</h2>
+<div class="rows">
+  {% for f in followups %}
+  <div class="row followup">
+    <div class="score none">{{ f.daysAgo }}d</div>
+    <div></div>
+    <div class="role">
+      <a class="title" href="/jobs/{{ f.slug }}">{{ f.company }} — {{ f.title }}</a>
+      <div class="meta">applied {{ f.appliedAt }}</div>
+    </div>
+    <div class="actions"><a class="btn" href="/jobs/{{ f.slug }}">open file</a></div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
 <h2 class="section">📥 Inbox — new &amp; unranked ({{ inbox | length }})</h2>
 <div class="rows">
   {% for row in inbox %}{% include "_row.njk" %}{% else %}<div class="empty">Der Stapel ist abgearbeitet — nothing new to triage.</div>{% endfor %}

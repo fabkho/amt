@@ -1,6 +1,6 @@
 import { AmtError } from './errors.js'
 import { applyHardFilters, isFresh, isRelevant } from './match.js'
-import { dedupeKey, findProbableDuplicates, listNotes, renderIndex, slugify, upsertNote } from './notes.js'
+import { dedupeKey, descriptionText, findProbableDuplicates, listNotes, readNote, renderIndex, slugify, upsertNote } from './notes.js'
 import { loadSeen, markSeen, saveSeen, type SeenLedger } from './seen.js'
 import { htmlToMarkdown, postingToNoteInput } from './sources/normalize.js'
 import { resolveCompanyLogo } from './sources/logo.js'
@@ -142,6 +142,16 @@ function noteBody(posting: JobPosting): string {
   return posting.descriptionHtml ? htmlToMarkdown(posting.descriptionHtml) : ''
 }
 
+/** True when an existing note has no real (non-migration) description region. */
+function descriptionMissing(ctx: IngestContext, slug: string): boolean {
+  try {
+    const text = descriptionText(readNote(ctx.profile.paths.notesDir, slug).body)
+    return !text || text.startsWith('Migriert aus')
+  } catch {
+    return false
+  }
+}
+
 /** Slug collisions (same company+title twice) get a nativeId suffix. */
 async function upsertWithDecollide(ctx: IngestContext, posting: JobPosting): Promise<{ slug: string; created: boolean }> {
   const input = postingToNoteInput(posting, ctx.today)
@@ -174,6 +184,13 @@ async function ingest(posting: JobPosting, batch: FetchedBatch, ctx: IngestConte
   // An existing note always wins over the ledger — the user may have
   // imported something the crawler once dismissed.
   if (ctx.noted.has(identityKey)) {
+    const slug = ctx.noted.get(identityKey)!
+    // Self-heal a description-less note (e.g. a LinkedIn detail that 429'd on
+    // creation) — but only when it's actually missing, never re-fetching every
+    // crawl for every note.
+    if (posting.descriptionHtml === null && batch.adapter.fetchDetail && descriptionMissing(ctx, slug)) {
+      posting = { ...posting, descriptionHtml: await batch.adapter.fetchDetail(ctx.client, batch.companySlug ?? posting.company, posting.nativeId) }
+    }
     const input = postingToNoteInput(posting, ctx.today)
     // Backfill for notes created before logos existed — cached per company.
     input.logo = await resolveCompanyLogo(ctx.client, posting.company)

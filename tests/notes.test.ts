@@ -11,6 +11,7 @@ import {
   renderIndex,
   setStatus,
   slugify,
+  staleApplications,
   undescribedNotes,
   unrankedNotes,
   updateNote,
@@ -153,6 +154,18 @@ describe('notes CRUD', () => {
     expect(readNote(dir, 'acme-gmbh-senior-frontend').note.score).toBeNull()
     expect(undescribedNotes(dir)).toHaveLength(0)
     expect(unrankedNotes(dir)).toContain('acme-gmbh-senior-frontend')
+  })
+
+  it('lists applications waiting on a reply past the threshold, oldest first', () => {
+    const dir = freshDir()
+    upsertNote(dir, posting({ slug: 'old', title: 'Old Role' }), '')
+    upsertNote(dir, posting({ slug: 'recent', nativeId: '2', title: 'Recent Role' }), '')
+    upsertNote(dir, posting({ slug: 'still-new', nativeId: '3', title: 'New Role' }), '')
+    setStatus(dir, 'old', 'applied', { at: '2026-08-01' })
+    setStatus(dir, 'recent', 'applied', { at: '2026-08-24' })
+    const due = staleApplications(dir, '2026-08-25', 14)
+    expect(due.map(f => f.slug)).toEqual(['old']) // recent (1d) and still-new (not applied) excluded
+    expect(due[0]!.daysAgo).toBe(24)
   })
 
   it('stamps appliedAt when a note becomes applied, and offer is a valid status', () => {

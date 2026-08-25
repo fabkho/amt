@@ -5,6 +5,7 @@ import {
   JOB_STATUSES,
   readNote,
   setStatus,
+  staleApplications,
   updateNote,
   type CutReason,
   type JobStatus,
@@ -37,9 +38,11 @@ function parseFilters(query: URLSearchParams): Filters {
 }
 
 export function dashboard(profile: Profile): Reply {
+  const today = new Date().toISOString().slice(0, 10)
   return html(render('dashboard', {
     page: 'dashboard',
     stats: stats(profile),
+    followups: staleApplications(profile.paths.notesDir, today),
     inbox: jobRows(profile, { status: 'new' }),
     shortlist: jobRows(profile, { status: 'shortlist' }),
   }))

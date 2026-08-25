@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.17](https://github.com/fabkho/amt/compare/amt-0.2.16...amt-0.2.17) (2026-08-25)
+
+
+### Features
+
+* unify crawl 'unfinished' definition + polish ([#40](https://github.com/fabkho/amt/issues/40) M5/L1/L2/L3) ([#56](https://github.com/fabkho/amt/issues/56)) ([9b9c99e](https://github.com/fabkho/amt/commit/9b9c99ef93fcc52028eec4d2f6cfb7200f98c39c))
+
 ## [0.2.16](https://github.com/fabkho/amt/compare/amt-0.2.15...amt-0.2.16) (2026-08-25)
 
 

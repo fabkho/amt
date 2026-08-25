@@ -47,6 +47,10 @@ export const profileSchema = z.object({
       .default(['agency', 'consulting', 'staffing', 'gambling']),
     companyBlocklist: z.array(z.string()).default([]),
     titleBlocklist: z.array(z.string()).default([]),
+    /** Title seniority terms above the target band — cut with reason 'level'. */
+    levelBlocklist: z
+      .array(z.string())
+      .default(['lead', 'staff', 'principal', 'head of', 'director', 'vp', 'chief']),
     /** Location substrings that hard-cut a posting (e.g. 'london', 'united states'). */
     locationBlocklist: z.array(z.string()).default([]),
     maxAgeDays: z.number().int().positive().default(7),

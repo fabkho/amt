@@ -76,11 +76,14 @@ function extractAssessment(body: string): string {
   return m ? m[1]!.replace(/^##.*$/m, '').trim() : ''
 }
 
-/** A single row fragment (htmx swaps this in after an action). */
-function rowFragment(profile: Profile, slug: string): Reply {
+/** After any mutation: the updated row (for the hx-target) plus an
+ *  out-of-band refresh of the header stat counts, so the strip stays live. */
+function mutationReply(profile: Profile, slug: string): Reply {
   const row = jobRows(profile).find(r => r.slug === slug)
   if (!row) return { status: 404, body: '' }
-  return html(render('_row', { row, cutReasons: CUT_REASONS, oob: true }))
+  const rowHtml = render('_row', { row, cutReasons: CUT_REASONS, oob: false })
+  const statsHtml = render('_stats_oob', { stats: stats(profile) })
+  return html(rowHtml + statsHtml)
 }
 
 export async function changeStatus(
@@ -95,13 +98,13 @@ export async function changeStatus(
     : {}
   const note = setStatus(profile.paths.notesDir, slug, status as never, opts)
   await trackAndReindex(defaultHttpClient, home, profile, note)
-  return rowFragment(profile, slug)
+  return mutationReply(profile, slug)
 }
 
 export function toggleFavorite(profile: Profile, slug: string): Reply {
   const { note } = readNote(profile.paths.notesDir, slug)
   updateNote(profile.paths.notesDir, slug, { favorite: !note.favorite })
-  return rowFragment(profile, slug)
+  return mutationReply(profile, slug)
 }
 
 export async function buildApplication(profile: Profile, slug: string): Promise<Reply> {

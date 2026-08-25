@@ -5,6 +5,7 @@
   </div>
   <div class="role">
     <a class="title" href="/jobs/{{ row.slug }}">{{ row.company }} — {{ row.title }}</a>
+    <a class="ext" href="{{ row.url }}" target="_blank" rel="noreferrer" title="Open the original posting">↗</a>
     <div class="meta">
       {% if row.workMode %}<span class="tag {{ 'remote' if row.workMode == 'remote' }}">{{ row.workMode }}</span>{% endif %}
       {% if row.bucket and row.bucket != 'Other' %}<span class="tag">{{ row.bucket }}</span>{% endif %}
@@ -20,11 +21,11 @@
     <button class="accept" title="Accept → shortlist"
       hx-post="/jobs/{{ row.slug }}/status" hx-vals='{"status":"shortlist"}'
       hx-target="#row-{{ row.slug }}" hx-swap="outerHTML">accept</button>
-    <select class="reject" title="Reject → cut"
-      hx-post="/jobs/{{ row.slug }}/status" hx-target="#row-{{ row.slug }}" hx-swap="outerHTML"
-      hx-vals='js:{status:"cut",reason:event.target.value}'>
-      <option value="">reject…</option>
-      {% for r in cutReasons %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
+    <select class="reject" name="reason" title="Reject → cut"
+      hx-post="/jobs/{{ row.slug }}/status" hx-vals='{"status":"cut"}'
+      hx-target="#row-{{ row.slug }}" hx-swap="outerHTML">
+      <option value="" selected>reject…</option>
+      {% for r in cutReasons %}<option value="{{ r }}">{{ r | replace('_', ' ') }}</option>{% endfor %}
     </select>
   </div>
 </div>

@@ -75,24 +75,26 @@ function scalarString(value: unknown): string | null {
   return null
 }
 
-/** Extract one field from an item (an HTML node, a JSON value, or a text blob). */
-function extractField(item: unknown, spec: FieldSpec, mode: string): string | null {
-  if (mode === 'json') {
-    const str = scalarString(spec.path ? dotPath(item, spec.path) : item)
-    if (str === null) return null
-    return spec.regex ? applyRegex(str, spec.regex) : str
-  }
-  if (mode === 'regex') {
-    const str = scalarString(item) ?? ''
-    return spec.regex ? applyRegex(str, spec.regex) : str
-  }
-  // selectors
+const withRegex = (value: string | null, regex?: string): string | null =>
+  value === null ? null : regex ? applyRegex(value, regex) : value
+
+function fromJson(item: unknown, spec: FieldSpec): string | null {
+  return withRegex(scalarString(spec.path ? dotPath(item, spec.path) : item), spec.regex)
+}
+
+function fromSelector(item: unknown, spec: FieldSpec): string | null {
   const node = item as HtmlNode
   const found = spec.selector ? node.querySelector(spec.selector) : node
   if (!found) return null
   const raw = spec.attr ? found.getAttribute(spec.attr) ?? null : found.text.trim()
-  if (raw === null) return null
-  return spec.regex ? applyRegex(raw, spec.regex) : raw
+  return withRegex(raw, spec.regex)
+}
+
+/** Extract one field from an item (an HTML node, a JSON value, or a text blob). */
+function extractField(item: unknown, spec: FieldSpec, mode: string): string | null {
+  if (mode === 'json') return fromJson(item, spec)
+  if (mode === 'regex') return withRegex(scalarString(item) ?? '', spec.regex)
+  return fromSelector(item, spec)
 }
 
 function itemsFrom(body: string, spec: ChannelCrawl): unknown[] {
@@ -146,6 +148,7 @@ function toPosting(item: unknown, spec: ChannelCrawl, source: string): JobPostin
 }
 
 const REQUEST_DELAY_MS = 400
+const DETAIL_DELAY_MS = 350
 
 async function fetchBody(
   client: HttpClient,
@@ -199,6 +202,9 @@ export function channelDetailFetcher(
   const detail = channel.crawl?.detail
   if (!detail) return undefined
   return async (client, _company, nativeId) => {
+    // Pace per-posting detail hits so a burst of them doesn't earn a 429 (the
+    // HTTP client still backs off and retries if one slips through).
+    await new Promise(resolve => setTimeout(resolve, DETAIL_DELAY_MS))
     const url = detail.urlTemplate.replaceAll('{id}', encodeURIComponent(nativeId))
     const body = channel.crawl?.render === true
       ? await renderHtml(url, channel.crawl.headers)

@@ -515,6 +515,28 @@ export function inboxNotes(notesDir: string, date: string): StoredNote[] {
     .sort(byRank)
 }
 
+export interface Followup {
+  slug: string
+  company: string
+  title: string
+  appliedAt: string
+  daysAgo: number
+}
+
+/** Applications waiting on a reply longer than `minDays` — "you applied N days
+ *  ago, nudge them?" Oldest first. Needs the appliedAt stamp. */
+export function staleApplications(notesDir: string, today: string, minDays = 14): Followup[] {
+  const now = Date.parse(today)
+  return listNotes(notesDir, { status: ['applied'] })
+    .flatMap(({ note }) => {
+      const at = note.application?.appliedAt
+      if (!at) return []
+      const daysAgo = Math.floor((now - Date.parse(at)) / 86_400_000)
+      return daysAgo >= minDays ? [{ slug: note.slug, company: note.company, title: note.title, appliedAt: at, daysAgo }] : []
+    })
+    .sort((a, b) => b.daysAgo - a.daysAgo)
+}
+
 function renderInbox(notesDir: string, notes: StoredNote[]): void {
   const byDate = new Map<string, StoredNote[]>()
   for (const stored of notes) {

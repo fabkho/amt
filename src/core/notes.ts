@@ -427,6 +427,16 @@ export function undescribedNotes(notesDir: string): string[] {
     .map(s => s.note.slug)
 }
 
+/**
+ * The ranking work a crawl leaves owed: notes still to score, plus scored
+ * notes whose description never arrived (the score is a guess). One
+ * definition, shared by the CLI exit code and the MCP ranking-debt response,
+ * so "the crawl round isn't finished" means the same thing everywhere.
+ */
+export function rankingDebt(notesDir: string): { unranked: string[]; undescribed: string[] } {
+  return { unranked: unrankedNotes(notesDir), undescribed: undescribedNotes(notesDir) }
+}
+
 /** Regenerates the `_index.md` overview — a view, never a source of truth. */
 // German cities appear under their English names in ATS data —
 // "Cologne, Germany" must land in the Köln bucket.

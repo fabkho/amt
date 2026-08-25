@@ -9,9 +9,12 @@ import {
   loadSeen,
   parsePostingUrl,
   importPostingFromUrl,
+  postingToNoteInput,
   profileSchema,
   sourcesSchema,
+  upsertNote,
   type HttpClient,
+  type JobPosting,
   type Profile,
 } from '../src/index.js'
 
@@ -125,6 +128,45 @@ describe('crawl', () => {
     expect(second.refreshed).toBe(first.created)
     expect(second.known).toBe(first.offStack + first.filtered)
     expect(listNotes(notesDir)).toHaveLength(noteCount)
+  })
+
+  it('resolves a logo on refresh only when the note lacks one', async () => {
+    const { home, notesDir, profile } = await testEnv(['vue'])
+    const seed = (company: string, logo: string | null): void => {
+      const posting: JobPosting = {
+        source: 'arbeitnow', nativeId: `seed-${company}`, company, title: 'Vue Engineer',
+        url: 'https://ex/seed', descriptionHtml: '<p>Vue work</p>', location: 'Berlin',
+        workMode: null, salaryMin: null, salaryMax: null, salaryCurrency: null, publishedAt: null, tags: [],
+      }
+      const input = postingToNoteInput(posting, '2026-08-19')
+      input.logo = logo
+      upsertNote(notesDir, input, 'Vue work')
+    }
+    // Two pre-existing notes (empty logo cache) the crawl will refresh.
+    seed('Alpha Logo GmbH', 'https://icons.duckduckgo.com/ip3/alpha.ico')
+    seed('Beta Nologo GmbH', null)
+
+    const post = (id: string, company: string): Record<string, unknown> => ({
+      slug: `r-${id}`, title: 'Vue Engineer', company_name: company, url: `https://ex/${id}`,
+      description: 'Vue work', location: 'Berlin', remote: true, created_at: 1787238038, tags: [], job_types: [],
+    })
+    const clearbit: string[] = []
+    const client: HttpClient = {
+      json: async (url) => {
+        if (url.includes('clearbit')) { clearbit.push(url); return [] }
+        if (url.includes('arbeitnow')) return { data: [post('a', 'Alpha Logo GmbH'), post('b', 'Beta Nologo GmbH')], links: null }
+        throw new Error(`404 ${url}`)
+      },
+      text: async () => '',
+    }
+    const summary = await crawl(client, home, profile, sourcesSchema.parse({ boards: ['arbeitnow'] }), { today: '2026-08-20' })
+
+    expect(summary.refreshed).toBe(2) // both matched the pre-seeded identities
+    // Alpha already had a logo → skipped; Beta had none → resolved.
+    expect(clearbit.some(u => u.includes('beta'))).toBe(true)
+    expect(clearbit.some(u => u.includes('alpha'))).toBe(false)
+    const alpha = listNotes(notesDir).find(n => n.note.company === 'Alpha Logo GmbH')!
+    expect(alpha.note.logo).toContain('alpha.ico') // preserved
   })
 
   it('collapses postings that share company and title to one identity', async () => {

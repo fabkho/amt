@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3](https://github.com/fabkho/amt/compare/amt-0.3.2...amt-0.3.3) (2026-08-25)
+
+
+### Features
+
+* free-text reject note in the dashboard dialog ([#70](https://github.com/fabkho/amt/issues/70)) ([7833dc1](https://github.com/fabkho/amt/commit/7833dc129924bec80fa04b2dfc95354f3e94e625)), closes [#64](https://github.com/fabkho/amt/issues/64)
+
 ## [0.3.2](https://github.com/fabkho/amt/compare/amt-0.3.1...amt-0.3.2) (2026-08-25)
 
 

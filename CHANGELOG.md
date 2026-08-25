@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.7](https://github.com/fabkho/amt/compare/amt-0.3.6...amt-0.3.7) (2026-08-25)
+
+
+### Bug Fixes
+
+* style the reject-dialog note textarea to match the select ([#78](https://github.com/fabkho/amt/issues/78)) ([32d506f](https://github.com/fabkho/amt/commit/32d506faf0cf7843b44ac8f13db462e498dc71c4))
+
 ## [0.3.6](https://github.com/fabkho/amt/compare/amt-0.3.5...amt-0.3.6) (2026-08-25)
 
 

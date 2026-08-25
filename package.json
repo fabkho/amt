@@ -25,7 +25,8 @@
     "lint": "vp lint",
     "typecheck": "tsc --noEmit",
     "test": "vp test run",
-    "prepare": "node .husky/install.mjs && pnpm build"
+    "prepare": "node .husky/install.mjs && pnpm build",
+    "shoot": "node scripts/shoot.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.0.0",

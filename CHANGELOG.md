@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.13](https://github.com/fabkho/amt/compare/amt-0.2.12...amt-0.2.13) (2026-08-25)
+
+
+### Features
+
+* amt serve — web dashboard (reject dialog, filters, live triage) + review hardening ([#46](https://github.com/fabkho/amt/issues/46)) ([be7980b](https://github.com/fabkho/amt/commit/be7980b61e9c6625cf9ece3b8e9f1accfccc7223))
+
 ## [0.2.12](https://github.com/fabkho/amt/compare/amt-0.2.11...amt-0.2.12) (2026-08-25)
 
 

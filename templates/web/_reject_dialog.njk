@@ -13,6 +13,8 @@
       <option value="" selected>— no specific reason —</option>
       {% for r in cutReasons %}<option value="{{ r }}">{{ r | replace('_', ' ') }}</option>{% endfor %}
     </select>
+    <label for="reject-note">Note (optional — why, in your words)</label>
+    <textarea id="reject-note" name="cutNote" rows="2" placeholder="e.g. only 50% remote; too much on-call; stack is legacy PHP"></textarea>
     <div class="dialog-actions">
       <button type="button" class="cancel" hx-on:click="document.getElementById('reject-dialog').close()">cancel</button>
       <button type="submit" class="confirm">reject</button>

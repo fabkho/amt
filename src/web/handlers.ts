@@ -99,12 +99,17 @@ export async function changeStatus(
   status: string,
   reason?: string,
   fromUrl = '',
+  cutNote?: string,
 ): Promise<Reply> {
   if (!JOB_STATUSES.includes(status as JobStatus)) {
     return { status: 400, body: `invalid status: ${status}` }
   }
+  const note0 = cutNote?.trim()
   const opts = status === 'cut'
-    ? { cutReason: (CUT_REASONS.includes(reason as CutReason) ? reason : 'personal_fit') as CutReason }
+    ? {
+        cutReason: (CUT_REASONS.includes(reason as CutReason) ? reason : 'personal_fit') as CutReason,
+        ...(note0 ? { cutNote: note0 } : {}),
+      }
     : {}
   const note = setStatus(profile.paths.notesDir, slug, status as JobStatus, opts)
   // ATS auto-track + reindex is network-heavy (seconds); don't make the click

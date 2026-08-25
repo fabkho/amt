@@ -1,14 +1,14 @@
 import { createServer as createHttpServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { existsSync, readFileSync } from 'node:fs'
-import { dirname, join, normalize } from 'node:path'
+import { dirname, join, normalize, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { AmtError, toErrorMessage } from '../core/errors.js'
+import { AmtError } from '../core/errors.js'
 import { loadProfile, resolveHome, type Profile } from '../core/profile.js'
 import {
-  buildApplication,
   changeStatus,
   dashboard,
   detail,
+  rejectDialog,
   jobs,
   toggleFavorite,
   type Reply,
@@ -31,14 +31,24 @@ const MIME: Record<string, string> = {
 function serveAsset(path: string): Reply {
   const base = assetsDir()
   const full = normalize(join(base, path))
-  if (!full.startsWith(base) || !existsSync(full)) return { status: 404, body: 'not found' }
+  // Trailing sep so a sibling like ".../assets/web-evil" can't pass the prefix.
+  if ((full !== base && !full.startsWith(base + sep)) || !existsSync(full)) {
+    return { status: 404, body: 'not found' }
+  }
   const ext = full.slice(full.lastIndexOf('.'))
   return { status: 200, body: readFileSync(full, 'utf-8'), contentType: MIME[ext] ?? 'text/plain' }
 }
 
+const MAX_BODY = 64 * 1024
+
 async function readBody(req: IncomingMessage): Promise<URLSearchParams> {
   const chunks: Buffer[] = []
-  for await (const chunk of req) chunks.push(chunk as Buffer)
+  let size = 0
+  for await (const chunk of req) {
+    size += (chunk as Buffer).length
+    if (size > MAX_BODY) throw new AmtError('BODY_TOO_LARGE', 'request body too large')
+    chunks.push(chunk as Buffer)
+  }
   return new URLSearchParams(Buffer.concat(chunks).toString())
 }
 
@@ -48,6 +58,9 @@ function routeGet(profile: Profile, url: URL, parts: string[]): Reply {
   if (url.pathname === '/') return dashboard(profile)
   if (url.pathname === '/jobs') return jobs(profile, url.searchParams)
   if (parts[0] === 'assets') return serveAsset(parts.slice(1).join('/'))
+  if (parts[0] === 'jobs' && parts[1] && parts[2] === 'reject') {
+    return rejectDialog(profile, parts[1], url.searchParams.get('from') === 'detail')
+  }
   if (parts[0] === 'jobs' && parts[1]) return detail(profile, parts[1])
   return NOT_FOUND
 }
@@ -57,16 +70,15 @@ async function routePost(
   home: string,
   parts: string[],
   form: URLSearchParams,
+  fromUrl: string,
 ): Promise<Reply> {
   if (parts[0] !== 'jobs' || !parts[1]) return NOT_FOUND
   const slug = parts[1]
   switch (parts[2]) {
     case 'status':
-      return changeStatus(profile, home, slug, form.get('status') ?? '', form.get('reason') ?? undefined)
+      return changeStatus(profile, home, slug, form.get('status') ?? '', form.get('reason') ?? undefined, fromUrl)
     case 'favorite':
       return toggleFavorite(profile, slug)
-    case 'prepare':
-      return buildApplication(profile, slug)
     default:
       return NOT_FOUND
   }
@@ -78,9 +90,18 @@ async function route(req: IncomingMessage): Promise<Reply> {
   const url = new URL(req.url ?? '/', 'http://localhost')
   const parts = url.pathname.split('/').filter(Boolean)
   if (req.method === 'GET') return routeGet(profile, url, parts)
-  if (req.method === 'POST') return routePost(profile, home, parts, await readBody(req))
+  if (req.method === 'POST') {
+    // Every mutation comes from htmx, which sets HX-Request. A cross-site
+    // simple form POST cannot set that header — cheap CSRF/rebinding guard.
+    if (req.headers['hx-request'] !== 'true') return { status: 403, body: 'forbidden' }
+    const fromUrl = String(req.headers['hx-current-url'] ?? '')
+    return routePost(profile, home, parts, await readBody(req), fromUrl)
+  }
   return NOT_FOUND
 }
+
+// Not-found notes are a 404, not a 500, and never echo the filesystem path.
+const HTTP_STATUS: Record<string, number> = { NOTE_NOT_FOUND: 404, NOTE_INVALID: 404, BODY_TOO_LARGE: 413 }
 
 async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
   try {
@@ -89,8 +110,9 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     res.end(reply.body)
   } catch (error) {
     const code = error instanceof AmtError ? error.code : 'UNEXPECTED'
-    res.writeHead(500, { 'Content-Type': 'text/plain' })
-    res.end(`[${code}] ${toErrorMessage(error)}`)
+    const status = HTTP_STATUS[code] ?? 500
+    res.writeHead(status, { 'Content-Type': 'text/plain' })
+    res.end(status === 500 ? `[${code}] internal error` : `[${code}]`)
   }
 }
 

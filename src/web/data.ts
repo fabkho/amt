@@ -27,18 +27,25 @@ export interface Filters {
   favorite?: boolean
 }
 
+/** Only http(s) survives into href/src — external postings could carry a
+ *  javascript: URL that autoescaping wouldn't stop. */
+export function safeUrl(url: string | null): string {
+  if (!url) return ''
+  return /^https?:\/\//i.test(url.trim()) ? url : ''
+}
+
 function toRow(note: JobNote, cities: string[]): RowView {
   return {
     slug: note.slug,
     company: note.company,
     title: note.title,
-    url: note.url,
+    url: safeUrl(note.url),
     status: note.status,
     score: note.score,
     favorite: note.favorite,
     workMode: note.workMode ?? '',
     location: note.location ?? '',
-    logo: note.logo,
+    logo: safeUrl(note.logo),
     bucket: placement(note, cities),
   }
 }

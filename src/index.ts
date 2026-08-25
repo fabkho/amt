@@ -12,6 +12,7 @@ export {
 export type { Profile, ProfileInput } from './core/profile.js'
 export {
   CUT_REASONS,
+  assessmentText,
   dedupeKey,
   descriptionText,
   inboxNotes,

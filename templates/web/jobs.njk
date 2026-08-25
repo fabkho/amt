@@ -3,29 +3,30 @@
 <h2 class="section">Akten ({{ rows | length }})</h2>
 
 <form class="filters" hx-get="/jobs" hx-target="#job-rows" hx-select="#job-rows" hx-swap="outerHTML" hx-trigger="change, keyup delay:300ms from:find input[name=q]">
-  <label>status</label>
-  <select name="status">
+  <label for="f-status">status</label>
+  <select id="f-status" name="status">
     <option value="">all</option>
     {% for s in ['new','shortlist','applied','interview','offer','rejected','cut'] %}
       <option value="{{ s }}" {{ 'selected' if filters.status == s }}>{{ s }}</option>
     {% endfor %}
   </select>
-  <label>mode</label>
-  <select name="workMode">
+  <label for="f-mode">mode</label>
+  <select id="f-mode" name="workMode">
     <option value="">any</option>
     {% for m in ['remote','hybrid','onsite'] %}
       <option value="{{ m }}" {{ 'selected' if filters.workMode == m }}>{{ m }}</option>
     {% endfor %}
   </select>
-  <label>place</label>
-  <select name="bucket">
+  <label for="f-place">place</label>
+  <select id="f-place" name="bucket">
     <option value="">any</option>
     {% for b in buckets %}<option value="{{ b }}" {{ 'selected' if filters.bucket == b }}>{{ b }}</option>{% endfor %}
   </select>
-  <label>min score</label>
-  <input type="number" name="minScore" min="0" max="100" step="5" style="width:4rem" value="{{ filters.minScore if filters.minScore != null }}">
+  <label for="f-score">min score</label>
+  <input id="f-score" type="number" name="minScore" min="0" max="100" step="5" style="width:4rem" value="{{ filters.minScore if filters.minScore != null }}">
   <label class="check"><input type="checkbox" name="favorite" value="1" {{ 'checked' if filters.favorite }}> ★ only</label>
-  <input type="search" name="q" placeholder="company / title…" value="{{ filters.q or '' }}">
+  <label for="f-q" class="sr-only">search</label>
+  <input id="f-q" type="search" name="q" placeholder="company / title…" value="{{ filters.q or '' }}">
 </form>
 
 <div id="job-rows" class="rows">

@@ -318,6 +318,14 @@ export function upsertNote(
 const ASSESS_START = '<!-- job-kit:assessment -->'
 const ASSESS_END = '<!-- /job-kit:assessment -->'
 
+/** The agent's assessment prose (without the "## Assessment" heading), or null. */
+export function assessmentText(body: string): string | null {
+  const start = body.indexOf(ASSESS_START)
+  const end = body.indexOf(ASSESS_END)
+  if (start === -1 || end <= start) return null
+  return body.slice(start + ASSESS_START.length, end).replace(/^\s*##.*$/m, '').trim() || null
+}
+
 function setAssessment(body: string, assessment: string): string {
   const block = `${ASSESS_START}\n## Assessment\n\n${assessment.trim()}\n${ASSESS_END}`
   const start = body.indexOf(ASSESS_START)
@@ -365,6 +373,12 @@ export function setStatus(
   options: { cutReason?: CutReason; cutNote?: string; at?: string } = {},
 ): JobNote {
   const { note, body } = readNote(notesDir, slug)
+  if (!JOB_STATUSES.includes(status)) {
+    throw new AmtError(
+      'STATUS_INVALID',
+      `Unknown status "${status}" — valid: ${JOB_STATUSES.join(', ')}.`,
+    )
+  }
   if (options.cutReason && !CUT_REASONS.includes(options.cutReason)) {
     throw new AmtError(
       'CUT_REASON_INVALID',

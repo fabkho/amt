@@ -1,11 +1,10 @@
-<div class="row {{ 'fav' if row.favorite }}" id="row-{{ row.slug }}"{% if oob %} hx-swap-oob="true"{% endif %}>
+<div class="row {{ 'fav' if row.favorite }}" id="row-{{ row.slug }}">
   <div class="score {{ 'none' if row.score == null }}">{% if row.score != null %}⭐{{ row.score }}{% else %}—{% endif %}</div>
   <div>
     {% if row.logo %}<img class="logo" src="{{ row.logo }}" alt="">{% else %}<div class="logo-fallback"></div>{% endif %}
   </div>
   <div class="role">
     <a class="title" href="/jobs/{{ row.slug }}">{{ row.company }} — {{ row.title }}</a>
-    <a class="ext" href="{{ row.url }}" target="_blank" rel="noreferrer" title="Open the original posting">↗</a>
     <div class="meta">
       {% if row.workMode %}<span class="tag {{ 'remote' if row.workMode == 'remote' }}">{{ row.workMode }}</span>{% endif %}
       {% if row.bucket and row.bucket != 'Other' %}<span class="tag">{{ row.bucket }}</span>{% endif %}
@@ -14,18 +13,18 @@
     </div>
   </div>
   <div class="actions">
-    <button class="star {{ 'on' if row.favorite }}" title="Favorite"
+    <button class="star {{ 'on' if row.favorite }}"
+      aria-pressed="{{ 'true' if row.favorite else 'false' }}"
+      aria-label="{{ 'Unfavorite' if row.favorite else 'Favorite' }}"
       hx-post="/jobs/{{ row.slug }}/favorite" hx-target="#row-{{ row.slug }}" hx-swap="outerHTML">
       {{ '★' if row.favorite else '☆' }}
     </button>
+    {% if row.url %}<a class="btn open" href="{{ row.url }}" target="_blank" rel="noreferrer noopener" title="Open the original posting">open ↗</a>{% endif %}
     <button class="accept" title="Accept → shortlist"
       hx-post="/jobs/{{ row.slug }}/status" hx-vals='{"status":"shortlist"}'
       hx-target="#row-{{ row.slug }}" hx-swap="outerHTML">accept</button>
-    <select class="reject" name="reason" title="Reject → cut"
-      hx-post="/jobs/{{ row.slug }}/status" hx-vals='{"status":"cut"}'
-      hx-target="#row-{{ row.slug }}" hx-swap="outerHTML">
-      <option value="" selected>reject…</option>
-      {% for r in cutReasons %}<option value="{{ r }}">{{ r | replace('_', ' ') }}</option>{% endfor %}
-    </select>
+    <button class="reject" title="Reject → cut"
+      hx-get="/jobs/{{ row.slug }}/reject" hx-target="body" hx-swap="beforeend"
+      hx-on:click="document.getElementById('reject-dialog')?.remove()">reject</button>
   </div>
 </div>

@@ -57,8 +57,10 @@ async function testEnv(stacks: string[]): Promise<Env> {
 
 describe('crawl', () => {
   const sources = sourcesSchema.parse({
-    boards: ['arbeitnow'],
-    companies: [{ name: 'shopware', ats: 'recruitee', slug: 'shopwareag' }],
+    sources: [
+      { name: 'arbeitnow' },
+      { name: 'shopware', ats: 'recruitee', slug: 'shopwareag' },
+    ],
   })
 
   it('creates notes only for stack-relevant postings; the rest goes to the ledger', async () => {
@@ -91,7 +93,7 @@ describe('crawl', () => {
       },
     }
     const channelSources = sourcesSchema.parse({
-      channels: [{
+      sources: [{
         name: 'demo-channel',
         crawl: {
           urlTemplate: 'https://ex/search?keywords={keyword}',
@@ -159,7 +161,7 @@ describe('crawl', () => {
       },
       text: async () => '',
     }
-    const summary = await crawl(client, home, profile, sourcesSchema.parse({ boards: ['arbeitnow'] }), { today: '2026-08-20' })
+    const summary = await crawl(client, home, profile, sourcesSchema.parse({ sources: [{ name: 'arbeitnow' }] }), { today: '2026-08-20' })
 
     expect(summary.refreshed).toBe(2) // both matched the pre-seeded identities
     // Alpha already had a logo → skipped; Beta had none → resolved.
@@ -189,7 +191,7 @@ describe('crawl', () => {
       json: async () => ({ data: [twin('a', 'Twin GmbH'), twin('b', 'Twin')], links: null }),
       text: async () => '',
     }
-    const summary = await crawl(twinClient, home, profile, sourcesSchema.parse({ boards: ['arbeitnow'] }), { today: '2026-08-20' })
+    const summary = await crawl(twinClient, home, profile, sourcesSchema.parse({ sources: [{ name: 'arbeitnow' }] }), { today: '2026-08-20' })
     expect(summary.errors).toHaveLength(0)
     expect(summary.created).toBe(1) // same identity — merged, not duplicated
     expect(listNotes(notesDir)).toHaveLength(1)
@@ -215,7 +217,7 @@ describe('crawl', () => {
       json: async () => ({ data: [off('a'), off('b')], links: null }),
       text: async () => '',
     }
-    const sources = sourcesSchema.parse({ boards: ['arbeitnow'] })
+    const sources = sourcesSchema.parse({ sources: [{ name: 'arbeitnow' }] })
     const summary = await crawl(client, home, profile, sources, { today: '2026-08-20' })
     expect(summary.offStack).toBe(2) // both ledgered, not one suppressing the other
     // ledger keys are source:nativeId, not company::title
@@ -227,8 +229,10 @@ describe('crawl', () => {
   it('isolates per-source failures', async () => {
     const { home, profile } = await testEnv(['databricks'])
     const broken = sourcesSchema.parse({
-      boards: ['arbeitnow'],
-      companies: [{ name: 'ghost', ats: 'recruitee', slug: 'ghost' }],
+      sources: [
+        { name: 'arbeitnow' },
+        { name: 'ghost', ats: 'recruitee', slug: 'ghost' },
+      ],
     })
     const summary = await crawl(routedClient, home, profile, broken, { today: '2026-08-20' })
     expect(summary.errors).toHaveLength(1)

@@ -4,10 +4,11 @@ import { dedupeKey, descriptionText, findProbableDuplicates, listNotes, readNote
 import { loadSeen, markSeen, saveSeen, type SeenLedger } from './seen.js'
 import { htmlToMarkdown, postingToNoteInput } from './sources/normalize.js'
 import { resolveCompanyLogo } from './sources/logo.js'
-import { channelDetailFetcher, fetchChannel, isCrawlableChannel } from './sources/channel.js'
+import { channelDetailFetcher, fetchChannel } from './sources/channel.js'
 import { getAdapter } from './sources/index.js'
+import { sourceKind } from './sources-store.js'
 import type { Profile } from './profile.js'
-import type { Sources } from './sources-store.js'
+import type { Sources, SourceEntry } from './sources-store.js'
 import type { HttpClient, JobPosting, SourceAdapter } from './sources/types.js'
 
 export interface CrawlSummary {
@@ -65,7 +66,7 @@ async function fetchBoardBatch(
 
 async function fetchChannelBatch(
   client: HttpClient,
-  channel: Sources['channels'][number],
+  channel: SourceEntry,
   search: Profile['search'],
 ): Promise<FetchedBatch> {
   const postings = await fetchChannel(client, channel, {
@@ -84,14 +85,17 @@ async function fetchChannelBatch(
 
 async function fetchCompanyBatch(
   client: HttpClient,
-  company: Sources['companies'][number],
+  company: SourceEntry,
 ): Promise<FetchedBatch> {
-  const adapter = getAdapter(company.ats)
-  const postings = (await adapter.fetchCompany!(client, company.slug))
+  // dispatch guarantees an ATS entry: ats and slug are present.
+  const ats = company.ats!
+  const slug = company.slug!
+  const adapter = getAdapter(ats)
+  const postings = (await adapter.fetchCompany!(client, slug))
     // Some ATS payloads carry no display name — fall back to the name the
     // user gave the company when tracking it.
-    .map(p => (p.company === company.slug ? { ...p, company: company.name } : p))
-  return { adapter, companySlug: company.slug, postings, applyFreshness: false }
+    .map(p => (p.company === slug ? { ...p, company: company.name } : p))
+  return { adapter, companySlug: slug, postings, applyFreshness: false }
 }
 
 async function fetchAll(
@@ -101,17 +105,18 @@ async function fetchAll(
   errors: CrawlSummary['errors'],
 ): Promise<FetchedBatch[]> {
   const batches: FetchedBatch[] = []
-  const jobs: { source: string; run: () => Promise<FetchedBatch> }[] = [
-    ...sources.boards.map(board => ({ source: board, run: () => fetchBoardBatch(client, board, search) })),
-    ...sources.companies.map(company => ({
-      source: `${company.ats}:${company.slug}`,
-      run: () => fetchCompanyBatch(client, company),
-    })),
-    ...sources.channels.filter(isCrawlableChannel).map(channel => ({
-      source: `channel:${channel.name}`,
-      run: () => fetchChannelBatch(client, channel, search),
-    })),
-  ]
+  // One list; the entry's shape (via sourceKind) picks the fetch path. Agent
+  // entries have no tool fetch — they're skipped here and surfaced to the agent.
+  type Job = { source: string; run: () => Promise<FetchedBatch> }
+  const jobs = sources.sources
+    .map((entry): Job | null => {
+      const kind = sourceKind(entry)
+      if (kind === 'company') return { source: `${entry.ats}:${entry.slug}`, run: () => fetchCompanyBatch(client, entry) }
+      if (kind === 'crawl') return { source: `channel:${entry.name}`, run: () => fetchChannelBatch(client, entry, search) }
+      if (kind === 'board') return { source: entry.name, run: () => fetchBoardBatch(client, entry.name, search) }
+      return null // agent — the tool never fetches it
+    })
+    .filter((j): j is Job => j !== null)
   for (const job of jobs) {
     try {
       batches.push(await job.run())
@@ -254,12 +259,11 @@ async function ingest(posting: JobPosting, batch: FetchedBatch, ctx: IngestConte
 }
 
 function assertCrawlableSources(sources: Sources): void {
-  const crawlableChannels = sources.channels.filter(isCrawlableChannel).length
-  if (sources.boards.length > 0 || sources.companies.length > 0 || crawlableChannels > 0) return
+  if (sources.sources.some(s => sourceKind(s) !== 'agent')) return
   throw new AmtError(
     'NO_SOURCES',
-    sources.channels.length > 0
-      ? 'Only agent-only channels are configured (no machine-crawl spec) — run those via your agent and feed findings through import. For tool crawling, add boards, companies, or channels with a `crawl` spec.'
+    sources.sources.length > 0
+      ? 'Only agent-only sources are configured (no machine-crawl spec) — run those via your agent and feed findings through import. For tool crawling, add boards, companies, or sources with a `crawl` spec.'
       : 'No sources configured. Run `amt init` or add some with `amt sources add <company>`.',
   )
 }

@@ -3,7 +3,7 @@ import { crawl, type CrawlSummary } from '../core/crawl.js'
 import { rankingDebt } from '../core/notes.js'
 import { loadProfile, resolveHome } from '../core/profile.js'
 import { defaultHttpClient } from '../core/sources/http.js'
-import { loadSources } from '../core/sources-store.js'
+import { loadSources, pendingSources } from '../core/sources-store.js'
 
 interface Debt { unranked: string[]; undescribed: string[] }
 
@@ -58,8 +58,8 @@ export default createCommand({
     const profile = await loadProfile(home)
     const sources = loadSources(home)
     const summary = await crawl(defaultHttpClient, home, profile, sources)
-    // Channels with a crawl spec were fetched above; only agent-only recipes stay pending.
-    const pending = sources.channels.filter(c => c.crawl === undefined).map(c => c.name)
+    // Tool sources were fetched above; only agent-only recipes stay pending.
+    const pending = pendingSources(sources).map(c => c.name)
     const debt = rankingDebt(profile.paths.notesDir)
     if (unfinished(debt, pending)) process.exitCode = 2
     return {

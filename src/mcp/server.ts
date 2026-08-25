@@ -18,10 +18,10 @@ import {
   notesForCompany,
   loadProfile,
   loadSources,
+  pendingSources,
   addCompany,
-  upsertChannel,
-  removeChannel,
-  removeCompany,
+  upsertSource,
+  removeSource,
   postingToNoteInput,
   readNote,
   renderIndex,
@@ -201,10 +201,8 @@ export function createServer(): McpServer {
         const sources = loadSources(home)
         const summary = await crawl(defaultHttpClient, home, profile, sources)
         const rankingDebt = rankingDebtPayload(profile.paths.notesDir)
-        // Channels WITH a crawl spec were fetched by the tool above; only
-        // agent-only recipes remain pending.
-        const pending = sources.channels
-          .filter(c => c.crawl === undefined)
+        // Tool sources were fetched above; only agent-only recipes remain pending.
+        const pending = pendingSources(sources)
           .sort((a, b) => (Number(a.priority) || 99) - (Number(b.priority) || 99))
         if (pending.length === 0) {
           return jsonContent(
@@ -471,7 +469,7 @@ export function createServer(): McpServer {
     },
     async ({ name, description, recipe, priority, yield: yieldNote }) => {
       try {
-        const { updated } = upsertChannel(resolveHome(), {
+        const { updated } = upsertSource(resolveHome(), {
           name,
           ...(description !== undefined && { description }),
           ...(recipe !== undefined && { recipe }),
@@ -495,7 +493,7 @@ export function createServer(): McpServer {
     },
     async ({ name }) => {
       try {
-        const removed = removeCompany(resolveHome(), name) || removeChannel(resolveHome(), name)
+        const removed = removeSource(resolveHome(), name)
         if (!removed) {
           throw new AmtError('COMPANY_NOT_TRACKED', `"${name}" is not tracked`)
         }
@@ -626,10 +624,11 @@ export function createServer(): McpServer {
         const home = resolveHome()
         context = buildProfileSection(await loadProfile(home))
         const sources = loadSources(home)
-        const crawledNames = sources.channels.filter(c => c.crawl).map(c => c.name)
+        const crawledNames = sources.sources.filter(c => c.crawl).map(c => c.name)
         if (crawledNames.length) crawlable = crawledNames.join(', ')
-        channels = sources.channels.length
-          ? `Configured agent channels (execute in priority order when present): ${JSON.stringify(sources.channels, null, 2)}`
+        const agentOnly = pendingSources(sources)
+        channels = agentOnly.length
+          ? `Configured agent channels (execute in priority order when present): ${JSON.stringify(agentOnly, null, 2)}`
           : 'No agent channels configured. Offer to seed channel recipes into sources.yaml — personal, local data the tool stores but never executes. Ready-made, field-tested recipes (URL templates + parse hints): https://github.com/fabkho/amt/blob/main/skills/job-search/channels.md — ranking: 1. LinkedIn guest jobs API (very high yield), 2. StepStone search pages (high, flaky details), 3. VueJobs internal API (niche, on-target for Vue), 4. Bing RSS as fallback. Tracked-company ATS crawling is the verifier/closer, not a discovery channel.'
       } catch {
         // still provide the workflow without context

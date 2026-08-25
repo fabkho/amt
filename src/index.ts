@@ -62,16 +62,21 @@ export { resolveCompanyLogo } from './core/sources/logo.js'
 export {
   addCompany,
   discoverCompany,
+  isToolSource,
   loadSources,
+  pendingSources,
   removeChannel,
   removeCompany,
+  removeSource,
   saveSources,
   slugCandidates,
+  sourceKind,
   sourcesSchema,
   tryAutoTrack,
   upsertChannel,
+  upsertSource,
 } from './core/sources-store.js'
-export type { AddCompanyResult, ChannelCrawl, ChannelSource, CompanySource, DiscoveryResult, Sources } from './core/sources-store.js'
+export type { AddCompanyResult, ChannelCrawl, ChannelSource, CompanySource, DiscoveryResult, SourceEntry, Sources } from './core/sources-store.js'
 export { channelDetailFetcher, fetchChannel, isCrawlableChannel } from './core/sources/channel.js'
 export { getAdapter, listAdapters } from './core/sources/index.js'
 export { defaultHttpClient } from './core/sources/http.js'

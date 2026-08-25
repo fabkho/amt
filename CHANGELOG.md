@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.15](https://github.com/fabkho/amt/compare/amt-0.2.14...amt-0.2.15) (2026-08-25)
+
+
+### Bug Fixes
+
+* level cuts get their own reason instead of buzzword ([#38](https://github.com/fabkho/amt/issues/38)) ([#52](https://github.com/fabkho/amt/issues/52)) ([354b6ce](https://github.com/fabkho/amt/commit/354b6ce88679abfb4ce1eb3951dc5b0490e712f9))
+
 ## [0.2.14](https://github.com/fabkho/amt/compare/amt-0.2.13...amt-0.2.14) (2026-08-25)
 
 

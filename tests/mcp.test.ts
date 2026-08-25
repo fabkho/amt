@@ -91,6 +91,7 @@ describe('amt mcp server', () => {
       'import_job',
       'list_jobs',
       'prepare_application',
+      'prune_below_threshold',
       'remove_source',
       'set_job_status',
     ])

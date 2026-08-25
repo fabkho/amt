@@ -22,6 +22,7 @@ const main = defineCommand({
     list: () => import('./commands/list.js').then(m => m.default),
     inbox: () => import('./commands/inbox.js').then(m => m.default),
     followups: () => import('./commands/followups.js').then(m => m.default),
+    prune: () => import('./commands/prune.js').then(m => m.default),
     reconsider: () => import('./commands/reconsider.js').then(m => m.default),
     serve: () => import('./commands/serve.js').then(m => m.default),
     status: () => import('./commands/status.js').then(m => m.default),

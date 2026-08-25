@@ -29,6 +29,14 @@
 <div class="rows">
   {% for row in inbox %}{% include "_row.njk" %}{% else %}<div class="empty">Der Stapel ist abgearbeitet — nothing new to triage.</div>{% endfor %}
 </div>
+{% if inboxBelow | length %}
+<details class="show-more">
+  <summary>Show {{ inboxBelow | length }} more below {{ threshold }}</summary>
+  <div class="rows">
+    {% for row in inboxBelow %}{% include "_row.njk" %}{% endfor %}
+  </div>
+</details>
+{% endif %}
 
 <h2 class="section">Shortlist ({{ shortlist | length }})</h2>
 <div class="rows">

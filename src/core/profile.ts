@@ -54,6 +54,9 @@ export const profileSchema = z.object({
     /** Location substrings that hard-cut a posting (e.g. 'london', 'united states'). */
     locationBlocklist: z.array(z.string()).default([]),
     maxAgeDays: z.number().int().positive().default(7),
+    /** Inbox notes scored below this are hidden by default and auto-pruned on
+     *  the daily update (cutReason 'below_threshold'). */
+    scoreThreshold: z.number().int().min(0).max(100).default(50),
     /** shortlist/apply/import auto-add the company's ATS to sources.yaml. */
     autoTrackCompanies: z.boolean().default(true),
   }),

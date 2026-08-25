@@ -265,3 +265,7 @@ a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible
   .row .actions { grid-column: 1 / -1; flex-wrap: wrap; justify-content: flex-start; }
   .row > div:nth-child(2) { display: none; } /* hide the logo cell to save width */
 }
+
+.show-more { margin: 0.25rem 0 1rem; }
+.show-more > summary { cursor: pointer; color: var(--color-ink-faint); font-size: var(--text-sm); padding: 0.35rem 0.5rem; list-style: revert; }
+.show-more > summary:hover { color: var(--color-accent); }

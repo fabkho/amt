@@ -14,6 +14,7 @@ import {
   inboxNotes,
   listNotes,
   resolveCompanyLogo,
+  pruneBelowThreshold,
   rankingDebt as computeRankingDebt,
   notesForCompany,
   loadProfile,
@@ -508,6 +509,34 @@ export function createServer(): McpServer {
     },
   )
 
+  // ─── Tool: prune_below_threshold ───────────────────────────────
+
+  server.registerTool(
+    'prune_below_threshold',
+    {
+      title: 'Prune Below Threshold',
+      description:
+        'Auto-reject inbox notes scored below the score threshold (default: profile scoreThreshold). '
+        + 'Call this at the END of a daily update, after ranking, so low-fit candidates are pruned '
+        + '(cutReason below_threshold) and only ≥ threshold stay in the inbox. Never touches unranked notes.',
+      inputSchema: z.object({
+        threshold: z.number().int().min(0).max(100).optional().describe('Score floor; below this is cut. Defaults to profile scoreThreshold.'),
+      }),
+      annotations: { readOnlyHint: false },
+    },
+    async ({ threshold }) => {
+      try {
+        const profile = await loadProfile(resolveHome())
+        const floor = threshold ?? profile.search.scoreThreshold
+        const pruned = pruneBelowThreshold(profile.paths.notesDir, floor)
+        renderIndex(profile.paths.notesDir, profile.search.locations.cities.map(c => c.name))
+        return jsonContent({ threshold: floor, pruned: pruned.length, slugs: pruned })
+      } catch (error) {
+        return toolErrorResponse('pruning below threshold', error)
+      }
+    },
+  )
+
   // ─── Tool: get_inbox ───────────────────────────────────────────
 
   server.registerTool(
@@ -648,7 +677,8 @@ export function createServer(): McpServer {
                 '1. Call crawl_jobs and report the summary.',
                 `2. crawl_jobs already fetched the tool-crawled channels (${crawlable}). Only the pendingChannels it returns (agent-only, no crawl spec) need you: fetch their URLs, parse postings, and feed relevant finds through import_job — use the manual fields for non-ATS sources.`,
                 '3. Rank EVERY unranked note (status "new", no score): judge stack fit and flags against the profile below, then persist score (0-100), flags, and your reasoning via set_job_status — never hand-edit note files. Cut clear mismatches with a cutReason. The round is not done while anything is unranked.',
-                "4. Present today's inbox delta: what arrived, how you ranked it, and where each candidate slots among the user's existing scores (the day's file is inbox/<date>.md in the notes dir). Never re-surface notes whose status is cut, rejected, or applied.",
+                '4. Once everything is ranked, call prune_below_threshold to auto-reject inbox notes scored below the threshold — only ≥ threshold stay open.',
+                "5. Present today's inbox delta: what arrived, how you ranked it, and where each candidate slots among the user's existing scores (the day's file is inbox/<date>.md in the notes dir). Never re-surface notes whose status is cut, rejected, or applied.",
                 '',
                 context,
                 '',

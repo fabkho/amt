@@ -7,6 +7,7 @@ import {
   findProbableDuplicates,
   listNotes,
   notesForCompany,
+  pruneBelowThreshold,
   rankingDebt,
   readNote,
   renderIndex,
@@ -165,6 +166,22 @@ describe('notes CRUD', () => {
     expect(readNote(dir, 'acme-gmbh-senior-frontend').note.score).toBeNull()
     expect(undescribedNotes(dir)).toHaveLength(0)
     expect(unrankedNotes(dir)).toContain('acme-gmbh-senior-frontend')
+  })
+
+  it('pruneBelowThreshold cuts scored inbox notes below the floor, sparing ≥floor and unranked', () => {
+    const dir = freshDir()
+    upsertNote(dir, posting({ slug: 'low', title: 'Low' }), 'x')
+    updateNote(dir, 'low', { score: 40 })
+    upsertNote(dir, posting({ slug: 'high', title: 'High' }), 'x')
+    updateNote(dir, 'high', { score: 80 })
+    upsertNote(dir, posting({ slug: 'unranked', title: 'Unranked' }), 'x') // score null
+
+    const pruned = pruneBelowThreshold(dir, 50)
+    expect(pruned).toEqual(['low'])
+    expect(readNote(dir, 'low').note.status).toBe('cut')
+    expect(readNote(dir, 'low').note.cutReason).toBe('below_threshold')
+    expect(readNote(dir, 'high').note.status).toBe('new') // ≥ floor kept
+    expect(readNote(dir, 'unranked').note.status).toBe('new') // never touched
   })
 
   it('rankingDebt bundles unranked and undescribed as one definition', () => {

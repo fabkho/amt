@@ -37,11 +37,17 @@ function parseFilters(query: URLSearchParams): Filters {
 
 export function dashboard(profile: Profile): Reply {
   const today = new Date().toISOString().slice(0, 10)
+  const threshold = profile.search.scoreThreshold
+  // Unranked (score null) always show — they still need judging. Below-threshold
+  // scored ones are tucked behind "show more".
+  const inboxAll = jobRows(profile, { status: 'new' })
   return html(render('dashboard', {
     page: 'dashboard',
     stats: stats(profile),
+    threshold,
     followups: staleApplications(profile.paths.notesDir, today),
-    inbox: jobRows(profile, { status: 'new' }),
+    inbox: inboxAll.filter(r => r.score === null || r.score >= threshold),
+    inboxBelow: inboxAll.filter(r => r.score !== null && r.score < threshold),
     shortlist: jobRows(profile, { status: 'shortlist' }),
   }))
 }

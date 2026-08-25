@@ -29,6 +29,7 @@ export const CUT_REASONS = [
   'ethics',
   'buzzword',
   'level',
+  'below_threshold',
   'unclear',
   'personal_fit',
 ] as const
@@ -436,6 +437,26 @@ export function undescribedNotes(notesDir: string): string[] {
  */
 export function rankingDebt(notesDir: string): { unranked: string[]; undescribed: string[] } {
   return { unranked: unrankedNotes(notesDir), undescribed: undescribedNotes(notesDir) }
+}
+
+/**
+ * Auto-reject inbox notes scored below the threshold — the daily prune that
+ * stops low-fit candidates piling up. Only touches `new` notes that already
+ * have a score (never the unranked, which still need judging). Returns the
+ * pruned slugs.
+ */
+export function pruneBelowThreshold(notesDir: string, threshold: number): string[] {
+  const pruned: string[] = []
+  for (const { note } of listNotes(notesDir, { status: ['new'] })) {
+    if (note.score !== null && note.score < threshold) {
+      setStatus(notesDir, note.slug, 'cut', {
+        cutReason: 'below_threshold',
+        cutNote: `score ${note.score} < threshold ${threshold}`,
+      })
+      pruned.push(note.slug)
+    }
+  }
+  return pruned
 }
 
 /** Regenerates the `_index.md` overview — a view, never a source of truth. */

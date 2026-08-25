@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.1](https://github.com/fabkho/amt/compare/amt-0.3.0...amt-0.3.1) (2026-08-25)
+
+
+### Features
+
+* crawl StepStone via headless Chromium (promote to tool-crawled) ([#61](https://github.com/fabkho/amt/issues/61)) ([a60f37c](https://github.com/fabkho/amt/commit/a60f37c975c4b647ad59b4f8dcd4615ba7a717b8)), closes [#40](https://github.com/fabkho/amt/issues/40)
+
+
+### Bug Fixes
+
+* dashboard accept/reject now removes the row from the inbox ([#62](https://github.com/fabkho/amt/issues/62)) ([01af1a8](https://github.com/fabkho/amt/commit/01af1a83203d5bcc67e7b990dc3922d0d912675c))
+
 ## [0.3.0](https://github.com/fabkho/amt/compare/amt-0.2.17...amt-0.3.0) (2026-08-25)
 
 

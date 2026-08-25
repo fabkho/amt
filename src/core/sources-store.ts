@@ -58,6 +58,17 @@ const channelCrawl = z.looseObject({
   }).optional(),
   /** Fetch via the bundled Chromium (JS-rendered / bot-walled pages). */
   render: z.boolean().optional(),
+  /**
+   * Walk result pages by appending an offset query param (e.g. LinkedIn's
+   * `&start=N`, 10 results/page). Stops early on a page that yields no NEW
+   * postings, else after `maxPages`.
+   */
+  paginate: z.looseObject({
+    param: z.string(),
+    step: z.number().int().positive(),
+    start: z.number().int().nonnegative().optional(), // defaults to 0 in the engine
+    maxPages: z.number().int().positive().default(3),
+  }).optional(),
 })
 
 const channel = z.looseObject({

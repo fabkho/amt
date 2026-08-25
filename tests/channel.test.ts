@@ -92,6 +92,56 @@ describe('fetchChannel — selectors mode', () => {
   })
 })
 
+describe('fetchChannel — pagination', () => {
+  const card = (id: string): string =>
+    `<li class="card"><h3 class="title">Job ${id}</h3>`
+    + `<a class="link" href="https://li/jobs/view/job-${id}">v</a></li>`
+  const channel = (maxPages: number): ChannelSource => ({
+    name: 'linkedin-guest',
+    crawl: {
+      urlTemplate: 'https://li/search?keywords={keyword}',
+      keywords: ['vue'],
+      mode: 'selectors',
+      item: 'li.card',
+      fields: { title: 'h3.title', url: { selector: 'a.link', attr: 'href' } },
+      nativeId: { field: 'url', regex: '-(\\d+)$' },
+      paginate: { param: 'start', step: 10, maxPages },
+    },
+  })
+
+  it('walks offset pages by step and collects across them', async () => {
+    // page 0 (start=0) → ids 10000001-02, page 1 (start=10) → 10000003-04
+    const byStart: Record<string, string> = {
+      '0': card('10000001') + card('10000002'),
+      '10': card('10000003') + card('10000004'),
+      '20': '', // empty tail
+    }
+    const { client, urls } = textClient((url) => {
+      const start = new URL(url).searchParams.get('start') ?? '0'
+      return byStart[start] ?? ''
+    })
+    const postings = await fetchChannel(client, channel(3), search)
+
+    expect(urls).toEqual([
+      'https://li/search?keywords=vue&start=0',
+      'https://li/search?keywords=vue&start=10',
+      'https://li/search?keywords=vue&start=20',
+    ])
+    expect(postings.map(p => p.nativeId)).toEqual(['10000001', '10000002', '10000003', '10000004'])
+  })
+
+  it('stops early on a fully-duplicate page instead of fetching maxPages', async () => {
+    // every page returns the same card → page 1 adds nothing new → stop
+    const { client, urls } = textClient(() => card('10000001'))
+    const postings = await fetchChannel(client, channel(3), search)
+    expect(urls).toEqual([
+      'https://li/search?keywords=vue&start=0',
+      'https://li/search?keywords=vue&start=10',
+    ])
+    expect(postings).toHaveLength(1)
+  })
+})
+
 describe('fetchChannel — json mode', () => {
   it('walks a dot-path to the array and maps fields', async () => {
     const payload = JSON.stringify({

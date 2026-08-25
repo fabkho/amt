@@ -229,6 +229,9 @@ const LINKEDIN_CHANNEL: ChannelSource = {
       url: { selector: 'a.base-card__full-link', attr: 'href' },
     },
     nativeId: { field: 'url', regex: '-(\\d{8,})' },
+    // The guest endpoint returns 10 cards/response; &start is an absolute item
+    // offset. 3 pages ⇒ ~30 postings per keyword×work-mode.
+    paginate: { param: 'start', step: 10, maxPages: 3 },
     detail: {
       urlTemplate: 'https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{id}',
       selector: '.description__text',

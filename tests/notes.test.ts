@@ -143,6 +143,16 @@ describe('notes CRUD', () => {
     expect(note.cutReason).toBe('company_type')
   })
 
+  it('accepts home_office_below as a cut reason', () => {
+    const dir = freshDir()
+    upsertNote(dir, posting(), 'x')
+    const note = setStatus(dir, 'acme-gmbh-senior-frontend', 'cut', {
+      cutReason: 'home_office_below',
+      cutNote: 'only 50% remote — below the 60% floor',
+    })
+    expect(note.cutReason).toBe('home_office_below')
+  })
+
   it('re-opens a note for ranking when a real description arrives after scoring', () => {
     const dir = freshDir()
     // imported with no description, then scored on title/company priors

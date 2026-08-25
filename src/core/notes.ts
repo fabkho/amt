@@ -22,6 +22,7 @@ export const JOB_STATUSES = [
 export const CUT_REASONS = [
   'years_required',
   'salary_below_floor',
+  'home_office_below',
   'location',
   'stack',
   'company_type',

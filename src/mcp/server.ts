@@ -79,6 +79,7 @@ function toolErrorResponse(doing: string, error: unknown) {
 /** Renders profile context for LLM-facing prompts. Never includes secrets. */
 function buildProfileSection(profile: Profile): string {
   const { search, tone } = profile
+  const minHO = Math.max(0, ...search.locations.cities.map(c => c.minHomeOfficeDays))
   return [
     'CANDIDATE PROFILE',
     `Primary stacks: ${search.stacksPrimary.join(', ')}`,
@@ -86,6 +87,9 @@ function buildProfileSection(profile: Profile): string {
     `Salary: floor ${search.salaryFloor}${search.salaryTarget ? `, target ${search.salaryTarget}` : ''}`,
     `Seniority: ${search.seniority.join(', ')}`,
     `Locations: remote ${search.locations.remote ? 'yes' : 'no'}; cities: ${search.locations.cities.map(c => `${c.name} (≥${c.minHomeOfficeDays} HO days)`).join(', ') || '—'}`,
+    ...(minHO > 0
+      ? [`Home-office floor: a hybrid role needs ≥${minHO}/5 days home office (≥${Math.round((minHO / 5) * 100)}%). Cut roles clearly below it (e.g. "50% remote", "2 Tage Home-Office") with cutReason home_office_below — agent-judged, the tool cannot read HO% from free text.`]
+      : []),
     `Company types to reject (agent-judged — no deterministic check exists): ${search.companyTypesBlocked.join(', ') || '—'}`,
     `Hard filters already applied by the tool: max years required ${search.maxYearsRequired ?? '—'}; company blocklist ${search.companyBlocklist.join(', ') || '—'}; title blocklist ${search.titleBlocklist.join(', ') || '—'}; location blocklist ${search.locationBlocklist.join(', ') || '—'}`,
     '',

@@ -74,13 +74,23 @@ real Chromium, so what you preview is what HR gets.
 
 ## Der Schalter (web dashboard)
 
-Prefer a screen to a terminal? `amt serve` opens a local dashboard at
-`http://localhost:4400` — an inbox to triage the day's arrivals (⭐ favorite,
-accept → shortlist, reject with a reason, build application) and a filterable
-Aktenboard (status, remote/hybrid, city, min score, search). It's server-rendered
-(htmx, no build) and every click writes straight to your markdown notes, so
-Obsidian and the dashboard never disagree. Design and plan in
-[docs/webview-plan.md](./docs/webview-plan.md).
+Prefer a screen to a terminal? **`amt serve`** opens a local dashboard at
+`http://localhost:4400` — triage the day's arrivals like a stack of files.
+
+<p align="center">
+  <img src="assets/web/screenshots/dashboard.png" width="820" alt="The amt dashboard: a paper-styled inbox of ranked job postings with accept/reject/favorite actions">
+</p>
+
+- **📥 Inbox** — the day's new postings, ranked; **⭐ favorite**, **accept → shortlist**,
+  or **reject** (with a reason) right from the row. Rejected/accepted rows leave
+  the inbox as you clear it.
+- **Aktenboard** — every note, filterable by status, remote/hybrid, city, minimum
+  score, favorites, or free text. The header cards are shortcuts into it.
+- **One original-posting click** — each row opens the real ad in a new tab.
+
+It's server-rendered (htmx, no build step, no framework), and **every click
+writes straight to your markdown notes** — so Obsidian and the dashboard never
+disagree. Design notes in [docs/webview-plan.md](./docs/webview-plan.md).
 
 ## Die Quellenlage (sources)
 

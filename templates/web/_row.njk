@@ -7,7 +7,7 @@
     <a class="title" href="/jobs/{{ row.slug }}">{{ row.company }} — {{ row.title }}</a>
     <div class="meta">
       {% if row.workMode %}<span class="tag {{ 'remote' if row.workMode == 'remote' }}">{{ row.workMode }}</span>{% endif %}
-      {% if row.bucket and row.bucket != 'Other' %}<span class="tag">{{ row.bucket }}</span>{% endif %}
+      {% if row.bucket and row.bucket != 'Other' and row.bucket != 'Remote' %}<span class="tag">{{ row.bucket }}</span>{% endif %}
       <span class="status-badge">{{ row.status }}</span>
       {% if row.location %}{{ row.location }}{% endif %}
     </div>

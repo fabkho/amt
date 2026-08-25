@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.4](https://github.com/fabkho/amt/compare/amt-0.3.3...amt-0.3.4) (2026-08-25)
+
+
+### Features
+
+* platform icons on the open link ([#63](https://github.com/fabkho/amt/issues/63)) ([#72](https://github.com/fabkho/amt/issues/72)) ([82f17fb](https://github.com/fabkho/amt/commit/82f17fb677ab8ac596ce4436cb674668b112e9e3))
+
 ## [0.3.3](https://github.com/fabkho/amt/compare/amt-0.3.2...amt-0.3.3) (2026-08-25)
 
 

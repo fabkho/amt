@@ -128,6 +128,31 @@ h2.section {
 .filters label { color: var(--color-ink-muted); text-transform: uppercase; font-size: var(--text-2xs); letter-spacing: 0.06em; }
 .filters label.check { display: inline-flex; align-items: center; gap: 0.35rem; text-transform: none; font-size: var(--text-sm); color: var(--color-ink-subtle); }
 .filters label.check input { margin: 0; }
+.filter-label { color: var(--color-ink-muted); text-transform: uppercase; font-size: var(--text-2xs); letter-spacing: 0.06em; }
+
+/* Multi-select status chips */
+.status-chips { display: inline-flex; flex-wrap: wrap; gap: 0.35rem; }
+.filters .chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--color-ink-subtle);
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  cursor: pointer;
+  user-select: none;
+}
+.filters .chip:hover { border-color: var(--color-ink-faint); }
+.filters .chip.on {
+  color: #fff;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+.filters .chip input { position: absolute; opacity: 0; width: 0; height: 0; }
 
 /* ─── Job rows (the ledger) ────────────────────────────── */
 .rows { border: 1px solid var(--color-line); border-radius: var(--radius); overflow: hidden; }

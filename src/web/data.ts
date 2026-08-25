@@ -50,7 +50,7 @@ export function platformOf(source: string): { label: string; icon: string } {
 }
 
 export interface Filters {
-  status?: string
+  statuses?: string[]
   workMode?: string
   bucket?: string
   minScore?: number
@@ -92,10 +92,11 @@ function byRank(a: RowView, b: RowView): number {
 const DEAD_STATUSES = new Set<string>(['cut', 'rejected'])
 
 function matches(row: RowView, f: Filters): boolean {
-  // status: 'all' shows everything; a specific status is exact; the default
-  // (unset) is "active" — everything except cut/rejected.
-  if (f.status === 'all') { /* no status filter */ }
-  else if (f.status) { if (row.status !== f.status) return false }
+  // status: one or more selected → OR match; none selected → the default
+  // "active" view (everything except cut/rejected).
+  if (f.statuses && f.statuses.length > 0) {
+    if (!f.statuses.includes(row.status)) return false
+  }
   else if (DEAD_STATUSES.has(row.status)) return false
   if (f.workMode && row.workMode !== f.workMode) return false
   if (f.bucket && row.bucket !== f.bucket) return false

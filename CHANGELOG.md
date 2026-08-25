@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.13](https://github.com/fabkho/amt/compare/amt-0.3.12...amt-0.3.13) (2026-08-25)
+
+
+### Features
+
+* multi-select status chip bar on the /jobs board ([#91](https://github.com/fabkho/amt/issues/91)) ([2f7be4d](https://github.com/fabkho/amt/commit/2f7be4dbb78ddae179603f909bd603a88bb176ff))
+
 ## [0.3.12](https://github.com/fabkho/amt/compare/amt-0.3.11...amt-0.3.12) (2026-08-25)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.14](https://github.com/fabkho/amt/compare/amt-0.3.13...amt-0.3.14) (2026-08-26)
+
+
+### Bug Fixes
+
+* align open button icon/arrow; stop text-fallback wrapping ([#93](https://github.com/fabkho/amt/issues/93)) ([ba42911](https://github.com/fabkho/amt/commit/ba42911336994d0eae89fe902a9cdeec0c5d5021))
+
 ## [0.3.13](https://github.com/fabkho/amt/compare/amt-0.3.12...amt-0.3.13) (2026-08-25)
 
 

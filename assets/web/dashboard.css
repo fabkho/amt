@@ -213,10 +213,14 @@ button.reject:hover { border-color: var(--color-ink); color: var(--color-ink-mut
   border-color: var(--color-accent-faint);
   color: var(--color-accent);
   font-weight: 500;
-  width: 4.25rem;        /* fixed so icon-only and text variants align */
-  text-align: center;
+  width: 5rem;                 /* fixed so icon-only and text variants align */
+  display: inline-flex;
+  align-items: center;         /* vertically centres icon/label with the ↗ */
+  justify-content: center;
+  gap: 3px;
+  white-space: nowrap;         /* the ↗ must never wrap to a second line */
 }
-.btn.open .platform-icon { margin-right: 2px; }
+.btn.open .platform-icon { margin: 0; vertical-align: 0; }
 .btn.open:hover { background: var(--color-accent); color: #fff; border-color: var(--color-accent); text-decoration: none; }
 .platform-icon { width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px; border-radius: 2px; object-fit: contain; }
 .applied-meta { color: var(--color-ink-faint); }

@@ -149,7 +149,8 @@ channels or judge fit, so it fetches what it can and says what's left.
   (bundles the MCP server + workflow skills, with auto-updates)
 - **Codex CLI:** `codex mcp add amt -- amt-mcp` + copy `skills/` to `~/.agents/skills/`
 - **Cursor / Zed:** point a stdio MCP server at `amt-mcp`
-- **pi:** copy `pi-extension/` to `~/.pi/agent/extensions/amt/`
+- **pi:** add `"amt": { "command": "amt-mcp", "lifecycle": "lazy" }` to
+  `~/.pi/agent/mcp.json` + copy `skills/` to `~/.pi/skills/`
 
 ## Sprechzeiten (troubleshooting)
 

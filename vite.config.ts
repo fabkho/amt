@@ -30,8 +30,7 @@ export default defineConfig({
         },
       },
     ],
-    // pi-extension targets the pi runtime — its deps aren't installed here
-    ignorePatterns: ["dist", "pi-extension", "assets", "scripts"],
+    ignorePatterns: ["dist", "assets", "scripts"],
     options: {
       typeAware: true,
       typeCheck: true,

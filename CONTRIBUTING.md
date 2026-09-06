@@ -16,9 +16,8 @@ src/
 ├── index.ts          # curated public API (the contract for MCP and wrappers)
 └── utils/            # logger (consola → stderr), stdout-guard
 templates/            # Nunjucks CV + letter templates, labels.<lang>.yaml, shared.css
-pi-extension/         # thin pi wrapper (own runtime — lint/fallow-ignored)
 skills/               # Agent Skills (open standard) — shipped via the Claude Code plugin,
-                      # copied to ~/.agents/skills for Codex
+                      # copied to ~/.agents/skills for Codex, ~/.pi/skills for pi
 ```
 
 ## Rules that matter
